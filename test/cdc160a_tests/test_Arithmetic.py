@@ -1,3 +1,4 @@
+import unittest
 from unittest import TestCase
 from cdc160a import Arithmetic
 
@@ -77,3 +78,7 @@ class Test(TestCase):
 
     def test_2_plus_1(self) -> None:
         assert Arithmetic.add(2, 1) == 3
+
+
+if __name__ == "__main__":
+    unittest.main()

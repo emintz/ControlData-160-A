@@ -1,4 +1,8 @@
+import unittest
 from unittest import TestCase
+
+from google.protobuf.unittest_custom_options_pb2 import oneof_opt1
+
 from cdc160a import Microinstructions
 from cdc160a.Storage import Storage
 from typing import Final
@@ -61,6 +65,29 @@ class Test(TestCase):
         assert self.storage.z_register == 0o0330
         assert self.storage.read_relative_bank(READ_AND_WRITE_ADDRESS) == 0o0330
 
+    def test_complement_a(self) -> None:
+        self.storage.a_register = 0o7070
+        self.storage.complement_a()
+        assert self.storage.a_register == 0o0707
+
+    def test_e_complement_to_a(self) -> None:
+        # LDN 33
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0433)
+        self.storage.unpack_instruction()
+        Microinstructions.e_complement_to_a(self.storage)
+        assert self.storage.run_stop_status
+        assert self.storage.z_register == 0o33
+        assert self.storage.a_register == 0o7744
+
+    def test_e_to_a(self) -> None:
+        # LDN 33
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0433)
+        self.storage.unpack_instruction()
+        Microinstructions.e_to_a(self.storage)
+        assert self.storage.run_stop_status
+        assert self.storage.z_register == 0o33
+        assert self.storage.a_register == 0o33
+
     def test_s_to_a(self) -> None:
         # LDN 37
         self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0437)
@@ -70,11 +97,13 @@ class Test(TestCase):
         assert self.storage.z_register == 0o37
         assert self.storage.a_register == 0o37
 
-    def test_specific_to_a(self) -> None:
-        Microinstructions.specific_to_a(self.storage)
+    def test_direct_complement_to_a(self) -> None:
+        self.storage.write_direct_bank(READ_AND_WRITE_ADDRESS, 0o7654)
+        self.storage.s_register = READ_AND_WRITE_ADDRESS
+        Microinstructions.s_direct_complement_to_a(self.storage)
         assert self.storage.run_stop_status
-        assert self.storage.z_register == 0o77
-        assert self.storage.a_register == 0o77
+        assert self.storage.z_register == 0o7654
+        assert self.storage.a_register == 0o7654 ^ 0o7777
 
     def test_s_direct_to_a(self) -> None:
         self.storage.write_direct_bank(READ_AND_WRITE_ADDRESS, 0o7654)
@@ -84,9 +113,104 @@ class Test(TestCase):
         assert self.storage.z_register == 0o7654
         assert self.storage.a_register == 0o7654
 
+    def test_indirect_complement_to_a(self) -> None:
+        self.storage.write_indirect_bank(READ_AND_WRITE_ADDRESS, 0o7654)
+        self.storage.s_register = READ_AND_WRITE_ADDRESS
+        Microinstructions.s_indirect_complement_to_a(self.storage)
+        assert self.storage.run_stop_status
+        assert self.storage.z_register == 0o7654
+        assert self.storage.a_register == 0o7654 ^ 0o7777
+
+    def test_s_indirect_to_a(self) -> None:
+        self.storage.write_indirect_bank(READ_AND_WRITE_ADDRESS, 0o7654)
+        self.storage.s_register = READ_AND_WRITE_ADDRESS
+        Microinstructions.s_indirect_to_a(self.storage)
+        assert self.storage.run_stop_status
+        assert self.storage.z_register == 0o7654
+        assert self.storage.a_register == 0o7654
+
+    def test_s_relative_complement_to_a(self) -> None:
+        self.storage.s_register = READ_AND_WRITE_ADDRESS
+        Microinstructions.s_relative_complement_to_a(self.storage)
+        assert self.storage.run_stop_status
+        assert self.storage.z_register == 0o13
+        assert self.storage.a_register == 0o7764
+
+    def test_rotate_a_left_one(self) -> None:
+        self.storage.a_register = 0o0001
+        Microinstructions.rotate_a_left_one(self.storage)
+        assert self.storage.a_register == 0x0002
+        self.storage.a_register = 0o4001
+        Microinstructions.rotate_a_left_one(self.storage)
+        assert self.storage.a_register == 0x0003
+
+    def test_rotate_a_left_two(self) -> None:
+        self.storage.a_register = 0o6000
+        Microinstructions.rotate_a_left_two(self.storage)
+        assert self.storage.a_register == 0o0003
+        self.storage.a_register = 0o4001
+        Microinstructions.rotate_a_left_two(self.storage)
+        assert self.storage.a_register == 0o0006
+
+    def test_rotate_a_left_three(self) -> None:
+        self.storage.a_register = 0o7000
+        Microinstructions.rotate_a_left_three(self.storage)
+        assert self.storage.a_register == 0o0007
+
+    def test_rotate_a_left_six(self) -> None:
+        self.storage.z_register = 0o2143
+        self.storage.z_to_a()
+        Microinstructions.rotate_a_left_six(self.storage)
+        assert self.storage.z_register == 0o2143
+        assert self.storage.a_register == 0o4321
+
+    def test_shift_a_right_one(self) -> None:
+        self.storage.a_register = 0o4000
+        Microinstructions.shift_a_right_one(self.storage)
+        assert self.storage.a_register == 0o6000
+        self.storage.a_register = 0o6000
+        Microinstructions.shift_a_right_one(self.storage)
+        assert self.storage.a_register == 0o7000
+        self.storage.a_register = 0o2000
+        Microinstructions.shift_a_right_one(self.storage)
+        assert self.storage.a_register == 0o1000
+        self.storage.a_register = 0o2002
+        Microinstructions.shift_a_right_one(self.storage)
+        assert self.storage.a_register == 0o1001
+
+    def test_shift_a_right_two(self) -> None:
+        self.storage.a_register = 0o4000
+        Microinstructions.shift_a_right_two(self.storage)
+        assert self.storage.a_register == 0o7000
+        self.storage.a_register = 0x2000
+        Microinstructions.shift_a_right_one(self.storage)
+        assert self.storage.a_register -- 0o0400
+        self.storage.a_register = 0o0014
+        Microinstructions.shift_a_right_two(self.storage)
+        assert self.storage.a_register == 0o0003
+        self.storage.a_register = 0o4014
+        Microinstructions.shift_a_right_two(self.storage)
+        assert self.storage.a_register == 0o7003
+
     def test_s_relative_to_a(self) -> None:
         self.storage.s_register = READ_AND_WRITE_ADDRESS
         Microinstructions.s_relative_to_a(self.storage)
         assert self.storage.run_stop_status
         assert self.storage.z_register == 0o13
         assert self.storage.a_register == 0o13
+
+    def test_specific_complement_to_a(self) -> None:
+        Microinstructions.specific_complement_to_a(self.storage)
+        assert self.storage.run_stop_status
+        assert self.storage.z_register == 0o77
+        assert self.storage.a_register == 0o7700
+
+    def test_specific_to_a(self) -> None:
+        Microinstructions.specific_to_a(self.storage)
+        assert self.storage.run_stop_status
+        assert self.storage.z_register == 0o77
+        assert self.storage.a_register == 0o77
+
+
+if __name__ == "__main__":
+    unittest.main()

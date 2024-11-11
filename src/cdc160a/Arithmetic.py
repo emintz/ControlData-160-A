@@ -2,7 +2,7 @@
 CED 160-A one's complement arithmetic
 
 Emulates the CDC 160-A's 12 bit one's complement complementing
-subtractor, together with multiply by 10 and multiply by 100
+subtracter, together with multiply by 10 and multiply by 100
 instructions.
 """
 

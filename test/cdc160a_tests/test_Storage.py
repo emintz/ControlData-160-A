@@ -62,6 +62,14 @@ class TestStorage(TestCase):
         assert self.storage.z_register == 0o0770
         assert self.storage.read_relative_bank(READ_AND_WRITE_ADDRESS) == 0o0770
 
+    def test_compement_a(self) -> None:
+        self.storage.a_register = 0o7777
+        self.storage.complement_a()
+        assert self.storage.a_register == 0o0000
+        self.storage.a_register = 0o7070
+        self.storage.complement_a()
+        assert self.storage.a_register == 0o0707
+
     def test_decode_instruction(self) -> None:
         self.storage.relative_storage_bank = 3
         self.storage.unpack_instruction()

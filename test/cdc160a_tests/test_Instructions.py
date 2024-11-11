@@ -1,4 +1,7 @@
+import unittest
 from unittest import TestCase
+
+from Instructions import Instruction
 from cdc160a import Instructions
 from cdc160a.Storage import Storage
 from typing import Final
@@ -58,6 +61,109 @@ class Test(TestCase):
         assert not self.storage.run_stop_status
         assert not self.storage.err_status
         assert self.storage.a_register == 0o3333
+        self.storage.advance_to_next_instruction()
+        assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+
+    def test_lcb(self) -> None:
+        # LCB 10
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o2710)
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS - 0o10, 0o5555)
+        self.storage.unpack_instruction()
+        Instructions.LCB.determine_effective_address(self.storage)
+        Instructions.LCB.perform_logic(self.storage)
+        assert self.storage.z_register == 0O5555
+        assert self.storage.a_register == 0o5555 ^ 0o7777
+        self.storage.advance_to_next_instruction()
+        assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+        assert self.storage.run_stop_status
+
+    def test_lcc(self) -> None:
+        # LCC 6666
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o2600)
+        self.storage.write_relative_bank(G_ADDRESS, 0o6666)
+        self.storage.p_register = INSTRUCTION_ADDRESS
+        self.storage.unpack_instruction()
+        Instructions.LCC.determine_effective_address(self.storage)
+        assert Instructions.LCC.perform_logic(self.storage) == 2
+        assert self.storage.z_register == 0o6666
+        assert self.storage.a_register == 0o6666 ^ 0o7777
+        self.storage.advance_to_next_instruction()
+        assert self.storage.p_register == AFTER_DOUBLE_WORD_INSTRUCTION_ADDRESS
+        assert self.storage.run_stop_status
+
+    def test_lcd(self) -> None:
+        # LCD 45
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o2445)
+        self.storage.write_direct_bank(INSTRUCTION_ADDRESS, 0o7654)
+        self.storage.unpack_instruction()
+        assert Instructions.LCD.perform_logic(self.storage) == 2
+        assert self.storage.s_register == INSTRUCTION_ADDRESS
+        assert self.storage.z_register == 0o7654
+        assert self.storage.a_register == 0o7654 ^ 0o7777
+        self.storage.advance_to_next_instruction()
+        assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+        assert self.storage.run_stop_status
+
+    def test_lcf(self) -> None:
+        # LCF 20
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o2620)
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS + 0o20, 0o2222)
+        self.storage.unpack_instruction()
+        Instructions.LCF.determine_effective_address(self.storage)
+        Instructions.LCF.perform_logic(self.storage)
+        assert self.storage.z_register == 0o2222
+        assert self.storage.a_register ==0o2222 ^ 0o7777
+        self.storage.advance_to_next_instruction()
+        assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+        assert self.storage.run_stop_status
+
+    def test_lci(self) -> None:
+        # LCI 45
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o2545)
+        self.storage.write_indirect_bank(0o45, 0o7654)
+        self.storage.unpack_instruction()
+        Instructions.LCI.determine_effective_address(self.storage)
+        assert Instructions.LCI.perform_logic(self.storage) == 3
+        assert self.storage.s_register == 0o45
+        assert self.storage.z_register == 0o7654
+        assert self.storage.a_register == 0o7654 ^ 0o7777
+        self.storage.advance_to_next_instruction()
+        assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+        assert self.storage.run_stop_status
+
+    def test_lcm(self) -> None:
+        # LCM 137
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o2500)
+        self.storage.write_relative_bank(G_ADDRESS, 0o137)
+        self.storage.write_indirect_bank(0o137, 0o1370)
+        self.storage.unpack_instruction()
+        Instructions.LCM.determine_effective_address(self.storage)
+        assert Instructions.LCM.perform_logic(self.storage) ==3
+        assert self.storage.s_register == 0o137
+        assert self.storage.z_register == 0o1370
+        assert self.storage.a_register == 0o1370 ^ 0o7777
+        self.storage.advance_to_next_instruction()
+        assert self.storage.p_register == AFTER_DOUBLE_WORD_INSTRUCTION_ADDRESS
+        assert self.storage.run_stop_status
+
+    def test_lcn(self) -> None:
+        # LCN 37
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0537)
+        self.storage.unpack_instruction()
+        Instructions.LCN.determine_effective_address(self.storage)
+        assert Instructions.LCN.perform_logic(self.storage) == 1
+        self.storage.advance_to_next_instruction()
+        assert self.storage.s_register == INSTRUCTION_ADDRESS
+        assert self.storage.z_register == 0o37
+        assert self.storage.a_register == 0o37 ^ 0o7777
+
+    def test_lcs(self) -> None:
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o2700)
+        self.storage.unpack_instruction()
+        Instructions.LCS.determine_effective_address(self.storage)
+        assert Instructions.LCS.perform_logic(self.storage) == 2
+        assert self.storage.z_register == 0o77
+        assert self.storage.a_register == 0o77 ^ 0o7777
         self.storage.advance_to_next_instruction()
         assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
 
@@ -164,6 +270,62 @@ class Test(TestCase):
         self.storage.advance_to_next_instruction()
         assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
 
+    def test_ls1(self)-> None:
+        # LS1
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0x0102)
+        self.storage.unpack_instruction()
+        self.storage.z_register = 0o4001
+        self.storage.a_register = 0o4001
+        Instructions.LS1.determine_effective_address(self.storage)
+        assert Instructions.LS1.perform_logic(self.storage) == 1
+        assert self.storage.run_stop_status
+        assert self.storage.z_register == 0o4001
+        assert self.storage.a_register == 0o0003
+        self.storage.advance_to_next_instruction()
+        assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+
+    def test_ls2(self) -> None:
+        # LS2
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0103)
+        self.storage.unpack_instruction()
+        self.storage.z_register = 0o6001
+        self.storage.a_register = 0o6001
+        Instructions.LS2.determine_effective_address(self.storage)
+        assert Instructions.LS2.perform_logic(self.storage) == 1
+        assert self.storage.run_stop_status
+        assert self.storage.z_register == 0o6001
+        assert self.storage.a_register == 0o0007
+        self.storage.advance_to_next_instruction()
+        assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+
+    def test_ls3(self) -> None:
+        # LS3
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0110)
+        self.storage.unpack_instruction()
+        self.storage.z_register = 0o7000
+        self.storage.a_register = 0o7000
+        Instructions.LS3.determine_effective_address(self.storage)
+        assert Instructions.LS3.perform_logic(self.storage) == 1
+        assert self.storage.run_stop_status
+        assert self.storage.z_register == 0o7000
+        assert self.storage.a_register == 0o0007
+        self.storage.advance_to_next_instruction()
+        assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+
+    def test_ls6(self) -> None:
+        # LS6
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0111)
+        self.storage.unpack_instruction()
+        self.storage.z_register = 0o3412
+        self.storage.z_to_a()
+        Instructions.LS6.determine_effective_address(self.storage)
+        assert Instructions.LS6.perform_logic(self.storage) == 1
+        assert self.storage.run_stop_status
+        assert self.storage.z_register == 0o3412
+        assert self.storage.a_register == 0o1234
+        self.storage.advance_to_next_instruction()
+        assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+
     def test_nop(self) -> None:
         # NOP 1
         self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0001)
@@ -175,6 +337,38 @@ class Test(TestCase):
         assert self.storage.z_register == 0o3333
         self.storage.advance_to_next_instruction()
         assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+
+    def test_rs1(self) -> None:
+        # RS1
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0114)
+        self.storage.unpack_instruction()
+        self.storage.z_register = 0o4020
+        self.storage.a_register = 0o4020
+        Instructions.RS1.determine_effective_address(self.storage)
+        assert Instructions.RS1.perform_logic(self.storage) == 1
+        assert self.storage.run_stop_status
+        assert self.storage.z_register == 0o4020
+        assert self.storage.a_register == 0o6010
+        self.storage.advance_to_next_instruction()
+        assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+
+    def test_rs2(self) -> None:
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0115)
+        self.storage.unpack_instruction()
+        self.storage.z_register = 0o0007
+        self.storage.z_to_a()
+        Instructions.RS2.determine_effective_address(self.storage)
+        assert Instructions.RS2.perform_logic(self.storage) == 1
+        assert self.storage.run_stop_status
+        assert self.storage.z_register == 0o0007
+        assert self.storage.a_register == 0o0001
+        self.storage.z_register = 0o4007
+        self.storage.z_to_a()
+        assert Instructions.RS2.perform_logic(self.storage) == 1
+        assert self.storage.run_stop_status
+        assert self.storage.z_register == 0o4007
+        assert self.storage.a_register == 0o7001
+
 
     def test_sdb(self) -> None:
         # STB 15
@@ -274,3 +468,7 @@ class Test(TestCase):
         self.storage.advance_to_next_instruction()
         assert (self.storage.get_program_counter() ==
                 AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
+
+
+if __name__ == "__main__":
+    unittest.main()

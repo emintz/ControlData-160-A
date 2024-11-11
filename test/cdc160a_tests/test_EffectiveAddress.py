@@ -1,3 +1,4 @@
+import unittest
 from unittest import TestCase
 from cdc160a.Storage import MCS_MODE_BFR
 from cdc160a.Storage import MCS_MODE_DIR
@@ -106,3 +107,7 @@ class Test(TestCase):
         EffectiveAddress.specific(self.storage)
         assert self.storage.s_register == 0o7777
         assert self.storage.storage_cycle == MCS_MODE_REL
+
+
+if __name__ == "__main__":
+    unittest.main()

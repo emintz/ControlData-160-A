@@ -131,6 +131,9 @@ class Storage:
     def a_to_z(self) -> None:
         self.z_register = self.a_register
 
+    def complement_a(self) -> None:
+        self.a_register = self.a_register ^ 0o7777
+
     # Declares that the next memory access will be in the buffer bank.
     def mode_buffer(self) -> None:
         self.storage_cycle = MCS_MODE_BFR
