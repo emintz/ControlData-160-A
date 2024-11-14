@@ -254,11 +254,20 @@ class TestStorage(TestCase):
         self.storage.stop()
         assert not self.storage.run_stop_status
 
+    def test_read_absolute(self) -> None:
+        assert self.storage.read_absolute(0, 0o1000) == 0
+        self.storage.memory[0, 0o1000] = 0o3777
+        assert self.storage.read_absolute(0, 0o1000) == 0o3777
+
     def test_read_write_specific(self) -> None:
         assert self.storage.read_specific() == 0o77
         self.storage.write_specific(0o777)
         assert self.storage.read_specific() == 0o777
 
+    def test_write_absolute(self) -> None:
+        assert self.storage.memory[0, 0o1000] == 0
+        self.storage.write_absolute(0, 0o1000, 0o3777)
+        assert self.storage.memory[0, 0o1000] == 0o3777
 
 if __name__ == "__main__":
     unittest.main()

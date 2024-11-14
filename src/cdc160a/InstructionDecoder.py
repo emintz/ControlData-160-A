@@ -90,7 +90,7 @@ class OpCode00:
 
 class OpCode77:
     def __init__(self):
-        self.opcode = 0x77
+        self.opcode = 0o77
 
     def decode(self, e: int) -> Instruction:
         if e == 0o00 or e == 0o77:

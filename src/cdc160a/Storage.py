@@ -11,6 +11,8 @@
     The design is motivated by, though differs from, the CDC 160A Programming
     Manual, which can be found at
     https://archive.org/details/bitsavers_cdc160023aingManual1960_4826291
+
+    TODO(emintz): move method descriptions to doc strings.
 """
 import numpy as np
 from typing import Final
@@ -251,6 +253,18 @@ class Storage:
     def set_relative_storage_bank(self, value: int) -> None:
         self.relative_storage_bank = value & 0o7
 
+    def read_absolute(self, bank: int, address: int):
+        """
+        Read and return the 12-bit value stored at the specified
+        address in the specified memory bank.
+
+        :param bank: memory bank. Must be in [0 .. 7] inclusive
+        :param address: address within the memory bank. Must be in
+               [0 .. 0x7777] inclusive
+        :return: the contents of the specified memory location
+        """
+        return self.memory[bank, address]
+
     # Read and return the value from a specified address in the
     # buffer storage bank. The least significant 12 bits in the
     # provided address argument specifies the address to be read.
@@ -310,6 +324,20 @@ class Storage:
 
     def s_relative_to_a(self) -> None:
         self.a_register = self.read_relative_bank(self.s_register)
+
+    def write_absolute(self, bank: int, address: int, value: int) -> None:
+        """
+        Write the specified value to the specified address in the specified
+        memory bank.
+
+        :param bank: the target memory bank. Holds the destination
+               of the write operation. Must be in [0 .. 7] inclusive
+        :param address: the cell to which to write
+        :param value: the value to write. Must be in [0 .. 0o0000]
+               inclusive.
+        :return: None
+        """
+        self.memory[bank, address] = value
 
     # Write the specified value to the specified address in the
     # buffer storage bank. The least significant 12 bits in the
