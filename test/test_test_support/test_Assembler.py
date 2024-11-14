@@ -141,3 +141,19 @@ class TestAssembler(TestCase):
         assert self.__storage.read_absolute(0o3, 0o0100) == 0o2200
         assert self.__storage.read_absolute(0o3, 0o0101) == 0o4321
         assert self.__storage.read_absolute(0o3, 0o0102) == 0o7700
+
+    def test_ldc_shift_halt(self) -> None:
+        assembler = self.assembler(Programs.LDC_SHIFT_HALT)
+        assembler.run()
+        assert assembler.address() == 0o0104
+        assert assembler.bank() == 3
+        assert assembler.line_count() == 8
+        assert assembler.error_count() == 0
+        assert assembler.warning_count() == 0
+        assert assembler.words_written() == 4
+        assert self.__storage.read_absolute(3, 0o0100) == 0o2200
+        assert self.__storage.read_absolute(3, 0o0101) == 0o4321
+        assert self.__storage.read_absolute(3, 0o0102) == 0o0110
+        assert self.__storage.read_absolute(3, 0o0103) == 0o7700
+        assert self.__storage.read_absolute(3, 0o0104) == 0o0000
+

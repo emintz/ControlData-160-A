@@ -37,11 +37,19 @@ NOOP_THEN_HALT = """
 """
 
 LDC_THEN_HALT = """
-          REM  no-op followed by a halt
+          REM  move 0o4321 to the accumulator and halt
           BNK 3
           ORG 100
           LDC 4321
           HLT
           END
 """
-
+LDC_SHIFT_HALT = """
+          REM  move 0o4321 to the accumulator and halt
+          BNK 3
+          ORG 100
+          LDC 4321
+          LS3
+          HLT
+          END
+"""
