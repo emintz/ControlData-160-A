@@ -24,6 +24,7 @@ def err(storage: Storage) -> int:
     storage.err_status = True
     storage.run_stop_status = False
     storage.next_after_one_word_instruction()
+    storage.advance_to_next_instruction()
     return 1
 
 # Halt: halt execution without setting error status
@@ -32,6 +33,7 @@ def err(storage: Storage) -> int:
 def hlt(storage: Storage) -> int:
     storage.stop()
     storage.next_after_one_word_instruction()
+    storage.advance_to_next_instruction()
     return 1
 
 # Load Backward: Transfer the value at a fixed memory location BEFORE
@@ -42,6 +44,7 @@ def ldb(storage: Storage) -> int:
     storage.s_address_relative_to_z()
     storage.z_to_a()
     storage.next_after_one_word_instruction()
+    storage.advance_to_next_instruction()
     return 2
 
 # Load Constant: load the A register with G, the word following the
@@ -51,6 +54,7 @@ def ldc(storage: Storage) -> int:
     storage.g_to_z()
     storage.z_to_a()
     storage.next_after_two_word_instruction()
+    storage.advance_to_next_instruction()
     return 2
 
 # Load Direct: loads the A register with the contents of a direct
@@ -62,6 +66,7 @@ def ldd(storage: Storage) -> int:
     storage.s_direct_to_z()
     storage.z_to_a()
     storage.next_after_one_word_instruction()
+    storage.advance_to_next_instruction()
     return 2
 
 # Load Forward: loads find the operand at P + E in the relative bank
@@ -72,6 +77,7 @@ def ldf(storage: Storage) -> int:
     storage.s_address_relative_to_z()
     storage.z_to_a()
     storage.next_after_one_word_instruction()
+    storage.advance_to_next_instruction()
     return 2
 
 # Load Indirect:  loads the A register with the contents of an indirect
@@ -83,6 +89,7 @@ def ldi(storage: Storage) -> int:
     storage.s_indirect_to_z()
     storage.z_to_a()
     storage.next_after_one_word_instruction()
+    storage.advance_to_next_instruction()
     return 3
 
 # Load Memory: load the A register with a word in the indirect bank. The
@@ -93,6 +100,7 @@ def ldm(storage: Storage) -> int:
     storage.s_indirect_to_z()
     storage.z_to_a()
     storage.next_after_two_word_instruction()
+    storage.advance_to_next_instruction()
     return 3
 
 # Load No Address: load the A register with E. Since E is unsigned,
@@ -102,11 +110,14 @@ def ldn(storage: Storage) -> int:
     storage.e_to_z()
     storage.z_to_a()
     storage.next_after_one_word_instruction()
+    storage.advance_to_next_instruction()
     return 1
 
 # No-op: do nothing
 #   F: 00   E: 0X
 def nop(storage: Storage) -> int:
+    storage.next_after_one_word_instruction()
+    storage.advance_to_next_instruction()
     return 1
 
 if __name__ == "__main__":

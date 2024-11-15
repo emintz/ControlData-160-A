@@ -24,9 +24,9 @@ class Test(TestCase):
         for e in range(0o00, 0o77):
             assert target.decode(e) == Instructions.ERR
 
-    def test_verify_opcode_0_decoder(self) -> None:
-        decoder_00 = decoder_at(0o00)
-        assert decoder_00.opcode == 0o00
+    def test_verify_opcode_1_decoder(self) -> None:
+        decoder_00 = decoder_at(0o01)
+        assert decoder_00.opcode == 0o01
 
 
     def test_decode_singleton(self) -> None:
@@ -36,9 +36,9 @@ class Test(TestCase):
             instruction = decode(0o04, e)
             assert instruction.name() == expected_instruction.name()
 
-    def test_decode_00(self) -> None:
-        decoder = InstructionDecoder.decoder_at(0x00)
-        assert decoder.opcode == 0o00
+    def test_decode_01(self) -> None:
+        decoder = InstructionDecoder.decoder_at(0x01)
+        assert decoder.opcode == 0o01
         for e in range(0o00, 0o100):
             instruction_name = decoder.decode(e).name()
             match e:

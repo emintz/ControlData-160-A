@@ -1,8 +1,6 @@
 import unittest
 from unittest import TestCase
 
-from google.protobuf.unittest_custom_options_pb2 import oneof_opt1
-
 from cdc160a import Microinstructions
 from cdc160a.Storage import Storage
 from typing import Final

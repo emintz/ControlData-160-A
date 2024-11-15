@@ -82,7 +82,7 @@ class OpCode01:
     }
 
     def __init__(self):
-        self.opcode = 0o00
+        self.opcode = 0o01
 
     def decode(self, e: int) -> Instruction:
         return Instructions.ERR if e not in self.__e_to_instruction \
