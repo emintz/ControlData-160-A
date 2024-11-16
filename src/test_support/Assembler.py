@@ -127,6 +127,17 @@ class BankSetter:
     def name(self) -> str:
         return self.__name
 
+class MemorySetter:
+    def __init__(self, assembler: Assembler, name: str):
+        self.__assembler = assembler
+        self.__name = name
+
+    def emit(self, tokens: [str]) -> None:
+        value = 0o0000
+        if len(tokens) < 2:
+            self.__assembler.warning("Literal value missing, using 0o0000")
+        self.__assembler.emit_word(int(tokens[1], 8))
+
 class VacuousEmitter:
     def __init__(self, assembler: Assembler, name: str):
         self.__assembler = assembler
@@ -180,6 +191,45 @@ class StopAssembly:
     def name(self) -> str:
         return self.__name
 
+class OneWordAnyE:
+    """
+    A single word instruction whose E can assume any possible value
+    in [0o00 .. 0o77]
+    """
+
+    def __init__(self, assembler: Assembler, name: str, instruction: int):
+        """
+        Construction
+
+        :param assembler: the target assembler
+        :param name: instruction name
+        :param instruction: op-code in [0o00 .. 0o77]
+        """
+        self.__assembler = assembler
+        self.__name = name
+        self.__instruction = (instruction << 6) & 0o7700
+
+    def emit(self, tokens: [str]) -> None:
+        e_value = 0o77
+        if len(tokens) < 2:
+            self.__assembler.error(
+                "E value missing, using 77")
+        elif not E_PATTERN.match(tokens[1]):
+            self.__assembler.error(
+                "E value must be an octal number between 00 and 77, using 7.7")
+        else:
+            e_value = int(tokens[1], 8)
+        self.__assembler.emit_word(self.__instruction | e_value)
+
+    def name(self) -> str:
+        """
+        Returns the instruction name
+
+        :return: the instruction name as documented in the CDC-160-A
+                 reference manual
+        """
+        return self.__name
+
 class OneWordNonZeroE:
     """
     An instruction with n E in [0o01 .. 0o77]
@@ -193,19 +243,22 @@ class OneWordNonZeroE:
         :param instruction: instruction code in the range [0o00 .. 0o77]
         """
         self.__assembler = assembler
+        self.__instruction = (instruction << 6) & 0o7700
         self.__name = name
-        self.__instruction = (instruction << 6) & 0x7700
 
     def emit(self, tokens: [str]) -> None:
         e_value = 0o77
         if len(tokens) < 2:
             self.__assembler.error(
-                "E value is required; using 0")
+                "E value is required; using 0077")
         else:
-            if G_PATTERN.match(tokens[1]):
-                e_value = int(tokens[1], 8)
-                self.__assembler.error(
-                    "E cannot be zero, using 77")
+            if E_PATTERN.match(tokens[1]):
+                maybe_e_value = int(tokens[1], 8)
+                if maybe_e_value == 0:
+                    self.__assembler.error(
+                        "E cannot be zero, using 77")
+                else:
+                    e_value = maybe_e_value
             else:
                 self.__assembler.error(
                     "The E value {0} must be a one or two digit octal number, using 77.")
@@ -293,34 +346,42 @@ class Assembler:
             "ERR": FixedEValue(self, "ERR", 0o0000),
             "HLT": FixedEValue(self, "HLT", 0o7700),
             "LCB": OneWordNonZeroE(self, "LCB", 0o27),
-            "LCD": OneWordNonZeroE(self, "LCD", 0o24),
+            "LCC": TwoWordFixedE(self, "LCC", 0o26),
+            "LCD": OneWordAnyE(self, "LCD", 0o24),
             "LCF": OneWordNonZeroE(self, "LCF", 0o26),
             "LCI": OneWordNonZeroE(self, "LCI", 0o25),
             "LCM": TwoWordFixedE(self, "LCM", 0o25),
-            "LCN": OneWordZeroE(self, "LCN", 0o05),
+            "LCN": OneWordAnyE(self, "LCN", 0o05),
             "LCS": FixedEValue(self, "LCS", 0o2700),
             "LDC": TwoWordFixedE(self, "LDC", 0o22),
-            "LDD": OneWordZeroE(self, "LDD", 0o22),
-            "LDF": OneWordNonZeroE(self, "LDN", 0o22),
-            "LDI": OneWordNonZeroE(self, "LDI", 0o22),
-            "LDM": TwoWordFixedE(self, "LDN", 0o21),
-            "LDN": FixedEValue(self, "LDM", 0o04),
+            "LDB": OneWordNonZeroE(self,"LDB", 0o23),
+            "LDD": OneWordAnyE(self, "LDD", 0o20),
+            "LDF": OneWordNonZeroE(self, "LDF", 0o22),
+            "LDI": OneWordNonZeroE(self, "LDI", 0o21),
+            "LDM": TwoWordFixedE(self, "LDM", 0o21),
+            "LDN": OneWordAnyE(self, "LDN", 0o04),
             "LDS": FixedEValue(self, "LDS", 0o2300),
             "LS1": FixedEValue(self, "LSI", 0o0102),
             "LS2": FixedEValue(self, "LS2", 0o0103),
             "LS3": FixedEValue(self, "LS3", 0o0110),
-            "LS6": FixedEValue(self,"LS6", 0x0111),
+            "LS6": FixedEValue(self,"LS6", 0o0111),
+            "NJF": OneWordAnyE(self, "NJF", 0o63),
             "NOP": FixedEValue(self, "NOP", 0o0007),
+            "NZF": OneWordAnyE(self, "NZF", 0o61),
+            "PJF": OneWordAnyE(self, "PJF", 0o62),
+            "OCT": MemorySetter(self, "OCT"),
             "ORG": AddressSetter(self, "ORG"),
             "REM": VacuousEmitter(self, "REM"),
             "RS1": FixedEValue(self, "RS1", 0o0114),
             "RS2": FixedEValue(self, "RS2", 0o0115),
+            "STB": OneWordNonZeroE(self, "STB", 0o43),
             "STC": TwoWordFixedE(self, "STC", 0o42),
-            "STD": TwoWordFixedE(self, "STD", 0o40),
+            "STD": OneWordAnyE(self, "STD", 0o40),
             "STF": OneWordNonZeroE(self, "STF", 0o42),
-            "STI": OneWordNonZeroE(self, "STI", 0o41),
+            "STI": OneWordAnyE(self, "STI", 0o41),
             "STM": TwoWordFixedE(self, "STM", 0o41),
             "STS": FixedEValue(self, "STS", 0o4300),
+            "ZJF": OneWordAnyE(self, "ZJF", 0o60)
         }
 
     def __crack_and_emit(self) -> None:

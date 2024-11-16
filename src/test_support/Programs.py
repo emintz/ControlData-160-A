@@ -53,3 +53,30 @@ LDC_SHIFT_HALT = """
           HLT
           END
 """
+SET_LITERAL = """
+          REM set a literal value
+          BNK 3
+          ORG 100
+          OCT 1234
+          END
+"""
+NEGATIVE_JUMP_FORWARD_ZERO_A = """
+          REM Test negative jump forward with A set to 0
+          BNK 3
+          ORG 100
+          LDN 0
+          NZF 2    # +0
+          HLT      # +1
+          HLT      # +2
+          END
+"""
+NEGATIVE_JUMP_FORWARD_MINUS_ZERO_A = """
+          REM Test negative jump forward with A set to minus zero
+          BNK 3
+          ORG 100
+          LDC 7777
+          NZF 2    # +0
+          HLT      # +1
+          HLT      # +2
+          END
+"""

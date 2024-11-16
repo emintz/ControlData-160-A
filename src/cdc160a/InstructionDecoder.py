@@ -106,7 +106,7 @@ __DECODERS = [
     __UNIMPLEMENTED,            # 02
     __UNIMPLEMENTED,            # 03
     Singleton(Instructions.LDN, 0o04),            # 04
-    __UNIMPLEMENTED,            # 05
+    Singleton(Instructions.LCN, 0o05),            # 05
     __UNIMPLEMENTED,            # 06
     __UNIMPLEMENTED,            # 07
     __UNIMPLEMENTED,            # 10
@@ -121,10 +121,10 @@ __DECODERS = [
     Bimodal(Instructions.LDM, Instructions.LDI, 0o21),   # 21
     Bimodal(Instructions.LDC, Instructions.LDF, 0o22),   # 22
     Bimodal(Instructions.LDS, Instructions.LDB, 0o23),   # 23
-    __UNIMPLEMENTED,            # 24
-    __UNIMPLEMENTED,            # 25
-    __UNIMPLEMENTED,            # 26
-    __UNIMPLEMENTED,            # 27
+    Singleton(Instructions.LCD, 0o24),                   # 24
+    Bimodal(Instructions.LDM, Instructions.LCI, 0o25),   # 25
+    Bimodal(Instructions.LCC, Instructions.LCF, 0o26),   # 26
+    Bimodal(Instructions.LCS, Instructions.LCB, 0o27),   # 27
     __UNIMPLEMENTED,            # 30
     __UNIMPLEMENTED,            # 31
     __UNIMPLEMENTED,            # 32
@@ -149,10 +149,10 @@ __DECODERS = [
     __UNIMPLEMENTED,            # 55
     __UNIMPLEMENTED,            # 56
     __UNIMPLEMENTED,            # 57
-    __UNIMPLEMENTED,            # 60
-    __UNIMPLEMENTED,            # 61
-    __UNIMPLEMENTED,            # 62
-    __UNIMPLEMENTED,            # 63
+    Singleton(Instructions.ZJF, 0o60),           # 60
+    Singleton(Instructions.NZF, 0o61),           # 61
+    Singleton(Instructions.PJF, 0o62),           # 62
+    Singleton(Instructions.NJF, 0o63),           # 63
     __UNIMPLEMENTED,            # 64
     __UNIMPLEMENTED,            # 65
     __UNIMPLEMENTED,            # 66

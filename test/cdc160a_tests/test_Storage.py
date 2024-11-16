@@ -30,6 +30,28 @@ class TestStorage(TestCase):
     def tearDown(self) -> None:
         self.storage = None
 
+    def test_a_predicates(self) -> None:
+        self.storage.a_register = 0
+        assert not self.storage.a_negative()
+        assert not self.storage.a_not_zero()
+        assert self.storage.a_positive()
+        assert self.storage.a_zero()
+        self.storage.a_register = 1
+        assert not self.storage.a_negative()
+        assert self.storage.a_not_zero()
+        assert self.storage.a_positive()
+        assert not self.storage.a_zero()
+        self.storage.a_register = 0o7777
+        assert self.storage.a_negative()
+        assert self.storage.a_not_zero()
+        assert not self.storage.a_positive()
+        assert not self.storage.a_zero()
+        self.storage.a_register = 0o4000
+        assert self.storage.a_negative()
+        assert self.storage.a_not_zero()
+        assert not self.storage.a_positive()
+        assert self.storage.a_not_zero()
+
     def test_a_to_s_buffer(self) -> None:
         self.storage.a_register = 0o0770
         self.storage.s_register = READ_AND_WRITE_ADDRESS
@@ -62,7 +84,7 @@ class TestStorage(TestCase):
         assert self.storage.z_register == 0o0770
         assert self.storage.read_relative_bank(READ_AND_WRITE_ADDRESS) == 0o0770
 
-    def test_compement_a(self) -> None:
+    def test_complement_a(self) -> None:
         self.storage.a_register = 0o7777
         self.storage.complement_a()
         assert self.storage.a_register == 0o0000
@@ -173,6 +195,17 @@ class TestStorage(TestCase):
         self.storage.run_stop_status = False
         self.storage.run()
         assert self.storage.run_stop_status
+
+    def test_s_to_a(self) -> None:
+        self.storage.s_register = 0o7007
+        self.storage.s_to_p()
+        assert self.storage.p_register == 0o7007
+
+    def test_s_to_next_address(self) -> None:
+        assert self.storage.next_address() == 0
+        self.storage.s_register = 0o321
+        self.storage.s_to_next_address()
+        assert self.storage.next_address() == 0o321
 
     def test_set_buffer_storage_bank(self) -> None:
         assert self.storage.buffer_storage_bank == 0

@@ -5,10 +5,12 @@ from cdc160a import Microinstructions
 from cdc160a.Storage import Storage
 from typing import Final
 
+from cdc160a_tests.test_Instructions import AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+
 READ_AND_WRITE_ADDRESS: Final[int] = 0o1234
 INSTRUCTION_ADDRESS: Final[int] = 0o1232
 G_ADDRESS: Final[int] = INSTRUCTION_ADDRESS + 1
-
+JUMP_ADDRESS: Final[int] = 0o2000
 
 class Test(TestCase):
 
@@ -119,6 +121,78 @@ class Test(TestCase):
         assert self.storage.z_register == 0o7654
         assert self.storage.a_register == 0o7654 ^ 0o7777
 
+    def test_jump_if_a_negative(self) -> None:
+        self.__prepare_for_jump()
+        self.storage.a_register = 0
+        Microinstructions.jump_if_a_negative(self.storage)
+        assert self.storage.next_address() == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+        self.__prepare_for_jump()
+        self.storage.a_register = 0o0001
+        Microinstructions.jump_if_a_negative(self.storage)
+        assert self.storage.next_address() == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+        self.__prepare_for_jump()
+        self.storage.a_register = 0o7777
+        Microinstructions.jump_if_a_negative(self.storage)
+        assert self.storage.next_address() == JUMP_ADDRESS
+        self.__prepare_for_jump()
+        self.storage.a_register = 0o7776
+        Microinstructions.jump_if_a_negative(self.storage)
+        assert self.storage.next_address() == JUMP_ADDRESS
+
+    def test_jump_if_a_nonzero(self) -> None:
+        self.__prepare_for_jump()
+        self.storage.a_register = 0
+        Microinstructions.jump_if_a_nonzero(self.storage)
+        assert self.storage.next_address() == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+        self.__prepare_for_jump()
+        self.storage.a_register = 0o0001
+        Microinstructions.jump_if_a_nonzero(self.storage)
+        assert self.storage.next_address() == JUMP_ADDRESS
+        self.__prepare_for_jump()
+        self.storage.a_register = 0o7777
+        Microinstructions.jump_if_a_nonzero(self.storage)
+        assert self.storage.next_address() == JUMP_ADDRESS
+        self.__prepare_for_jump()
+        self.storage.nex = 0o7776
+        Microinstructions.jump_if_a_nonzero(self.storage)
+        assert self.storage.next_address() == JUMP_ADDRESS
+
+    def test_jump_if_a_positive(self) -> None:
+        self.__prepare_for_jump()
+        self.storage.a_register = 0
+        Microinstructions.jump_if_a_positive(self.storage)
+        assert self.storage.next_address() == JUMP_ADDRESS
+        self.__prepare_for_jump()
+        self.storage.a_register = 0o0001
+        Microinstructions.jump_if_a_positive(self.storage)
+        assert self.storage.next_address() == JUMP_ADDRESS
+        self.__prepare_for_jump()
+        self.storage.a_register = 0o7777
+        Microinstructions.jump_if_a_positive(self.storage)
+        assert self.storage.next_address() == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+        self.__prepare_for_jump()
+        self.storage.a_register = 0o7776
+        Microinstructions.jump_if_a_positive(self.storage)
+        assert self.storage.next_address() == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+
+    def test_jump_if_a_zero(self) -> None:
+        self.__prepare_for_jump()
+        self.storage.a_register = 0
+        Microinstructions.jump_if_a_zero(self.storage)
+        assert self.storage.next_address() == JUMP_ADDRESS
+        self.__prepare_for_jump()
+        self.storage.a_register = 0o0001
+        Microinstructions.jump_if_a_zero(self.storage)
+        assert self.storage.next_address() == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+        self.__prepare_for_jump()
+        self.storage.a_register = 0o7777
+        Microinstructions.jump_if_a_zero(self.storage)
+        assert self.storage.next_address() == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+        self.__prepare_for_jump()
+        self.storage.a_register = 0o7776
+        Microinstructions.jump_if_a_zero(self.storage)
+        assert self.storage.next_address() == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+
     def test_s_indirect_to_a(self) -> None:
         self.storage.write_indirect_bank(READ_AND_WRITE_ADDRESS, 0o7654)
         self.storage.s_register = READ_AND_WRITE_ADDRESS
@@ -209,6 +283,9 @@ class Test(TestCase):
         assert self.storage.z_register == 0o77
         assert self.storage.a_register == 0o77
 
+    def __prepare_for_jump(self) -> None:
+        self.storage.p_register = INSTRUCTION_ADDRESS
+        self.storage.s_register = JUMP_ADDRESS
 
 if __name__ == "__main__":
     unittest.main()

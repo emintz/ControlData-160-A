@@ -42,3 +42,15 @@ class TestRunLoop(TestCase):
         assert self.__storage.p_register == 0o0103
         assert not self.__storage.err_status
         assert not self.__storage.run_stop_status
+
+    def test_jnf_a_zero(self) -> None:
+        self.load_test_program(Programs.NEGATIVE_JUMP_FORWARD_ZERO_A)
+        self.__run_loop.run()
+        assert not self.__storage.err_status
+        assert self.__storage.p_register == 0o0102
+
+    def test_jnf_a_minus_zero(self) -> None:
+        self.load_test_program(Programs.NEGATIVE_JUMP_FORWARD_MINUS_ZERO_A)
+        self.__run_loop.run()
+        assert not self.__storage.err_status
+        assert self.__storage.p_register == 0o0104

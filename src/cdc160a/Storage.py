@@ -111,6 +111,18 @@ class Storage:
         # has not halted itself.
         self.__next_address = 0
 
+    def a_negative(self) -> bool:
+        return self.a_register & 0o4000 != 0
+
+    def a_not_zero(self) -> bool:
+        return self.a_register != 0
+
+    def a_positive(self) -> bool:
+        return self.a_register & 0o4000 == 0
+
+    def a_zero(self) -> bool:
+        return self.a_register == 0o0000
+
     def advance_to_next_instruction(self) -> None:
         self.p_register = self.__next_address
 
@@ -208,6 +220,15 @@ class Storage:
         self.s_register = self.p_register + 1
         self.z_register = self.read_relative_bank(self.s_register)
 
+    def next_address(self) -> int:
+        """
+        Returns the address of the next instruction. Used for testing
+
+        :return: the address of the next instruction that will be
+                 performed.
+        """
+        return self.__next_address
+
     def next_after_one_word_instruction(self) -> None:
         self.__next_address = Arithmetic.add(self.p_register, 1)
 
@@ -226,6 +247,15 @@ class Storage:
     # instructions invoke this to move their operand addresses to S
     def relative_forward_to_s(self) -> None:
         self.s_register = self.p_register + self.f_e
+
+    def s_to_p(self) -> None:
+        """
+        Move the contents of the S (i.e. effective address) register
+        to the P (program address) register
+
+        :return: None
+        """
+        self.p_register = self.s_register
 
     # Set the buffer storage bank to the least significant bits in
     # the specified value.
@@ -324,6 +354,9 @@ class Storage:
 
     def s_relative_to_a(self) -> None:
         self.a_register = self.read_relative_bank(self.s_register)
+
+    def s_to_next_address(self) -> None:
+        self.__next_address = self.s_register
 
     def write_absolute(self, bank: int, address: int, value: int) -> None:
         """

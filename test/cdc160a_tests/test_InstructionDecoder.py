@@ -60,7 +60,25 @@ class Test(TestCase):
                     assert instruction_name == "ERR", \
                            f"At {e} expected ERR and got {instruction_name}"
 
+    def test_decode_60(self) -> None:
+        decoder = InstructionDecoder.decoder_at(0o60)
+        for e in range(0o00, 0o100):
+            assert decoder.decode(e).name() == "ZJF"
 
+    def test_decode_61(self) -> None:
+        decoder = InstructionDecoder.decoder_at(0o61)
+        for e in range(0o00, 0o100):
+            assert decoder.decode(e).name() == "NZF"
+
+    def test_decode_62(self) -> None:
+        decoder = InstructionDecoder.decoder_at(0o62)
+        for e in range(0o00, 0o100):
+            assert decoder.decode(e).name() == "PJF"
+
+    def test_decode_63(self) -> None:
+        decoder = InstructionDecoder.decoder_at(0o63)
+        for e in range(0o00, 0o100):
+            assert decoder.decode(e).name() == "NJF"
 
     if __name__ == "__main__":
         unittest.main()

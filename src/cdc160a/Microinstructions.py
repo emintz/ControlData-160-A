@@ -135,3 +135,27 @@ def a_to_relative(storage: Storage) -> None:
 def a_to_specific(storage: Storage) -> None:
     storage.a_to_z()
     storage.write_specific(storage.z_register)
+
+def jump_if_a_negative(storage: Storage) -> None:
+    if storage.a_negative():
+        storage.s_to_next_address()
+    else:
+        storage.next_after_one_word_instruction()
+
+def jump_if_a_nonzero(storage: Storage) -> None:
+    if storage.a_not_zero():
+        storage.s_to_next_address()
+    else:
+        storage.next_after_one_word_instruction()
+
+def jump_if_a_positive(storage: Storage) -> None:
+    if storage.a_positive():
+        storage.s_to_next_address()
+    else:
+        storage.next_after_one_word_instruction()
+
+def jump_if_a_zero(storage: Storage) -> None:
+    if storage.a_zero():
+        storage.s_to_next_address()
+    else:
+        storage.next_after_one_word_instruction()

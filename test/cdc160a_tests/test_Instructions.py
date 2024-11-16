@@ -326,6 +326,102 @@ class Test(TestCase):
         self.storage.advance_to_next_instruction()
         assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
 
+    def test_njf_a_minus_zero(self) -> None:
+        # NJF
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o6340)
+        self.storage.a_register = 0o7777
+        self.storage.unpack_instruction()
+        Instructions.NJF.determine_effective_address(self.storage)
+        assert self.storage.s_register == INSTRUCTION_ADDRESS + 0o0040
+        Instructions.NJF.perform_logic(self.storage)
+        assert self.storage.next_address() == INSTRUCTION_ADDRESS + 0o0040
+        self.storage.advance_to_next_instruction()
+        assert self.storage.p_register == INSTRUCTION_ADDRESS + 0o0040
+
+    def test_njf_a_negative(self) -> None:
+        # NJF
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o6340)
+        self.storage.a_register = 0o7776
+        self.storage.unpack_instruction()
+        Instructions.NJF.determine_effective_address(self.storage)
+        assert self.storage.s_register == INSTRUCTION_ADDRESS + 0o0040
+        Instructions.NJF.perform_logic(self.storage)
+        assert self.storage.next_address() == INSTRUCTION_ADDRESS + 0o0040
+        self.storage.advance_to_next_instruction()
+        assert self.storage.p_register == INSTRUCTION_ADDRESS + 0o0040
+
+    def test_njf_a_positive(self) -> None:
+        # NJF
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o6340)
+        self.storage.a_register = 0o3777
+        self.storage.unpack_instruction()
+        Instructions.NJF.determine_effective_address(self.storage)
+        assert self.storage.s_register == INSTRUCTION_ADDRESS + 0o0040
+        Instructions.NJF.perform_logic(self.storage)
+        assert self.storage.next_address() == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+        self.storage.advance_to_next_instruction()
+        assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+
+    def test_njf_a_zero(self) -> None:
+        # NJF
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o6340)
+        self.storage.a_register = 0
+        self.storage.unpack_instruction()
+        Instructions.NJF.determine_effective_address(self.storage)
+        assert self.storage.s_register == INSTRUCTION_ADDRESS + 0o0040
+        Instructions.NJF.perform_logic(self.storage)
+        assert self.storage.next_address() == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+        self.storage.advance_to_next_instruction()
+        assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+
+    def test_nzf_a_minus_zero(self) -> None:
+        # NZF
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o6140)
+        self.storage.a_register = 0o7777
+        self.storage.unpack_instruction()
+        Instructions.NZF.determine_effective_address(self.storage)
+        assert self.storage.s_register == INSTRUCTION_ADDRESS + 0o0040
+        Instructions.NZF.perform_logic(self.storage)
+        assert self.storage.next_address() == INSTRUCTION_ADDRESS + 0o0040
+        self.storage.advance_to_next_instruction()
+        assert self.storage.p_register == INSTRUCTION_ADDRESS + 0o0040
+
+    def test_nzf_a_negative(self) -> None:
+        # NZF
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o6140)
+        self.storage.a_register = 0o4000
+        self.storage.unpack_instruction()
+        Instructions.NZF.determine_effective_address(self.storage)
+        assert self.storage.s_register == INSTRUCTION_ADDRESS + 0o0040
+        Instructions.NZF.perform_logic(self.storage)
+        assert self.storage.next_address() == INSTRUCTION_ADDRESS + 0o0040
+        self.storage.advance_to_next_instruction()
+        assert self.storage.p_register == INSTRUCTION_ADDRESS + 0o0040
+
+    def test_nzf_a_positive(self) -> None:
+        # NZF
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o6140)
+        self.storage.a_register = 0o3777
+        self.storage.unpack_instruction()
+        Instructions.NZF.determine_effective_address(self.storage)
+        assert self.storage.s_register == INSTRUCTION_ADDRESS + 0o0040
+        Instructions.NZF.perform_logic(self.storage)
+        assert self.storage.next_address() == INSTRUCTION_ADDRESS + 0o0040
+        self.storage.advance_to_next_instruction()
+        assert self.storage.p_register == INSTRUCTION_ADDRESS + 0o0040
+
+    def test_nzf_a_zero(self) -> None:
+        # NZF
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o6140)
+        self.storage.a_register = 0
+        self.storage.unpack_instruction()
+        Instructions.NZF.determine_effective_address(self.storage)
+        assert self.storage.s_register == INSTRUCTION_ADDRESS + 0o0040
+        Instructions.NZF.perform_logic(self.storage)
+        assert self.storage.next_address() == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+        self.storage.advance_to_next_instruction()
+        assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+
     def test_nop(self) -> None:
         # NOP 1
         self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0001)
@@ -337,6 +433,54 @@ class Test(TestCase):
         assert self.storage.z_register == 0o3333
         self.storage.advance_to_next_instruction()
         assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+
+    def test_pjf_a_minus_zero(self) -> None:
+        # PZF
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o6240)
+        self.storage.a_register = 0o7777
+        self.storage.unpack_instruction()
+        Instructions.PJF.determine_effective_address(self.storage)
+        assert self.storage.s_register == INSTRUCTION_ADDRESS + 0o0040
+        Instructions.PJF.perform_logic(self.storage)
+        assert self.storage.next_address() == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+        self.storage.advance_to_next_instruction()
+        assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+
+    def test_pjf_a_negative(self) -> None:
+        # PZF
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o6240)
+        self.storage.a_register = 0o7776
+        self.storage.unpack_instruction()
+        Instructions.PJF.determine_effective_address(self.storage)
+        assert self.storage.s_register == INSTRUCTION_ADDRESS + 0o0040
+        Instructions.PJF.perform_logic(self.storage)
+        assert self.storage.next_address() == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+        self.storage.advance_to_next_instruction()
+        assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+
+    def test_pjf_a_positive(self) -> None:
+        # PZF
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o6240)
+        self.storage.a_register = 1
+        self.storage.unpack_instruction()
+        Instructions.PJF.determine_effective_address(self.storage)
+        assert self.storage.s_register == INSTRUCTION_ADDRESS + 0o0040
+        Instructions.PJF.perform_logic(self.storage)
+        assert self.storage.next_address() == INSTRUCTION_ADDRESS + 0o0040
+        self.storage.advance_to_next_instruction()
+        assert self.storage.p_register == INSTRUCTION_ADDRESS + 0o0040
+
+    def test_pjf_a_zero(self) -> None:
+        # PZF
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o6240)
+        self.storage.a_register = 0
+        self.storage.unpack_instruction()
+        Instructions.PJF.determine_effective_address(self.storage)
+        assert self.storage.s_register == INSTRUCTION_ADDRESS + 0o0040
+        Instructions.PJF.perform_logic(self.storage)
+        assert self.storage.next_address() == INSTRUCTION_ADDRESS + 0o0040
+        self.storage.advance_to_next_instruction()
+        assert self.storage.p_register == INSTRUCTION_ADDRESS + 0o0040
 
     def test_rs1(self) -> None:
         # RS1
@@ -469,6 +613,50 @@ class Test(TestCase):
         assert (self.storage.get_program_counter() ==
                 AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
 
+    def test_zjf_a_zero(self) -> None:
+        # ZJF
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o6040)
+        self.storage.a_register = 0
+        self.storage.unpack_instruction()
+        Instructions.ZJF.determine_effective_address(self.storage)
+        assert self.storage.s_register == INSTRUCTION_ADDRESS + 0o0040
+        Instructions.ZJF.perform_logic(self.storage)
+        assert self.storage.next_address() == INSTRUCTION_ADDRESS + 0o0040
+        self.storage.advance_to_next_instruction()
+        assert self.storage.p_register == INSTRUCTION_ADDRESS + 0o0040
+
+    def test_zjf_a_positive(self) -> None:
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o6040)
+        self.storage.a_register = 1
+        self.storage.unpack_instruction()
+        Instructions.ZJF.determine_effective_address(self.storage)
+        assert self.storage.s_register == INSTRUCTION_ADDRESS + 0o0040
+        Instructions.ZJF.perform_logic(self.storage)
+        assert self.storage.next_address() == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+        self.storage.advance_to_next_instruction()
+        assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+
+    def test_zjf_a_minus_zero(self) -> None:
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o6040)
+        self.storage.a_register = 0o7777
+        self.storage.unpack_instruction()
+        Instructions.ZJF.determine_effective_address(self.storage)
+        assert self.storage.s_register == INSTRUCTION_ADDRESS + 0o0040
+        Instructions.ZJF.perform_logic(self.storage)
+        assert self.storage.next_address() == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+        self.storage.advance_to_next_instruction()
+        assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+
+    def test_zjf_a_negative(self) -> None:
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o6040)
+        self.storage.a_register = 0o7777
+        self.storage.unpack_instruction()
+        Instructions.ZJF.determine_effective_address(self.storage)
+        assert self.storage.s_register == INSTRUCTION_ADDRESS + 0o0040
+        Instructions.ZJF.perform_logic(self.storage)
+        assert self.storage.next_address() == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+        self.storage.advance_to_next_instruction()
+        assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
 
 if __name__ == "__main__":
     unittest.main()
