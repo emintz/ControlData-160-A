@@ -9,6 +9,8 @@ class TestRunLoop(TestCase):
     def setUp(self) -> None:
         self.__storage = Storage()
         self.__run_loop = RunLoop(self.__storage)
+        self.__storage.set_direct_storage_bank(2)
+        self.__storage.set_indirect_storage_bank(1)
         self.__storage.set_relative_storage_bank(0o3)
         self.__storage.set_program_counter(0o0100)
 
@@ -43,14 +45,131 @@ class TestRunLoop(TestCase):
         assert not self.__storage.err_status
         assert not self.__storage.run_stop_status
 
-    def test_jnf_a_zero(self) -> None:
+    def test_njb_a_minus_zero(self) -> None:
+        self.load_test_program(Programs.NEGATIVE_JUMP_BACKWARD_MINUS_ZERO_A)
+        self.__run_loop.run()
+        assert not self.__storage.err_status
+        assert self.__storage.p_register == 0o77
+
+    def test_njb_a_zero(self) -> None:
+        self.load_test_program(Programs.NEGATIVE_JUMP_BACKWARD_ZERO_A)
+        self.__run_loop.run()
+        assert not self.__storage.err_status
+        assert self.__storage.p_register == 0o103
+
+    def test_njf_a_minus_zero(self) -> None:
+        self.load_test_program(Programs.NEGATIVE_JUMP_FORWARD_MINUS_ZERO_A)
+        self.__run_loop.run()
+        assert not self.__storage.err_status
+        assert self.__storage.p_register == 0o0104
+
+    def test_njf_a_zero(self) -> None:
         self.load_test_program(Programs.NEGATIVE_JUMP_FORWARD_ZERO_A)
         self.__run_loop.run()
         assert not self.__storage.err_status
         assert self.__storage.p_register == 0o0102
 
-    def test_jnf_a_minus_zero(self) -> None:
-        self.load_test_program(Programs.NEGATIVE_JUMP_FORWARD_MINUS_ZERO_A)
+    def test_nzf_a_minus_zero(self) -> None:
+        self.load_test_program(Programs.NONZERO_JUMP_FORWARD_MINUS_ZERO_A)
         self.__run_loop.run()
         assert not self.__storage.err_status
-        assert self.__storage.p_register == 0o0104
+        assert self.__storage.p_register == 0o104
+
+    def test_nzf_a_zero(self) -> None:
+        self.load_test_program(Programs.NONZERO_JUMP_FORWARD_ZERO_A)
+        self.__run_loop.run()
+        assert not self.__storage.err_status
+        assert self.__storage.p_register == 0o103
+
+    def test_pjb_a_minus_zero(self) -> None:
+        self.load_test_program(Programs.POSITIVE_JUMP_BACKWARD_MINUS_ZERO_A)
+        self.__run_loop.run()
+        assert not self.__storage.err_status
+        assert self.__storage.p_register == 0o77
+
+    def test_pjb_a_zero(self) -> None:
+        self.load_test_program(Programs.POSITIVE_JUMP_BACKWARD_ZERO_A)
+        self.__run_loop.run()
+        assert not self.__storage.err_status
+        assert self.__storage.p_register == 0o77
+
+    def test_pjf_a_minus_zero(self) -> None:
+        self.load_test_program(Programs.POSITIVE_JUMP_FORWARD_MINUS_ZERO_A)
+        self.__run_loop.run()
+        assert not self.__storage.err_status
+        assert self.__storage.p_register ==  0o103
+
+    def test_pjf_a_zero(self) -> None:
+        self.load_test_program(Programs.POSITIVE_JUMP_FORWARD_ZERO_A)
+        self.__run_loop.run()
+        assert not self.__storage.err_status
+        assert self.__storage.p_register ==  0o104
+
+    def test_stb(self) -> None:
+        self.load_test_program(Programs.STORE_BACKWARD)
+        assert self.__storage.read_absolute(3, 0o77) == 0o7777
+        self.__run_loop.run()
+        assert self.__storage.read_absolute(3, 0o77) == 0o1234
+
+    def test_stc(self) -> None:
+        self.load_test_program(Programs.STORE_CONSTANT)
+        assert self.__storage.read_absolute(3, 0o103) == 0o7777
+        self.__run_loop.run()
+        assert self.__storage.read_absolute(3, 0o103) == 0o1234
+
+    def test_std(self) -> None:
+        self.load_test_program(Programs.STORE_DIRECT)
+        assert self.__storage.read_absolute(2, 0o0040) == 0o7777
+        self.__run_loop.run()
+        assert not self.__storage.err_status
+        assert self.__storage.read_absolute(2, 0o0040) == 0o1234
+
+    def test_stf(self) -> None:
+        self.load_test_program(Programs.STORE_FORWARD)
+        assert self.__storage.read_absolute(3, 0o104) == 0o7777
+        self.__run_loop.run()
+        assert self.__storage.read_absolute(3, 0o104) == 0o1234
+
+    def test_sti(self) -> None:
+        self.load_test_program(Programs.STORE_INDIRECT)
+        assert self.__storage.read_absolute(1, 0o0040) == 0o7777
+        self.__run_loop.run()
+        assert not self.__storage.err_status
+        assert self.__storage.read_absolute(1, 0o0040) == 0o1234
+
+    def test_stm(self) -> None:
+        self.load_test_program(Programs.STORE_MEMORY)
+        assert self.__storage.read_absolute(3, 0o1000) == 0o7777
+        self.__run_loop.run()
+        assert not self.__storage.err_status
+        assert self.__storage.read_absolute(3, 0o1000) == 0o1234
+
+    def test_sts(self) -> None:
+        self.load_test_program(Programs.STORE_SPECIFIC)
+        assert self.__storage.read_absolute(0, 0o7777) == 0o7777
+        self.__run_loop.run()
+        assert self.__storage.read_absolute(0, 0o7777) == 0o1234
+
+    def test_zjb_a_minus_zero(self) -> None:
+        self.load_test_program(Programs.ZERO_JUMP_BACKWARD_MINUS_ZERO_A)
+        self.__run_loop.run()
+        assert not self.__storage.err_status
+        assert self.__storage.p_register == 0o103
+
+    def test_zjb_a_zero(self) -> None:
+        self.load_test_program(Programs.ZERO_JUMP_BACKWARD_ZERO_A)
+        self.__run_loop.run()
+        assert not self.__storage.err_status
+        assert self.__storage.p_register == 0o77
+
+    def test_zjf_a_minus_zero(self) -> None:
+        self.load_test_program(Programs.ZERO_JUMP_FORWARD_MINUS_ZERO_A)
+        self.__run_loop.run()
+        assert not self.__storage.err_status
+        assert self.__storage.p_register == 0o104
+
+    def test_zjf_a_zero(self) -> None:
+        self.load_test_program(Programs.ZERO_JUMP_FORWARD_ZERO_A)
+        self.__run_loop.run()
+        assert not self.__storage.err_status
+        assert self.__storage.p_register == 0o104

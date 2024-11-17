@@ -80,5 +80,25 @@ class Test(TestCase):
         for e in range(0o00, 0o100):
             assert decoder.decode(e).name() == "NJF"
 
+    def test_decode_64(self) -> None:
+        decoder = InstructionDecoder.decoder_at(0o64)
+        for e in range(0o00, 0o100):
+            assert decoder.decode(e).name() == "ZJB"
+
+    def test_decode_65(self) -> None:
+        decoder = InstructionDecoder.decoder_at(0o65)
+        for e in range(0o00, 0o100):
+            assert decoder.decode(e).name() == "NZB"
+
+    def test_decode_66(self) -> None:
+        decoder = InstructionDecoder.decoder_at(0o66)
+        for e in range(0o00, 0o100):
+            assert decoder.decode(e).name() == "PJB"
+
+    def test_decode_67(self) -> None:
+        decoder = InstructionDecoder.decoder_at(0o67)
+        for e in range(0o00, 0o100):
+            assert decoder.decode(e).name() == "NJB"
+
     if __name__ == "__main__":
         unittest.main()

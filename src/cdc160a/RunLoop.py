@@ -35,8 +35,8 @@ class RunLoop:
             # TODO(emintz): service pending buffer requests
             # TODO(emintz): refactor instruction decoding into the Storage class
             self.__storage.unpack_instruction()
-            current_instruction = (InstructionDecoder.decoder_at(self.__storage.f_instruction)
-                                   .decode(self.__storage.f_e))
+            decoder = InstructionDecoder.decoder_at(self.__storage.f_instruction)
+            current_instruction = decoder.decode(self.__storage.f_e)
             current_instruction.determine_effective_address(self.__storage)
             # TODO(emintz): invoke the console's run/stop handler. The handler should
             #               return immediately any of the following holds:

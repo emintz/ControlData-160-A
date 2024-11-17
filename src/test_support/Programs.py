@@ -45,7 +45,8 @@ LDC_THEN_HALT = """
           END
 """
 LDC_SHIFT_HALT = """
-          REM  move 0o4321 to the accumulator and halt
+          REM  move 0o4321 to the accumulator, shift left by 3 bits,
+          REM  and halt
           BNK 3
           ORG 100
           LDC 4321
@@ -58,6 +59,26 @@ SET_LITERAL = """
           BNK 3
           ORG 100
           OCT 1234
+          END
+"""
+NEGATIVE_JUMP_BACKWARD_MINUS_ZERO_A = """
+          REM Test negative jump backward with a set to 0
+          BNK 3
+          ORG 77
+          HLT
+          LDC 7777
+          NJB 3
+          HLT
+          END
+"""
+NEGATIVE_JUMP_BACKWARD_ZERO_A = """
+          REM Test negative jump backward with a set to 0
+          BNK 3
+          ORG 77
+          HLT
+          LDC 0
+          NJB 3
+          HLT
           END
 """
 NEGATIVE_JUMP_FORWARD_ZERO_A = """
@@ -76,6 +97,188 @@ NEGATIVE_JUMP_FORWARD_MINUS_ZERO_A = """
           ORG 100
           LDC 7777
           NZF 2    # +0
+          HLT      # +1
+          HLT      # +2
+          END
+"""
+NONZERO_JUMP_FORWARD_MINUS_ZERO_A = """
+          REM Test nonzero jump backward with a set to minus zero
+          BNK 3
+          ORG 77
+          HLT
+          LDC 7777
+          NZF 2
+          HLT
+          HLT
+          END
+"""
+NONZERO_JUMP_FORWARD_ZERO_A = """
+          REM Test nonzero jump backward with a set to zero
+          BNK 3
+          ORG 77
+          HLT
+          LDC 0
+          NZF 2
+          HLT
+          HLT
+          END
+"""
+POSITIVE_JUMP_BACKWARD_MINUS_ZERO_A = """
+          REM Test positive jump backward with a set to minus zero
+          BNK 3
+          ORG 77
+          HLT
+          LDC 0
+          PJB 3
+          HLT
+          END
+"""
+POSITIVE_JUMP_BACKWARD_ZERO_A = """
+          REM Test positive jump backward with a set to minus zero
+          BNK 3
+          ORG 77
+          HLT
+          LDC 0
+          PJB 3
+          HLT
+          END
+"""
+POSITIVE_JUMP_FORWARD_MINUS_ZERO_A = """
+          REM Test positive jump forward with A set to minus zero
+          BNK 3
+          ORG 100
+          LDC 7777
+          PJF 2    # +0
+          HLT      # +1
+          HLT      # +2
+          END
+"""
+POSITIVE_JUMP_FORWARD_ZERO_A = """
+          REM Test positive jump forward with A set to minus zero
+          BNK 3
+          ORG 100
+          LDC 0
+          PJF 2    # +0
+          HLT      # +1
+          HLT      # +2
+          END
+"""
+STORE_BACKWARD = """
+          REM Test store backward, which stores the A register
+          REM contents to the current location minus the E
+          REM value (which specifies a nonzero backwards offset).
+          BNK 3
+          ORG 77
+          OCT 7777
+          LDC 1234
+          STB 3
+          HLT
+          END
+"""
+STORE_CONSTANT = """
+          REM Test store constant, store into instruction's G
+          REM which seems odd, but that's what the manual says
+          REM it does.
+          BNK 3  Relative bank
+          ORG 100
+          LDC 1234
+          STC 7777
+          END
+"""
+STORE_DIRECT = """
+          REM Test store direct, store A to the direct storage bank
+          BNK 2   Direct bank
+          ORG 40
+          OCT 7777
+          BNK 3
+          ORG 100
+          LDC 1234
+          STD 40
+          HLT
+          END
+"""
+STORE_FORWARD = """
+          REM Test store forward, store A to the current address plus
+          REM the offset in E
+          BNK 3
+          ORG 100
+          LDC 1234
+          STF 2
+          HLT
+          OCT 7777
+          END
+"""
+STORE_INDIRECT = """
+          REM Test store direct, store A to the direct storage bank
+          BNK 1   Indirect bank
+          ORG 40
+          OCT 7777
+          BNK 3
+          ORG 100
+          LDC 1234
+          STI 40
+          HLT
+          END
+"""
+STORE_MEMORY = """
+          REM Test store memory, store A to [G](r)
+          BNK 3
+          ORG 100
+          LDC 1234
+          STM 1000
+          HLT
+          ORG 1000
+          OCT 7777
+          END
+"""
+STORE_SPECIFIC = """
+          REM Test store specific, store A 7777(0)
+          BNK 0
+          ORG 7777
+          OCT 7777
+          BNK 3
+          ORG 100
+          LDC 1234
+          STS
+          HLT
+          END
+"""
+ZERO_JUMP_BACKWARD_MINUS_ZERO_A = """
+          REM Test zero jump backward with a set to minus zero
+          BNK 3
+          ORG 77
+          HLT
+          LDC 7777
+          ZJB 3
+          HLT
+          END
+"""
+ZERO_JUMP_BACKWARD_ZERO_A = """
+          REM Test zero jump backward with a set to minus zero
+          BNK 3
+          ORG 77
+          HLT
+          LDC 0
+          ZJB 3
+          HLT
+          END
+"""
+ZERO_JUMP_FORWARD_MINUS_ZERO_A = """
+          REM Test zero jump forward with A set to minus zero
+          BNK 3
+          ORG 100
+          LDC 0
+          ZJF 2    # +0
+          HLT      # +1
+          HLT      # +2
+          END
+"""
+ZERO_JUMP_FORWARD_ZERO_A = """
+          REM Test zero jump forward with A set to minus zero
+          BNK 3
+          ORG 100
+          LDC 0
+          ZJF 2    # +0
           HLT      # +1
           HLT      # +2
           END

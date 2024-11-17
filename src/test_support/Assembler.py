@@ -98,10 +98,7 @@ class AddressSetter:
         if (len(tokens)) < 2:
             self.__assembler.error("Address value missing, using 0x0000")
         else:
-            if G_PATTERN.match(tokens[1]):
-                address = int(tokens[1], 8)
-            else:
-                self.__assembler.error("Ill-formed origin address, using 0")
+            address = self.__assembler.token_to_g(tokens[1], 0)
             self.__assembler.set_address(address)
 
     def name(self) -> str:
@@ -117,11 +114,7 @@ class BankSetter:
         if (len(tokens)) < 2:
             self.__assembler.error("Bank number required, using 0.")
         else:
-            if BANK_PATTERN.match(tokens[1]):
-                bank_number = int(tokens[1], 8)
-            else:
-                self.__assembler.error(
-                    "Bank number must be in [0o0 .. 0o07], using 0.")
+            bank_number = self.__assembler.token_to_bank(tokens[1])
         self.__assembler.set_bank(bank_number)
 
     def name(self) -> str:
@@ -214,11 +207,8 @@ class OneWordAnyE:
         if len(tokens) < 2:
             self.__assembler.error(
                 "E value missing, using 77")
-        elif not E_PATTERN.match(tokens[1]):
-            self.__assembler.error(
-                "E value must be an octal number between 00 and 77, using 7.7")
         else:
-            e_value = int(tokens[1], 8)
+            e_value = self.__assembler.token_to_e(tokens[1], 0o77)
         self.__assembler.emit_word(self.__instruction | e_value)
 
     def name(self) -> str:
@@ -252,52 +242,15 @@ class OneWordNonZeroE:
             self.__assembler.error(
                 "E value is required; using 0077")
         else:
-            if E_PATTERN.match(tokens[1]):
-                maybe_e_value = int(tokens[1], 8)
-                if maybe_e_value == 0:
-                    self.__assembler.error(
-                        "E cannot be zero, using 77")
-                else:
-                    e_value = maybe_e_value
-            else:
+            maybe_e_value = self.__assembler.token_to_e(tokens[1], 0o77)
+            if maybe_e_value == 0:
                 self.__assembler.error(
-                    "The E value {0} must be a one or two digit octal number, using 77.")
+                    "E cannot be zero, using 77")
+            else:
+                e_value = maybe_e_value
         self.__assembler.emit_word(self.__instruction | e_value)
 
     def name(self) -> str:
-        return self.__name
-
-
-class OneWordZeroE:
-    """
-    A one word instruction whose E can be 0o00
-    """
-    def __init__(self, assembler: Assembler, name: str, instruction: int):
-        """
-        Constructor
-
-        :param assembler: receives the assembled instruction
-        :param name: three character instruction name
-        :param instruction: instruction code in the range [0o00 .. 0o77]
-        """
-        self.__assembler = assembler
-        self.__name = name
-        self.__output = (instruction << 6) & 0o7700
-
-    def emit(self, tokens: [str]) -> None:
-        e_value = 0
-        if len(tokens) < 2:
-            self.__assembler.error(
-                "E value is required; using 0")
-        else:
-            if E_PATTERN.match(tokens[1]):
-                e_value = int(tokens[1], 8)
-            else:
-                self.__assembler.error(
-                     "The E value {0} must be a one or two digit octal number.")
-        self.__assembler.emit_word((self.__output | e_value) & 0o7777)
-
-    def name(self):
         return self.__name
 
 class TwoWordFixedE:
@@ -365,9 +318,12 @@ class Assembler:
             "LS2": FixedEValue(self, "LS2", 0o0103),
             "LS3": FixedEValue(self, "LS3", 0o0110),
             "LS6": FixedEValue(self,"LS6", 0o0111),
+            "NJB": OneWordAnyE(self, "NJB", 0o67),
             "NJF": OneWordAnyE(self, "NJF", 0o63),
             "NOP": FixedEValue(self, "NOP", 0o0007),
+            "NZB": OneWordAnyE(self, "NZB", 0o65),
             "NZF": OneWordAnyE(self, "NZF", 0o61),
+            "PJB": OneWordAnyE(self, "PJB", 0o66),
             "PJF": OneWordAnyE(self, "PJF", 0o62),
             "OCT": MemorySetter(self, "OCT"),
             "ORG": AddressSetter(self, "ORG"),
@@ -381,7 +337,8 @@ class Assembler:
             "STI": OneWordAnyE(self, "STI", 0o41),
             "STM": TwoWordFixedE(self, "STM", 0o41),
             "STS": FixedEValue(self, "STS", 0o4300),
-            "ZJF": OneWordAnyE(self, "ZJF", 0o60)
+            "ZJB": OneWordAnyE(self, "ZJB", 0o64),
+            "ZJF": OneWordAnyE(self, "ZJF", 0o60),
         }
 
     def __crack_and_emit(self) -> None:
@@ -402,7 +359,7 @@ class Assembler:
 
     def __store_and_advance(self, value: int) -> None:
         self.__storage.write_absolute(self.__bank, self.__address, value)
-        self.__address += 1
+        self.__address = (self.__address + 1) & 0o7777
         self.__words_written += 1
 
     def address(self) -> int:
@@ -488,6 +445,36 @@ class Assembler:
     def stop(self) -> None:
         self.__running = False
         self.print_current_line("         ")
+
+    def token_to_bank(self, token: str) -> int:
+        bank = 0
+        if 0 < len(token) < 2 and BANK_PATTERN.match(token):
+            bank = int(token, 8)
+        else:
+            self.error(
+                "Bank must be a single octal digit in [0 .. ], was '{0}', using 0"
+                    .format(token))
+        return bank
+
+    def token_to_e(self, token: str, default: int) -> int:
+        e = default
+        if 0 < len(token) < 3 and E_PATTERN.match(token):
+            e = int(token, 8)
+        else:
+            self.error(
+                "E must be one or two octal digits, was {0}, using {1}"
+                    .format(token, default))
+        return e
+
+    def token_to_g(self, token: str, default: int) -> int:
+        g = default
+        if 0 < len(token) < 5 and G_PATTERN.match(token):
+            g = int(token, 8)
+        else:
+            self.error(
+                "E must be one through four octal digits, was {0} using {1}."
+                    .format(token, default))
+        return g
 
     def warning(self, description: str) -> None:
         sys.stderr.print("Warning: {0}", description)

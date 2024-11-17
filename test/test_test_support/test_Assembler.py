@@ -1,4 +1,7 @@
 from unittest import TestCase
+
+from numpy.compat import open_latin1
+
 from test_support import Programs
 from cdc160a.Storage import Storage
 from test_support.Assembler import Assembler, two_digit_octal, four_digit_octal
@@ -70,6 +73,59 @@ class TestAssembler(TestCase):
             self.fail("Expected exception on 0o10000")
         except AssertionError:
             pass
+
+    def test_token_to_bank_valid_input(self) -> None:
+        assembler = self.assembler("          END\n")
+        assert assembler.token_to_bank("3") == 3
+        assert assembler.error_count() == 0
+
+    def test_token_to_bank_input_too_long(self) -> None:
+        assembler = self.assembler("          END\n")
+        assert assembler.token_to_bank("10") == 0
+        assert assembler.error_count() == 1
+
+    def test_token_to_bank_not_octal(self) -> None:
+        assembler = self.assembler("          END\n")
+        assert assembler.token_to_bank("9") == 0
+        assert assembler.error_count() == 1
+
+    def test_token_to_e_valid_input(self) -> None:
+        assembler = self.assembler("          END\n")
+        assert assembler.token_to_e("1", 0) == 0o1
+        assert assembler.error_count() == 0
+        assert assembler.token_to_e("12", 0) == 0o12
+        assert assembler.error_count() == 0
+
+    def test_token_to_e_input_too_long(self) -> None:
+        assembler = self.assembler("          END\n")
+        assert assembler.token_to_e("123", 0) == 0
+        assert assembler.error_count() == 1
+
+    def test_token_to_e_not_octal(self) -> None:
+        assembler = self.assembler("          END\n")
+        assert assembler.token_to_e("##", 0) == 0
+        assert assembler.error_count() == 1
+
+    def test_token_to_g_valid_input(self) -> None:
+        assembler = self.assembler("          END\n")
+        assert assembler.token_to_g("1", 0) == 0o1
+        assert assembler.error_count() == 0
+        assert assembler.token_to_g("12", 0) == 0o12
+        assert assembler.error_count() == 0
+        assert assembler.token_to_g("123", 0) == 0o123
+        assert assembler.error_count() == 0
+        assert assembler.token_to_g("1234", 0) == 0o1234
+        assert assembler.error_count() == 0
+
+    def test_token_to_g_input_too_long(self) -> None:
+        assembler = self.assembler("          END\n")
+        assert assembler.token_to_g("12345", 0) == 0
+        assert assembler.error_count() == 1
+
+    def test_token_to_g_not_octal(self) -> None:
+        assembler = self.assembler("          END\n")
+        assert assembler.token_to_g("*", 0) == 0
+        assert assembler.error_count() == 1
 
     def test_empty_one_statement_program(self) -> None:
         source = "          END\n"
@@ -242,6 +298,10 @@ class TestAssembler(TestCase):
         assert assembler.bank() == 3
         assert self.__storage.read_absolute(3, 0o0100) == 0o1234
 
+    def test_njb(self) -> None:
+        self.__single_instruction_test("NJB 50", [0o6750])
+        self.__single_instruction_test("NJB 0", [0o6700])
+
     def test_njf(self) -> None:
         self.__single_instruction_test(
             "NJF 40", [0o6340])
@@ -249,9 +309,17 @@ class TestAssembler(TestCase):
     def test_nop(self) -> None:
         self.__single_instruction_test("NOP", [0o0007])
 
+    def test_nzb(self) -> None:
+        self.__single_instruction_test("NZB 30", [0o6530])
+        self.__single_instruction_test("NZB 0", [0o6500])
+
     def test_nzf(self) -> None:
         self.__single_instruction_test(
             "NZF 40", [0o6140])
+
+    def test_pjb(self) -> None:
+        self.__single_instruction_test("PJB 34", [0o6634])
+        self.__single_instruction_test("PJB 0", [0o6600])
 
     def test_pjf(self) -> None:
         self.__single_instruction_test(
@@ -289,9 +357,14 @@ class TestAssembler(TestCase):
     def test_sts(self) -> None:
         self.__single_instruction_test("STS", [0o4300])
 
-    def test_zdf(self) -> None:
+    def test_zjb(self) -> None:
+        self.__single_instruction_test("ZJB 60", [0o6460])
+        self.__single_instruction_test("ZJB 0", [0o6400])
+
+    def test_zjf(self) -> None:
         self.__single_instruction_test(
             "ZJF 40", [0o6040])
+        self.__single_instruction_test("ZJF 0", [0o6000])
 
     def __single_instruction_test(
             self, instruction: str, expected_output: [int]) -> None:

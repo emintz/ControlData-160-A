@@ -153,10 +153,10 @@ __DECODERS = [
     Singleton(Instructions.NZF, 0o61),           # 61
     Singleton(Instructions.PJF, 0o62),           # 62
     Singleton(Instructions.NJF, 0o63),           # 63
-    __UNIMPLEMENTED,            # 64
-    __UNIMPLEMENTED,            # 65
-    __UNIMPLEMENTED,            # 66
-    __UNIMPLEMENTED,            # 67
+    Singleton(Instructions.ZJB, 0o64),           # 64
+    Singleton(Instructions.NZB, 0o65),           # 65
+    Singleton(Instructions.PJB, 0o66),           # 66
+    Singleton(Instructions.NJB, 0o67),           # 67
     __UNIMPLEMENTED,            # 70
     __UNIMPLEMENTED,            # 71
     __UNIMPLEMENTED,            # 72

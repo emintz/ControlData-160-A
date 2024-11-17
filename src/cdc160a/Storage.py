@@ -397,8 +397,7 @@ class Storage:
     # relative storage bank. The least significant 12 bits in the
     # provided address argument specifies the address to be written.
     def write_relative_bank(self, address: int, value: int) -> None:
-        self.memory[self.relative_storage_bank, address & 0o7777] = (
-                value & 0o7777)
+        self.memory[self.relative_storage_bank, address & 0o7777] =  value & 0o7777
 
     # Write the specified value to the specific address, bank 0,
     # location 0o7777.
