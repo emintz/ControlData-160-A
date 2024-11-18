@@ -60,6 +60,34 @@ class Test(TestCase):
                     assert instruction_name == "ERR", \
                            f"At {e} expected ERR and got {instruction_name}"
 
+    def test_decode_02(self) -> None:
+        decoder = InstructionDecoder.decoder_at(0o02)
+        for e in range(0, 0o100):
+            assert decoder.decode(e).name() == "LPN"
+
+    def test_decode_10(self) -> None:
+        decoder = InstructionDecoder.decoder_at(0o10)
+        for e in range(0, 0o100):
+            assert decoder.decode(e).name() == "LPD"
+
+    def test_decode_11(self) -> None:
+        decoder = InstructionDecoder.decoder_at(0o11)
+        assert decoder.decode(0o00).name() == "LPM"
+        for e in range(0o01, 0o100):
+            assert decoder.decode(e).name() == "LPI"
+
+    def test_decode_12(self) -> None:
+        decoder = InstructionDecoder.decoder_at(0o12)
+        assert decoder.decode(0o00).name() == "LPC"
+        for e in (0o01, 0o100):
+            assert decoder.decode(e).name() == "LPF"
+
+    def test_decode_13(self) -> None:
+        decoder = InstructionDecoder.decoder_at(0o13)
+        assert decoder.decode(0o00).name() == "LPS"
+        for e in range(0o01, 0o100):
+            assert decoder.decode(e).name() == "LPB"
+
     def test_decode_60(self) -> None:
         decoder = InstructionDecoder.decoder_at(0o60)
         for e in range(0o00, 0o100):

@@ -103,16 +103,16 @@ __UNIMPLEMENTED = Unimplemented()
 __DECODERS = [
     __UNIMPLEMENTED,            # 00
     OpCode01(),                 # 01
-    __UNIMPLEMENTED,            # 02
+    Singleton(Instructions.LPN, 0o02),            # 02
     __UNIMPLEMENTED,            # 03
     Singleton(Instructions.LDN, 0o04),            # 04
     Singleton(Instructions.LCN, 0o05),            # 05
     __UNIMPLEMENTED,            # 06
     __UNIMPLEMENTED,            # 07
-    __UNIMPLEMENTED,            # 10
-    __UNIMPLEMENTED,            # 11
-    __UNIMPLEMENTED,            # 12
-    __UNIMPLEMENTED,            # 13
+    Singleton(Instructions.LPD, 0o10),            # 10
+    Bimodal(Instructions.LPM, Instructions.LPI, 0o11),            # 11
+    Bimodal(Instructions.LPC, Instructions.LPF, 0o12),            # 12
+    Bimodal(Instructions.LPS, Instructions.LPB, 0o13),            # 13
     __UNIMPLEMENTED,            # 14
     __UNIMPLEMENTED,            # 15
     __UNIMPLEMENTED,            # 16

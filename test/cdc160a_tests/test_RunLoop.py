@@ -45,6 +45,62 @@ class TestRunLoop(TestCase):
         assert not self.__storage.err_status
         assert not self.__storage.run_stop_status
 
+    def test_lpb(self) -> None:
+        self.load_test_program(Programs.LOGICAL_PRODUCT_BACKWARD)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o21
+        assert self.__storage.p_register == 0o103
+        assert not self.__storage.err_status
+
+    def test_lpc(self) -> None:
+        self.load_test_program(Programs.LOGICAL_PRODUCT_CONSTANT)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o21
+        assert self.__storage.p_register == 0o104
+        assert not self.__storage.err_status
+
+    def test_lpd(self) -> None:
+        self.load_test_program(Programs.LOGICAL_PRODUCT_DIRECT)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o21
+        assert self.__storage.p_register == 0o103
+        assert not self.__storage.err_status
+
+    def test_lpf(self) -> None:
+        self.load_test_program(Programs.LOGICAL_PRODUCT_FORWARD)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o21
+        assert self.__storage.p_register == 0o103
+        assert not self.__storage.err_status
+
+    def test_lpi(self) -> None:
+        self.load_test_program(Programs.LOGICAL_PRODUCT_INDIRECT)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o21
+        assert self.__storage.p_register == 0o103
+        assert not self.__storage.err_status
+
+    def test_lpm(self) -> None:
+        self.load_test_program(Programs.LOGICAL_PRODUCT_MEMORY)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o21
+        assert self.__storage.p_register == 0o104
+        assert not self.__storage.err_status
+
+    def test_lpn(self) -> None:
+        self.load_test_program(Programs.LOGICAL_PRODUCT_NONE)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o21
+        assert self.__storage.p_register == 0o103
+        assert not self.__storage.err_status
+
+    def test_lps(self) -> None:
+        self.load_test_program(Programs.LOGICAL_PRODUCT_SPECIFIC)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o21
+        assert self.__storage.p_register == 0o103
+        assert not self.__storage.err_status
+
     def test_njb_a_minus_zero(self) -> None:
         self.load_test_program(Programs.NEGATIVE_JUMP_BACKWARD_MINUS_ZERO_A)
         self.__run_loop.run()

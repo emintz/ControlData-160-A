@@ -65,6 +65,33 @@ class Test(TestCase):
         assert self.storage.z_register == 0o0330
         assert self.storage.read_relative_bank(READ_AND_WRITE_ADDRESS) == 0o0330
 
+    def test_and_direct_with_a(self) -> None:
+        self.storage.set_direct_storage_bank(5)
+        self.storage.a_register = 0o5733
+        self.storage.s_register = 0o240
+        self.storage.write_absolute(5, self.storage.s_register, 0o6365)
+        Microinstructions.and_direct_with_a(self.storage)
+        assert self.storage.z_register == 0o6365
+        assert self.storage.a_register == 0o4321
+
+    def test_and_indirect_with_a(self) -> None:
+        self.storage.set_indirect_storage_bank(5)
+        self.storage.a_register = 0o5733
+        self.storage.s_register = 0o240
+        self.storage.write_absolute(5, self.storage.s_register, 0o6365)
+        Microinstructions.and_indirect_with_a(self.storage)
+        assert self.storage.z_register == 0o6365
+        assert self.storage.a_register == 0o4321
+
+    def test_and_relative_with_a(self) -> None:
+        self.storage.set_relative_storage_bank(5)
+        self.storage.a_register = 0o5733
+        self.storage.s_register = 0o240
+        self.storage.write_absolute(5, self.storage.s_register, 0o6365)
+        Microinstructions.and_relative_with_a(self.storage)
+        assert self.storage.z_register == 0o6365
+        assert self.storage.a_register == 0o4321
+
     def test_complement_a(self) -> None:
         self.storage.a_register = 0o7070
         self.storage.complement_a()

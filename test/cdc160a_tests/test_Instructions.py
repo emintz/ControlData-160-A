@@ -270,6 +270,121 @@ class Test(TestCase):
         self.storage.advance_to_next_instruction()
         assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
 
+    def test_lpd(self) -> None:
+        assert Instructions.LPB.name() == "LPB"
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS - 1, 0o77)
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o1301)
+        self.storage.a_register = 0o4321
+        Instructions.LPD.determine_effective_address(self.storage)
+        assert self.storage.s_register == INSTRUCTION_ADDRESS - 1
+        Instructions.LPB.perform_logic(self.storage)
+        assert self.storage.z_register == 0o77
+        assert self.storage.a_register == 0o21
+        self.storage.advance_to_next_instruction()
+        assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+
+    def test_lpc(self) -> None:
+        assert Instructions.LPC.name() == "LPC"
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o1200)
+        self.storage.write_relative_bank(G_ADDRESS, 0o77)
+        self.storage.a_register = 0o4321
+        self.storage.unpack_instruction()
+        Instructions.LPC.determine_effective_address(self.storage)
+        assert self.storage.s_register == G_ADDRESS
+        assert Instructions.LPC.perform_logic(self.storage) == 2
+        assert self.storage.z_register == 0o77
+        assert self.storage.a_register == 0o21
+        self.storage.advance_to_next_instruction()
+        assert self.storage.p_register == AFTER_DOUBLE_WORD_INSTRUCTION_ADDRESS
+
+    def test_lpd(self) -> None:
+        assert Instructions.LPD.name() == "LPD"
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o1040)
+        self.storage.write_direct_bank(0o40, 0o77)
+        self.storage.a_register = 0o4321
+        self.storage.unpack_instruction()
+        assert self.storage.s_register == INSTRUCTION_ADDRESS
+        Instructions.LPD.determine_effective_address(self.storage)
+        assert self.storage.s_register == 0o40
+        assert Instructions.LPD.perform_logic(self.storage) == 2
+        assert self.storage.z_register == 0o77
+        assert self.storage.a_register == 0o21
+        self.storage.advance_to_next_instruction()
+        assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+
+    def test_lpf(self) -> None:
+        assert Instructions.LPF.name() == "LPF"
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o1201)
+        self.storage.write_relative_bank(G_ADDRESS, 0o77)
+        self.storage.a_register = 0o4321
+        self.storage.unpack_instruction()
+        Instructions.LPF.determine_effective_address(self.storage)
+        assert self.storage.s_register == G_ADDRESS
+        assert Instructions.LPF.perform_logic(self.storage) == 2
+        assert self.storage.z_register == 0o77
+        assert self.storage.a_register == 0o21
+        self.storage.advance_to_next_instruction()
+        assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+
+    def test_lpi(self) -> None:
+        assert Instructions.LPI.name() == "LPI"
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o1140)
+        self.storage.write_indirect_bank(0o40, 0o77)
+        self.storage.a_register = 0o4321
+        self.storage.unpack_instruction()
+        assert self.storage.s_register == INSTRUCTION_ADDRESS
+        Instructions.LPI.determine_effective_address(self.storage)
+        assert self.storage.s_register == 0o40
+        assert Instructions.LPI.perform_logic(self.storage) == 3
+        assert self.storage.z_register == 0o77
+        assert self.storage.a_register == 0o21
+        self.storage.advance_to_next_instruction()
+        assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+
+    def test_lpm(self) -> None:
+        assert Instructions.LPM.name() == "LPM"
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o1100)
+        self.storage.write_relative_bank(G_ADDRESS, 0o140)
+        self.storage.write_relative_bank(0o140, 0o77)
+        self.storage.a_register = 0o4321
+        self.storage.unpack_instruction()
+        assert self.storage.s_register == INSTRUCTION_ADDRESS
+        Instructions.LPM.determine_effective_address(self.storage)
+        assert self.storage.s_register == 0o140
+        assert Instructions.LPM.perform_logic(self.storage) == 3
+        assert self.storage.z_register == 0o77
+        assert self.storage.a_register == 0o21
+        self.storage.advance_to_next_instruction()
+        assert self.storage.p_register == AFTER_DOUBLE_WORD_INSTRUCTION_ADDRESS
+
+    def test_lpn(self) -> None:
+        assert Instructions.LPN.name() == "LPN"
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0277)
+        self.storage.a_register = 0o4321
+        self.storage.unpack_instruction()
+        assert self.storage.s_register == INSTRUCTION_ADDRESS
+        Instructions.LPN.determine_effective_address(self.storage)
+        assert self.storage.s_register == INSTRUCTION_ADDRESS
+        assert Instructions.LPN.perform_logic(self.storage) == 1
+        assert self.storage.z_register == 0o77
+        assert self.storage.a_register == 0o21
+        self.storage.advance_to_next_instruction()
+        assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+
+    def test_lps(self) -> None:
+        assert Instructions.LPS.name() == "LPS"
+        self.storage.write_specific(0o77)
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o1300)
+        self.storage.a_register = 0o4321
+        self.storage.unpack_instruction()
+        Instructions.LPS.determine_effective_address(self.storage)
+        assert self.storage.s_register == 0o7777
+        assert Instructions.LPS.perform_logic(self.storage) == 2
+        assert self.storage.z_register == 0o77
+        assert self.storage.a_register == 0o21
+        self.storage.advance_to_next_instruction()
+        assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+
     def test_ls1(self)-> None:
         # LS1
         self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0x0102)

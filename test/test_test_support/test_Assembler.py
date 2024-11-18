@@ -210,7 +210,7 @@ class TestAssembler(TestCase):
         assembler.run()
         assert assembler.address() == 0o0104
         assert assembler.bank() == 3
-        assert assembler.line_count() == 8
+        assert assembler.line_count() == 9
         assert assembler.error_count() == 0
         assert assembler.warning_count() == 0
         assert assembler.words_written() == 4
@@ -245,6 +245,31 @@ class TestAssembler(TestCase):
 
     def test_lcs(self) -> None:
         self.__single_instruction_test("LCS", [0o2700])
+
+    def test_lpb(self) -> None:
+        self.__single_instruction_test("LPB 22", [0o1322])
+
+    def test_lpc(self) -> None:
+        self.__single_instruction_test("LPC 0000", [0o1200, 0o0000])
+        self.__single_instruction_test("LPC 4321", [0o1200, 0o4321])
+
+    def test_lpd(self) -> None:
+        self.__single_instruction_test("LPD 00", [0o1000])
+        self.__single_instruction_test("LPD 40", [0o1040])
+
+    def test_lpi(self) -> None:
+        self.__single_instruction_test("LPI 31", [0o1131])
+
+    def test_lpm(self) -> None:
+        self.__single_instruction_test("LPM 0", [0o1100, 0])
+        self.__single_instruction_test("LPM 01400", [0o1100, 0o1400])
+
+    def test_lpn(self) -> None:
+        self.__single_instruction_test("LPN 00", [0o0200])
+        self.__single_instruction_test("LPN 40", [0o0240])
+
+    def test_lps(self) -> None:
+        self.__single_instruction_test("LPS", [0o1300])
 
     def test_err(self) -> None:
         self.__single_instruction_test("ERR", [0o0000])

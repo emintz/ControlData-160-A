@@ -54,6 +54,90 @@ LDC_SHIFT_HALT = """
           HLT
           END
 """
+LOGICAL_PRODUCT_BACKWARD = """
+          REM logical product backward, A -> A & [P - E]
+          BNK 3
+          ORG 77
+          OCT 77
+          LDC 4321
+          LPB 3
+          HLT
+          END
+"""
+LOGICAL_PRODUCT_CONSTANT = """
+          REM logical product constant, A -> A & [G](r)
+          BNK 3
+          ORG 100
+          LDC 4321
+          LPC 77
+          HLT
+          END
+"""
+LOGICAL_PRODUCT_DIRECT = """
+          REM logical product direct, A -> A & E(d)
+          BNK 2
+          ORG 40
+          OCT 77
+          BNK 3
+          ORG 100
+          LDC 4321
+          LPD 40
+          HLT
+          END
+"""
+LOGICAL_PRODUCT_FORWARD = """
+          REM Logical product forward: A -> A & [P + E]
+          BNK 3
+          ORG 100
+          LDC 4321
+          LPF 2
+          HLT
+          OCT 77
+          END
+"""
+LOGICAL_PRODUCT_INDIRECT = """
+          REM logical product indirect A -> A & E(i)
+          BNK 1
+          ORG 40
+          OCT 77
+          BNK 3
+          ORG 100
+          LDC 4321
+          LPI 40
+          HLT
+          END
+"""
+LOGICAL_PRODUCT_MEMORY = """
+          REM logical product from memory, A -> A & [G](r)
+          BNK 3
+          ORG 100
+          LDC 4321
+          LPM 40
+          HLT
+          ORG 40
+          OCT 77
+          END
+"""
+LOGICAL_PRODUCT_NONE = """
+          REM logical product no address with A
+          BNK 3
+          ORG 100
+          LDC 4321
+          LPN 77
+          HLT
+          END
+"""
+LOGICAL_PRODUCT_SPECIFIC = """
+          REM logical product specific, A -> A & [7777(0)]
+          BNK 0
+          ORG 7777
+          OCT 77
+          BNK 3
+          ORG 100
+          LDC 4321
+          LPS
+          HLT
+"""
 SET_LITERAL = """
           REM set a literal value
           BNK 3

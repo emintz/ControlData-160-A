@@ -21,6 +21,21 @@
 """
 from cdc160a.Storage import Storage
 
+def and_e_with_a(storage: Storage) -> None:
+    storage.and_e_with_a()
+
+def and_direct_with_a(storage: Storage) -> None:
+    storage.and_s_address_with_a(storage.direct_storage_bank)
+
+def and_indirect_with_a(storage: Storage) -> None:
+    storage.and_s_address_with_a(storage.indirect_storage_bank)
+
+def and_relative_with_a(storage: Storage) -> None:
+    storage.and_s_address_with_a(storage.relative_storage_bank)
+
+def and_specific_with_a(storage: Storage) -> None:
+    storage.and_specific_with_a()
+
 # No operation
 def do_nothing(storage: Storage) -> None:
     pass

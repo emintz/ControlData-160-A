@@ -148,6 +148,18 @@ class Storage:
     def complement_a(self) -> None:
         self.a_register = self.a_register ^ 0o7777
 
+    def and_e_with_a(self) -> None:
+        self.z_register = self.f_e & 0o0077
+        self.a_register &= self.z_register
+
+    def and_s_address_with_a(self, bank: int) -> None:
+        self.z_register = self.memory[bank, self.s_register]
+        self.a_register &= self.z_register
+
+    def and_specific_with_a(self) -> None:
+        self.z_register = self.memory[0, 0o7777]
+        self.a_register &= self.z_register
+
     # Declares that the next memory access will be in the buffer bank.
     def mode_buffer(self) -> None:
         self.storage_cycle = MCS_MODE_BFR
@@ -407,6 +419,7 @@ class Storage:
 
     def z_to_a(self) -> None:
         self.a_register = self.z_register
+
 
 if __name__ == "__main__":
     print('Running storage in stand-alone mode.\n')
