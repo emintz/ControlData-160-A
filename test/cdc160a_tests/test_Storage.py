@@ -309,6 +309,68 @@ class TestStorage(TestCase):
         self.storage.stop()
         assert not self.storage.run_stop_status
 
+    def test_subtract_e_from_a(self) -> None:
+        self.storage.a_register = 0o1255
+        self.storage.f_e = 0o21
+        self.storage.subtract_e_from_a()
+        assert self.storage.z_register == 0o21
+        assert self.storage.a_register == 0o1234
+
+    def test_subtract_s_absolute_from_a_neg_neg_neg(self) -> None:
+        self.storage.a_register = 0o7000
+        self.storage.write_absolute(3, 0o40, 0o1000)
+        self.storage.s_register = 0o40
+        self.storage.subtract_s_address_from_a(3)
+        assert self.storage.z_register == 0o1000
+        assert self.storage.a_register == 0o6000
+
+    def test_subtract_s_absolute_from_a_neg_neg_pos(self) -> None:
+        self.storage.a_register = 0o7776
+        self.storage.write_absolute(3, 0o40, 0o7775)
+        self.storage.s_register = 0o40
+        self.storage.subtract_s_address_from_a(3)
+        assert self.storage.z_register == 0o7775
+        assert self.storage.a_register == 0o0001
+
+    def test_subtract_s_absolute_from_a_pos_mzro_pos(self) -> None:
+        self.storage.a_register = 0o1234
+        self.storage.write_absolute(3, 0o40, 0o7777)
+        self.storage.s_register = 0o40
+        self.storage.subtract_s_address_from_a(3)
+        assert self.storage.z_register == 0o7777
+        assert self.storage.a_register == 0o1234
+
+    def test_subtract_s_absolute_pos_pos_neg(self) -> None:
+        self.storage.a_register = 0o300
+        self.storage.write_absolute(3, 0o40, 0o0700)
+        self.storage.s_register = 0o40
+        self.storage.subtract_s_address_from_a(3)
+        assert self.storage.z_register == 0o700
+        assert self.storage.a_register == 0o7377
+
+    def test_subtract_s_absolute_from_a_pos_pos_pos(self) -> None:
+        self.storage.a_register = 0o2234
+        self.storage.write_absolute(3, 0o40, 0o1000)
+        self.storage.s_register = 0o40
+        self.storage.subtract_s_address_from_a(3)
+        assert self.storage.z_register == 0o1000
+        assert self.storage.a_register == 0o1234
+
+    def test_subtract_s_absolute_from_a_pos_zero_pos(self) -> None:
+        self.storage.a_register = 0o1234
+        self.storage.write_absolute(3, 0o40, 0)
+        self.storage.s_register = 0o40
+        self.storage.subtract_s_address_from_a(3)
+        assert self.storage.z_register == 0
+        assert self.storage.a_register == 0o1234
+
+    def test_subtract_specific_from_a(self) -> None:
+        self.storage.a_register = 0o2234
+        self.storage.write_absolute(0, 0o7777, 0o1000)
+        self.storage.subtract_specific_from_a()
+        assert self.storage.z_register == 0o1000
+        assert self.storage.a_register == 0o1234
+
     def test_read_absolute(self) -> None:
         assert self.storage.read_absolute(0, 0o1000) == 0
         self.storage.memory[0, 0o1000] = 0o3777

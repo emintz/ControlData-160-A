@@ -281,9 +281,9 @@ class Test(TestCase):
         self.storage.a_register = 0o4000
         Microinstructions.shift_a_right_two(self.storage)
         assert self.storage.a_register == 0o7000
-        self.storage.a_register = 0x2000
+        self.storage.a_register = 0o2000
         Microinstructions.shift_a_right_one(self.storage)
-        assert self.storage.a_register -- 0o0400
+        assert self.storage.a_register == 0o1000
         self.storage.a_register = 0o0014
         Microinstructions.shift_a_right_two(self.storage)
         assert self.storage.a_register == 0o0003
@@ -309,6 +309,43 @@ class Test(TestCase):
         assert self.storage.run_stop_status
         assert self.storage.z_register == 0o77
         assert self.storage.a_register == 0o77
+
+    def test_subtract_direct_from_a(self) -> None:
+        self.storage.direct_storage_bank = 2
+        self.storage.s_register = READ_AND_WRITE_ADDRESS
+        self.storage.a_register = 0o112
+        Microinstructions.subtract_direct_from_a(self.storage)
+        assert self.storage.z_register == 0o12
+        assert self.storage.a_register == 0o100
+
+    def test_subtract_indirect_from_a(self) -> None:
+        self.storage.indirect_storage_bank = 2
+        self.storage.s_register = READ_AND_WRITE_ADDRESS
+        self.storage.a_register = 0o112
+        Microinstructions.subtract_indirect_from_a(self.storage)
+        assert self.storage.z_register == 0o12
+        assert self.storage.a_register == 0o100
+
+    def test_subtract_relative_from_a(self) -> None:
+        self.storage.s_register = READ_AND_WRITE_ADDRESS
+        self.storage.a_register = 0o113
+        Microinstructions.subtract_relative_from_a(self.storage)
+        assert self.storage.z_register == 0o13
+        assert self.storage.a_register == 0o100
+
+    def test_subtract_e_from_a(self) -> None:
+        self.storage.a_register = 0o1255
+        self.storage.f_e = 0o21
+        Microinstructions.subtract_e_from_a(self.storage)
+        assert self.storage.z_register == 0o21
+        assert self.storage.a_register == 0o1234
+
+    def test_subtract_specific_from_a(self) -> None:
+        self.storage.a_register = 0o2234
+        self.storage.write_absolute(0, 0o7777, 0o1000)
+        Microinstructions.subtract_specific_from_a(self.storage)
+        assert self.storage.z_register == 0o1000
+        assert self.storage.a_register == 0o1234
 
     def __prepare_for_jump(self) -> None:
         self.storage.p_register = INSTRUCTION_ADDRESS

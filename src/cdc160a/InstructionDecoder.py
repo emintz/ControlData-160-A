@@ -44,7 +44,7 @@ class Singleton:
         self.__instruction = instruction
         self.opcode = opcode
 
-    def decode(self, e: int) -> Instruction:
+    def decode(self, _) -> Instruction:
         return self.__instruction
 
 class Bimodal:
@@ -52,7 +52,7 @@ class Bimodal:
     Decoder for bimodal op-codes, which means one instruction when e == 0
     and another when e != 0
     """
-    def __init__(self, e_zero: Instruction, e_nonzero: Instruction, opcode: int):
+    def __init__(self, e_zero: Instruction, e_nonzero: Instruction, _):
         self.__e_zero = e_zero
         self.__e_nonzero = e_nonzero
 
@@ -66,7 +66,7 @@ class Unimplemented:
     """
     Temporary interpreter for as-yet unsupported op-codes.
     """
-    def decode(self, e: int) -> Instruction:
+    def decode(self, _) -> Instruction:
         return Instructions.ERR
 
 class OpCode01:
@@ -108,7 +108,7 @@ __DECODERS = [
     Singleton(Instructions.LDN, 0o04),            # 04
     Singleton(Instructions.LCN, 0o05),            # 05
     __UNIMPLEMENTED,            # 06
-    __UNIMPLEMENTED,            # 07
+    Singleton(Instructions.SBN, 0o07),             # 07
     Singleton(Instructions.LPD, 0o10),            # 10
     Bimodal(Instructions.LPM, Instructions.LPI, 0o11),            # 11
     Bimodal(Instructions.LPC, Instructions.LPF, 0o12),            # 12
@@ -129,10 +129,10 @@ __DECODERS = [
     __UNIMPLEMENTED,            # 31
     __UNIMPLEMENTED,            # 32
     __UNIMPLEMENTED,            # 33
-    __UNIMPLEMENTED,            # 34
-    __UNIMPLEMENTED,            # 35
-    __UNIMPLEMENTED,            # 36
-    __UNIMPLEMENTED,            # 37
+    Singleton(Instructions.SBD, 0o34),            # 34
+    Bimodal(Instructions.SBM, Instructions.SBI, 0o35),            # 35
+    Bimodal(Instructions.SBC, Instructions.SBF, 0o36),            # 36
+    Bimodal(Instructions.SBS, Instructions.SBB, 0o37),            # 37
     Singleton(Instructions.STD, 0o40),                    # 40
     Bimodal(Instructions.STM, Instructions.STI, 0o41),    # 41
     Bimodal(Instructions.STC, Instructions.STF, 0o42),    # 42

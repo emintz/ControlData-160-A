@@ -37,7 +37,7 @@ def and_specific_with_a(storage: Storage) -> None:
     storage.and_specific_with_a()
 
 # No operation
-def do_nothing(storage: Storage) -> None:
+def do_nothing(_: Storage) -> None:
     pass
 
 # A -> ~A
@@ -130,6 +130,21 @@ def s_relative_complement_to_a(storage: Storage) -> None:
 def s_relative_to_a(storage: Storage) -> None:
     storage.z_register = storage.read_relative_bank(storage.s_register)
     storage.z_to_a()
+
+def subtract_e_from_a(storage: Storage) -> None:
+    storage.subtract_e_from_a()
+
+def subtract_direct_from_a(storage: Storage) -> None:
+    storage.subtract_s_address_from_a(storage.direct_storage_bank)
+
+def subtract_indirect_from_a(storage: Storage) -> None:
+    storage.subtract_s_address_from_a(storage.indirect_storage_bank)
+
+def subtract_relative_from_a(storage: Storage) -> None:
+    storage.subtract_s_address_from_a(storage.relative_storage_bank)
+
+def subtract_specific_from_a(storage: Storage) -> None:
+    storage.subtract_specific_from_a()
 
 # A -> [S](b)
 def a_to_buffer(storage: Storage) -> None:

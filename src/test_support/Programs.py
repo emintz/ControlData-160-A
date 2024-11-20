@@ -3,6 +3,7 @@ Programs for testing the emulator. All runnable programs
 start at 0100(3)
 """
 
+# Assembler sanity checks.
 VACUOUS_THREE_LINE_PROGRAM_WITH_BLANK_LINE = """
           REM This is a three instruction vacuous program staring with a blank line.
           END
@@ -20,6 +21,16 @@ SET_ADDRESS = """
           END
 
 """
+# Individual instructions
+ADD_NO_ADDRESS = """
+          REM Test add no address
+          BNK 3
+          ORG 100
+          LDC 1200
+          ADN 34
+          HLT
+          END
+"""
 HALT = """
           REM  Simplest possible non-vacuous program that just halts
           BNK 3
@@ -27,15 +38,6 @@ HALT = """
           HLT
           END
 """
-NOOP_THEN_HALT = """
-          REM  no-op followed by a halt
-          BNK 3
-          ORG 100
-          NOP
-          HLT
-          END
-"""
-
 LDC_THEN_HALT = """
           REM  move 0o4321 to the accumulator and halt
           BNK 3
@@ -138,11 +140,12 @@ LOGICAL_PRODUCT_SPECIFIC = """
           LPS
           HLT
 """
-SET_LITERAL = """
-          REM set a literal value
+NOOP_THEN_HALT = """
+          REM  no-op followed by a halt
           BNK 3
           ORG 100
-          OCT 1234
+          NOP
+          HLT
           END
 """
 NEGATIVE_JUMP_BACKWARD_MINUS_ZERO_A = """
@@ -247,6 +250,13 @@ POSITIVE_JUMP_FORWARD_ZERO_A = """
           HLT      # +2
           END
 """
+SET_LITERAL = """
+          REM set a literal value
+          BNK 3
+          ORG 100
+          OCT 1234
+          END
+"""
 STORE_BACKWARD = """
           REM Test store backward, which stores the A register
           REM contents to the current location minus the E
@@ -324,6 +334,91 @@ STORE_SPECIFIC = """
           ORG 100
           LDC 1234
           STS
+          HLT
+          END
+"""
+SUBTRACT_BACKWARD = """
+          REM Test subtract backward
+          BNK 3
+          ORG 77
+          OCT 31
+          LDC 1265
+          SBB 3
+          HLT
+          END
+"""
+SUBTRACT_CONSTANT = """
+          REM Test subtract constant
+          BNK 3
+          ORG 100
+          LDC 1265
+          SBC 31
+          HLT
+          END
+"""
+SUBTRACT_DIRECT = """
+          REM Test subtract direct
+          BNK 2 Direct storage bank
+          ORG 40
+          OCT 31
+          BNK 3
+          ORG 100
+          LDC 1265
+          SBD 40
+          HLT
+          END
+"""
+SUBTRACT_FORWARD = """
+          REM Test subtract forward
+          BNK 3
+          ORG 100
+          LDC 1265
+          SBF 2
+          HLT
+          OCT 31
+          END
+"""
+SUBTRACT_INDIRECT = """
+          REM Test subtract indirect
+          BNK 1 indirect storage bank
+          ORG 40
+          OCT 31
+          BNK 3
+          ORG 100
+          LDC 1265
+          SBI 40
+          HLT
+          END
+"""
+SUBTRACT_MEMORY = """
+          REM Test subtract memory
+          BNK 3
+          ORG 100
+          LDC 1265
+          SBM 110
+          HLT
+          ORG 110
+          OCT 31
+          END
+"""
+SUBTRACT_NO_ADDRESS = """
+          REM Test subtract no address 
+          BNK 3
+          ORG 100
+          LDC 1265
+          SBN 31
+          HLT
+          END
+"""
+SUBTRACT_SPECIFIC = """
+          REM Test subtract specific
+          BNK 0
+          ORG 7777
+          OCT 31
+          BNK 3
+          ORG 100
+          LDC 1265
+          SBS
           HLT
           END
 """

@@ -1,7 +1,5 @@
 from unittest import TestCase
 
-from numpy.compat import open_latin1
-
 from test_support import Programs
 from cdc160a.Storage import Storage
 from test_support.Assembler import Assembler, two_digit_octal, four_digit_octal
@@ -180,6 +178,12 @@ class TestAssembler(TestCase):
         assert assembler.words_written() == 1
         assert self.__storage.read_absolute(0o3, 0o0100) == 0o7700
 
+    # def test_add_no_address(self) -> None:
+    #     assembler = self.assembler(Programs.ADD_NO_ADDRESS)
+    #     assembler.run()
+    #     assert assembler.address() == 0o103
+    #     assert self.__storage.a_register == 0o1234
+
     def test_nop_then_halt(self) -> None:
         assembler = self.assembler(Programs.NOOP_THEN_HALT)
         assert assembler.run()
@@ -356,6 +360,32 @@ class TestAssembler(TestCase):
     def test_rs2(self) -> None:
         self.__single_instruction_test("RS2", [0o0115])
 
+    def test_sbc(self) -> None:
+        self.__single_instruction_test("SBC 4321", [0o3600, 0o4321])
+
+    def test_sbb(self) -> None:
+        self.__single_instruction_test("SBB 17", [0o3717])
+
+    def test_sbd(self) -> None:
+        self.__single_instruction_test("SBD 12", [0o3412])
+        self.__single_instruction_test("SBD 0", [0o3400])
+
+    def test_sbf(self) -> None:
+        self.__single_instruction_test("SBF 77", [0o3677])
+
+    def test_sbi(self) -> None:
+        self.__single_instruction_test("SBI 34", [0o3534])
+
+    def test_sbm(self) -> None:
+        self.__single_instruction_test("SBM 1234", [0o03500, 0o1234])
+
+    def test_sbn(self) -> None:
+        self.__single_instruction_test("SBN 12", [0o0712])
+        self.__single_instruction_test("SBN 00", [0O0700])
+
+    def test_sbs(self) -> None:
+        self.__single_instruction_test("SBS", [0o3700])
+
     def test_stb(self) -> None:
         self.__single_instruction_test("STB 24", [0o4324])
 
@@ -400,3 +430,5 @@ class TestAssembler(TestCase):
         for expected in expected_output:
             address += 1
             assert self.__storage.read_absolute(3, address) == expected
+        address += 1
+        assert self.__storage.read_absolute(3, address) == 0o00

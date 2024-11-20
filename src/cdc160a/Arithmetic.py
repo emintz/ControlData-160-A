@@ -8,7 +8,7 @@ instructions.
 
 def subtract(minuend: int, subtrahend: int) -> int:
     """
-    Calculate lhs - rhs using one's complement arithmetic
+    Calculate minuend - subtrahend using one's complement arithmetic
 
     :param minuend: the number to subtract from
     :param subtrahend: the number to subtract

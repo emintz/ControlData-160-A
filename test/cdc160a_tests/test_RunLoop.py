@@ -1,4 +1,5 @@
 from unittest import TestCase
+
 from cdc160a.RunLoop import RunLoop
 from cdc160a.Storage import  Storage
 from test_support.Assembler import Assembler
@@ -160,6 +161,62 @@ class TestRunLoop(TestCase):
         self.__run_loop.run()
         assert not self.__storage.err_status
         assert self.__storage.p_register ==  0o104
+
+    def test_sbb(self) -> None:
+        self.load_test_program(Programs.SUBTRACT_BACKWARD)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o1234
+        assert self.__storage.get_program_counter() == 0o103
+        assert not self.__storage.err_status
+
+    def test_sbc(self) -> None:
+        self.load_test_program(Programs.SUBTRACT_CONSTANT)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o1234
+        assert self.__storage.get_program_counter() == 0o104
+        assert not self.__storage.err_status
+
+    def test_sbd(self) -> None:
+        self.load_test_program(Programs.SUBTRACT_DIRECT)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o1234
+        assert self.__storage.get_program_counter() == 0o103
+        assert not self.__storage.err_status
+
+    def test_sbf(self) -> None:
+        self.load_test_program(Programs.SUBTRACT_FORWARD)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o1234
+        assert self.__storage.get_program_counter() == 0o103
+        assert not self.__storage.err_status
+
+    def test_shi(self) -> None:
+        self.load_test_program(Programs.SUBTRACT_INDIRECT)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o1234
+        assert self.__storage.get_program_counter() == 0o103
+        assert not self.__storage.err_status
+
+    def test_sbm(self) -> None:
+        self.load_test_program(Programs.SUBTRACT_MEMORY)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o1234
+        assert self.__storage.get_program_counter() == 0o104
+        assert not self.__storage.err_status
+
+    def test_sbn(self) -> None:
+        self.load_test_program(Programs.SUBTRACT_NO_ADDRESS)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o1234
+        assert self.__storage.get_program_counter() == 0o103
+        assert not self.__storage.err_status
+
+    def test_sbs(self) -> None:
+        self.load_test_program(Programs.SUBTRACT_SPECIFIC)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o1234
+        assert self.__storage.get_program_counter() == 0o103
+        assert not self.__storage.err_status
 
     def test_stb(self) -> None:
         self.load_test_program(Programs.STORE_BACKWARD)

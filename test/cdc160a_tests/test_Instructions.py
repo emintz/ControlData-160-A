@@ -1,7 +1,6 @@
 import unittest
 from unittest import TestCase
 
-from Instructions import Instruction
 from cdc160a import Instructions
 from cdc160a.Storage import Storage
 from typing import Final
@@ -267,19 +266,6 @@ class Test(TestCase):
         assert Instructions.LDS.perform_logic(self.storage) == 2
         assert self.storage.z_register == 0o77
         assert self.storage.a_register == 0o77
-        self.storage.advance_to_next_instruction()
-        assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
-
-    def test_lpd(self) -> None:
-        assert Instructions.LPB.name() == "LPB"
-        self.storage.write_relative_bank(INSTRUCTION_ADDRESS - 1, 0o77)
-        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o1301)
-        self.storage.a_register = 0o4321
-        Instructions.LPD.determine_effective_address(self.storage)
-        assert self.storage.s_register == INSTRUCTION_ADDRESS - 1
-        Instructions.LPB.perform_logic(self.storage)
-        assert self.storage.z_register == 0o77
-        assert self.storage.a_register == 0o21
         self.storage.advance_to_next_instruction()
         assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
 
@@ -816,6 +802,124 @@ class Test(TestCase):
         assert Instructions.STD.perform_logic(self.storage) == 3
         assert self.storage.z_register == 0o0210
         assert self.storage.read_direct_bank(0o15) == 0o0210
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_sbb(self) -> None:
+        assert Instructions.SBB.name() == "SBB"
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o3703)
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS - 3, 0o77)
+        self.storage.a_register = 0o4420
+        self.storage.unpack_instruction()
+        Instructions.SBB.determine_effective_address(self.storage)
+        assert self.storage.s_register == INSTRUCTION_ADDRESS - 3
+        assert Instructions.SBB.perform_logic(self.storage) == 2
+        assert self.storage.z_register == 0o77
+        assert self.storage.a_register == 0o4321
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_sbc(self) -> None:
+        assert Instructions.SBC.name() == "SBC"
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o3600)
+        self.storage.a_register = 0o5555
+        self.storage.write_relative_bank(G_ADDRESS, 0o1234)
+        self.storage.unpack_instruction()
+        Instructions.SBC.determine_effective_address(self.storage)
+        assert self.storage.s_register == G_ADDRESS
+        assert Instructions.SBC.perform_logic(self.storage) == 2
+        assert self.storage.z_register == 0o1234
+        assert self.storage.a_register -- 0o4321
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_DOUBLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_sbd(self) -> None:
+        assert Instructions.SBD.name() == "SBD"
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o3440)
+        self.storage.write_direct_bank(0o40, 0o14)
+        self.storage.a_register = 0o4335
+        self.storage.unpack_instruction()
+        Instructions.SBD.determine_effective_address(self.storage)
+        assert self.storage.s_register == 0o40
+        assert Instructions.SBD.perform_logic(self.storage) == 2
+        assert self.storage.z_register == 0o14
+        assert self.storage.a_register == 0o4321
+        self.storage.advance_to_next_instruction()
+        assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+
+    def test_sbf(self) -> None:
+        assert Instructions.SBF.name() == "SBF"
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o3603)
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS + 3, 0o1234)
+        self.storage.a_register = 0o5555
+        self.storage.unpack_instruction()
+        Instructions.SBF.determine_effective_address(self.storage)
+        assert self.storage.s_register == INSTRUCTION_ADDRESS + 3
+        assert Instructions.SBF.perform_logic(self.storage) == 2
+        assert self.storage.z_register == 0o1234
+        assert self.storage.a_register == 0o4321
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_sbi(self) -> None:
+        assert Instructions.SBI.name() == "SBI"
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o3510)
+        self.storage.write_indirect_bank(0o10, 0o13)
+        self.storage.a_register = 0o4334
+        self.storage.unpack_instruction()
+        Instructions.SBI.determine_effective_address(self.storage)
+        assert self.storage.s_register == 0o10
+        assert Instructions.SBI.perform_logic(self.storage) == 3
+        assert self.storage.z_register == 0o13
+        assert self.storage.a_register == 0o4321
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_sbm(self) -> None:
+        assert Instructions.SBM.name() == "SBM"
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o3500)
+        self.storage.write_relative_bank(G_ADDRESS, READ_AND_WRITE_ADDRESS)
+        self.storage.write_relative_bank(READ_AND_WRITE_ADDRESS, 0o241)
+        self.storage.a_register = 0o4562
+        self.storage.unpack_instruction()
+        Instructions.SBM.determine_effective_address(self.storage)
+        assert self.storage.s_register == READ_AND_WRITE_ADDRESS
+        assert Instructions.SBM.perform_logic(self.storage) == 3
+        assert self.storage.z_register == 0o241
+        assert self.storage.a_register == 0o4321
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_DOUBLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_sbn(self) -> None:
+        # SBN 40
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0740)
+        self.storage.a_register = 0o1274
+        self.storage.unpack_instruction()
+        Instructions.SBN.determine_effective_address(self.storage)
+        assert self.storage.s_register == INSTRUCTION_ADDRESS
+        assert Instructions.SBN.perform_logic(self.storage) == 1
+        assert self.storage.z_register == 0o40
+        assert self.storage.a_register == 0o1234
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_sbs(self) -> None:
+        assert Instructions.SBS.name() == "SBS"
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o3700)
+        self.storage.a_register = 0o4420
+        self.storage.unpack_instruction()
+        Instructions.SBS.determine_effective_address(self.storage)
+        assert self.storage.s_register == 0o7777
+        assert Instructions.SBS.perform_logic(self.storage) == 2
+        assert self.storage.z_register == 0o77
+        assert self.storage.a_register == 0o4321
         self.storage.advance_to_next_instruction()
         assert (self.storage.get_program_counter() ==
                 AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)

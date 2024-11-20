@@ -8,7 +8,6 @@ This is a temporary version to support testing, and needs a
 lot of work before we can integrate it with the console and
 I/O system.
 """
-from Instructions import  Instruction
 import InstructionDecoder
 from Storage import Storage
 

@@ -199,6 +199,39 @@ class Storage:
     def s_address_relative_to_z(self)-> None:
         self.z_register = self.read_relative_bank(self.s_register)
 
+    def subtract_e_from_a(self) -> None:
+        """
+        A -> A - E
+
+        Subtract E from A
+
+        :return: None
+        """
+        self.__difference_to_a(self.a_register, self.f_e)
+
+    def subtract_s_address_from_a(self, bank: int) -> None:
+        """
+        A -> A - [S](bank)
+
+        Take the value located at the S register's value in bank
+        'bank' and subtract it from A. Leave the result in A
+
+        :param bank: memory bank containing the subtrahend Note
+               that S contains the subtrahend's address.
+        :return: None
+        """
+        self.__difference_to_a(self.a_register, int(self.memory[bank, self.s_register]))
+        # minuend = self.a_register
+        # subtrahend = int(self.memory[bank, self.s_register])
+        # self.z_register = subtrahend
+        # self.a_register = Arithmetic.subtract(minuend, subtrahend)
+
+    def subtract_specific_from_a(self) -> None:
+        minuend = self.a_register
+        subtrahend = int(self.memory[0, 0o7777])
+        self.z_register = subtrahend
+        self.a_register = Arithmetic.subtract(minuend, subtrahend)
+
     def unpack_instruction(self) -> None:
         self.p_to_s()
         self.s_address_relative_to_z()
@@ -416,10 +449,20 @@ class Storage:
     def write_specific(self, value: int):
         self.memory[0, 0o7777] = value
 
-
     def z_to_a(self) -> None:
         self.a_register = self.z_register
 
+    def __difference_to_a(self, minuend: int, subtrahend: int) -> None:
+        """
+        Move subtrahend to the Z register and minuend - subtrahend to the
+        A register
+
+        :param minuend: the value to subtract from
+        :param subtrahend: the value to subtract
+        :return: None
+        """
+        self.z_register = subtrahend
+        self.a_register = Arithmetic.subtract(minuend, subtrahend)
 
 if __name__ == "__main__":
     print('Running storage in stand-alone mode.\n')

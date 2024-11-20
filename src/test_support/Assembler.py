@@ -45,8 +45,6 @@ has its own format.
    """
 from __future__ import annotations
 
-from codecs import namereplace_errors
-
 from cdc160a import Storage
 import re
 import sys
@@ -94,7 +92,6 @@ class AddressSetter:
 
 
     def emit(self, tokens: [str]) -> None:
-        address = 0
         if (len(tokens)) < 2:
             self.__assembler.error("Address value missing, using 0x0000")
         else:
@@ -126,7 +123,6 @@ class MemorySetter:
         self.__name = name
 
     def emit(self, tokens: [str]) -> None:
-        value = 0o0000
         if len(tokens) < 2:
             self.__assembler.warning("Literal value missing, using 0o0000")
         self.__assembler.emit_word(int(tokens[1], 8))
@@ -294,6 +290,14 @@ class Assembler:
         self.__words_written = 0
 
         self.__emitters = {
+            # "ADB": OneWordNonZeroE(self, "ADB", 0o33),
+            # "ADC": TwoWordFixedE(self, "ADC", 0o32),
+            # "ADD": OneWordAnyE(self, "ADD", 0o30),
+            # "ADF": OneWordNonZeroE(self, "ADC", 0o32),
+            # "ADI": OneWordNonZeroE(self, "ADI", 0o31),
+            # "ADM": TwoWordFixedE(self, "ADM", 0o31),
+            # "ADN": OneWordAnyE(self, "ADN", 0o06),
+            # "ADS": FixedEValue(self, "ADS", 0o3300),
             "BNK": BankSetter(self, "BNK"),
             "END": StopAssembly(self, "ERR"),
             "ERR": FixedEValue(self, "ERR", 0o0000),
@@ -338,6 +342,14 @@ class Assembler:
             "REM": VacuousEmitter(self, "REM"),
             "RS1": FixedEValue(self, "RS1", 0o0114),
             "RS2": FixedEValue(self, "RS2", 0o0115),
+            "SBB": OneWordNonZeroE(self, "SBB", 0o37),
+            "SBC": TwoWordFixedE(self, "SBC", 0o36),
+            "SBD": OneWordAnyE(self, "SBD", 0o34),
+            "SBF": OneWordNonZeroE(self, "SBF", 0o36),
+            "SBI": OneWordNonZeroE(self, "SBD", 0o35),
+            "SBM": TwoWordFixedE(self, "SBM", 0o35),
+            "SBN": OneWordAnyE(self, "SBN", 0o07),
+            "SBS": FixedEValue(self, "SBS", 0o3700),
             "STB": OneWordNonZeroE(self, "STB", 0o43),
             "STC": TwoWordFixedE(self, "STC", 0o42),
             "STD": OneWordAnyE(self, "STD", 0o40),
@@ -394,6 +406,9 @@ class Assembler:
     def emit_word(self, value: int) -> None:
         self.print_current_line("{0}     ".format(four_digit_octal(value)))
         self.__store_and_advance(value)
+
+    def emitter(self, name: str):
+        return self.__emitters[name]
 
     def error_count(self) -> int:
         return self.__errors

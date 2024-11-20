@@ -21,12 +21,11 @@ from cdc160a import EffectiveAddress
 from cdc160a import Microinstructions
 from cdc160a.Storage import Storage
 
-def __no_advance(storage: Storage) -> None:
+def __no_advance(_) -> None:
     """
     A placeholder advance function used by instructions that
     either advance by a variable amount or change the flow of
     control.
-    :param storage: placeholder, not referenced
     :return: None
     """
     pass
@@ -193,6 +192,14 @@ PJB = __no_advance_instruction("PJB", EffectiveAddress.relative_backward, Microi
 PJF = __no_advance_instruction("PJF", EffectiveAddress.relative_forward, Microinstructions.jump_if_a_positive, 1)
 RS1 = __single_advance_instruction("RS1", EffectiveAddress.no_address, Microinstructions.shift_a_right_one, 1)
 RS2 = __single_advance_instruction("RS2", EffectiveAddress.no_address, Microinstructions.shift_a_right_two, 1)
+SBB = __single_advance_instruction("SBB", EffectiveAddress.relative_backward, Microinstructions.subtract_relative_from_a, 2)
+SBC = __double_advance_instruction("SBC", EffectiveAddress.constant, Microinstructions.subtract_relative_from_a, 2)
+SBD = __single_advance_instruction("SBD", EffectiveAddress.direct, Microinstructions.subtract_direct_from_a, 2)
+SBF = __single_advance_instruction("SBF", EffectiveAddress.relative_forward, Microinstructions.subtract_relative_from_a, 2)
+SBI = __single_advance_instruction("SBI", EffectiveAddress.indirect, Microinstructions.subtract_indirect_from_a, 3)
+SBM = __double_advance_instruction("SBM", EffectiveAddress.memory, Microinstructions.subtract_relative_from_a, 3)
+SBN = __single_advance_instruction("SBN", EffectiveAddress.no_address, Microinstructions.subtract_e_from_a, 1)
+SBS = __single_advance_instruction("SBS", EffectiveAddress.specific, Microinstructions.subtract_specific_from_a, 2)
 STB = __single_advance_instruction("STB", EffectiveAddress.relative_backward, Microinstructions.a_to_relative, 3)
 # TODO(emintz): verify STC behavior, which makes no sense to me.
 STC = __double_advance_instruction("STC", EffectiveAddress.constant, Microinstructions.a_to_relative, 3)
