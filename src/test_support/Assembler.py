@@ -290,14 +290,14 @@ class Assembler:
         self.__words_written = 0
 
         self.__emitters = {
-            # "ADB": OneWordNonZeroE(self, "ADB", 0o33),
-            # "ADC": TwoWordFixedE(self, "ADC", 0o32),
-            # "ADD": OneWordAnyE(self, "ADD", 0o30),
-            # "ADF": OneWordNonZeroE(self, "ADC", 0o32),
-            # "ADI": OneWordNonZeroE(self, "ADI", 0o31),
-            # "ADM": TwoWordFixedE(self, "ADM", 0o31),
-            # "ADN": OneWordAnyE(self, "ADN", 0o06),
-            # "ADS": FixedEValue(self, "ADS", 0o3300),
+            "ADB": OneWordNonZeroE(self, "ADB", 0o33),
+            "ADC": TwoWordFixedE(self, "ADC", 0o32),
+            "ADD": OneWordAnyE(self, "ADD", 0o30),
+            "ADF": OneWordNonZeroE(self, "ADC", 0o32),
+            "ADI": OneWordNonZeroE(self, "ADI", 0o31),
+            "ADM": TwoWordFixedE(self, "ADM", 0o31),
+            "ADN": OneWordAnyE(self, "ADN", 0o06),
+            "ADS": FixedEValue(self, "ADS", 0o3300),
             "BNK": BankSetter(self, "BNK"),
             "END": StopAssembly(self, "ERR"),
             "ERR": FixedEValue(self, "ERR", 0o0000),

@@ -75,6 +75,11 @@ class Test(TestCase):
         for e in range(0o00, 0o100):
             assert decoder.decode(e).name() == "LCN"
 
+    def test_decode_06(self) -> None:
+        decoder = InstructionDecoder.decoder_at(0o06)
+        for e in range(0o00, 0o100):
+            assert decoder.decode(e).name() == "ADN"
+
     def test_decode_07(self) -> None:
         decoder = InstructionDecoder.decoder_at(0o07)
         for e in range(0, 0o100):
@@ -102,6 +107,23 @@ class Test(TestCase):
         assert decoder.decode(0o00).name() == "LPS"
         for e in range(0o01, 0o100):
             assert decoder.decode(e).name() == "LPB"
+
+    def test_decode_30(self) -> None:
+        decoder = InstructionDecoder.decoder_at(0o30)
+        for e in range(0o00, 0o100):
+            assert decoder.decode(e).name() == "ADD"
+
+    def test_decode_31(self) -> None:
+        decoder = InstructionDecoder.decoder_at(0o31)
+        assert decoder.decode(0).name() == "ADM"
+        for e in range(0o01, 0o100):
+            assert decoder.decode(e).name() == "ADI"
+
+    def test_decode_32(self) -> None:
+        decoder = InstructionDecoder.decoder_at(0o32)
+        assert decoder.decode(0).name() == "ADC"
+        for e in range(0o01, 0o100):
+            assert decoder.decode(e).name() == "ADF"
 
     def test_decode_34(self) -> None:
         decoder = InstructionDecoder.decoder_at(0o34)

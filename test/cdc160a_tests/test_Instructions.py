@@ -35,6 +35,140 @@ class Test(TestCase):
     def tearDown(self) -> None:
         self.storage = None
 
+    def test_adb(self) -> None:
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o3301)
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS - 1, 0o21)
+        self.storage.a_register = 0o1213
+        self.storage.unpack_instruction()
+        Instructions.ADB.determine_effective_address(self.storage)
+        assert self.storage.s_register == INSTRUCTION_ADDRESS - 1
+        assert Instructions.ADB.perform_logic(self.storage) == 2
+        assert self.storage.run_stop_status
+        assert not self.storage.err_status
+        assert self.storage.a_register == 0o1234
+        assert self.storage.z_register == 0o21
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_adc(self) -> None:
+        # adc
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o3200)
+        self.storage.write_relative_bank(G_ADDRESS, 0o21)
+        self.storage.a_register = 0o1213
+        self.storage.unpack_instruction()
+        Instructions.ADC.determine_effective_address(self.storage)
+        assert self.storage.s_register == G_ADDRESS
+        assert Instructions.ADC.perform_logic(self.storage) == 2
+        assert self.storage.run_stop_status
+        assert not self.storage.err_status
+        assert self.storage.a_register == 0o1234
+        assert self.storage.z_register == 0o21
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_DOUBLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_add(self) -> None:
+        # add
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o3040)
+        self.storage.write_direct_bank(0o40, 0o21)
+        self.storage.a_register = 0o1213
+        self.storage.unpack_instruction()
+        Instructions.ADD.determine_effective_address(self.storage)
+        assert self.storage.s_register == 0o40
+        assert Instructions.ADD.perform_logic(self.storage) == 2
+        assert self.storage.run_stop_status
+        assert not self.storage.err_status
+        assert self.storage.a_register == 0o1234
+        assert self.storage.z_register == 0o21
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_adf(self) -> None:
+        # adf
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o3202)
+        self.storage.a_register = 0o1213
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS + 2, 0o21)
+        self.storage.unpack_instruction()
+        Instructions.ADF.determine_effective_address(self.storage)
+        assert self.storage.s_register == INSTRUCTION_ADDRESS + 2
+        assert Instructions.ADF.perform_logic(self.storage) == 2
+        assert self.storage.run_stop_status
+        assert not self.storage.err_status
+        assert self.storage.a_register == 0o1234
+        assert self.storage.z_register == 0o21
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_adi(self) -> None:
+        # adi
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o3140)
+        self.storage.a_register = 0o1213
+        self.storage.write_indirect_bank(0o40, 0o21)
+        self.storage.unpack_instruction()
+        Instructions.ADI.determine_effective_address(self.storage)
+        assert self.storage.s_register == 0o40
+        assert Instructions.ADI.perform_logic(self.storage) == 3
+        assert self.storage.run_stop_status
+        assert not self.storage.err_status
+        assert self.storage.a_register == 0o1234
+        assert self.storage.z_register == 0o21
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_adm(self) -> None:
+        # adm
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o3100)
+        self.storage.write_relative_bank(G_ADDRESS, READ_AND_WRITE_ADDRESS)
+        self.storage.write_relative_bank(READ_AND_WRITE_ADDRESS, 0o21)
+        self.storage.a_register = 0o1213
+        Instructions.ADM.determine_effective_address(self.storage)
+        assert self.storage.s_register == READ_AND_WRITE_ADDRESS
+        assert Instructions.ADM.perform_logic(self.storage) == 3
+        assert self.storage.run_stop_status
+        assert not self.storage.err_status
+        assert self.storage.a_register == 0o1234
+        assert self.storage.z_register == 0o21
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_DOUBLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_adn(self) -> None:
+        # adn
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0621)
+        self.storage.a_register = 0o1213
+        self.storage.unpack_instruction()
+        Instructions.ADN.determine_effective_address(self.storage)
+        assert self.storage.s_register == INSTRUCTION_ADDRESS
+        assert Instructions.ADN.perform_logic(self.storage) == 1
+        assert self.storage.run_stop_status
+        assert not self.storage.err_status
+        assert self.storage.a_register == 0o1234
+        assert self.storage.z_register == 0o21
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_ads(self) -> None:
+        # ads
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o3300)
+        self.storage.write_absolute(0, 0o7777, 0o21)
+        self.storage.a_register = 0o1213
+        self.storage.unpack_instruction()
+        Instructions.ADS.determine_effective_address(self.storage)
+        assert self.storage.s_register == 0o7777
+        assert Instructions.ADS.perform_logic(self.storage) == 2
+        assert self.storage.run_stop_status
+        assert not self.storage.err_status
+        assert self.storage.a_register == 0o1234
+        assert self.storage.z_register == 0o21
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
+
     def test_err(self) -> None:
         # err
         self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0000)

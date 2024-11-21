@@ -153,6 +153,14 @@ def __double_advance_instruction(name, effective_address: object, logic: object,
     """
     return Instruction(name, effective_address, logic, __double_advance, cycles)
 
+ADB = __single_advance_instruction("ADB", EffectiveAddress.relative_backward, Microinstructions.add_relative_to_a, 2)
+ADC = __double_advance_instruction("ADC", EffectiveAddress.constant, Microinstructions.add_relative_to_a, 2)
+ADD = __single_advance_instruction("ADD", EffectiveAddress.direct, Microinstructions.add_direct_to_a, 2)
+ADF = __single_advance_instruction("ADF", EffectiveAddress.relative_forward, Microinstructions.add_relative_to_a, 2)
+ADI = __single_advance_instruction("ADI", EffectiveAddress.indirect, Microinstructions.add_indirect_to_a, 3)
+ADM = __double_advance_instruction("ADM", EffectiveAddress.memory, Microinstructions.add_relative_to_a, 3)
+ADN = __single_advance_instruction("ADN", EffectiveAddress.no_address, Microinstructions.add_e_to_a, 1)###
+ADS = __single_advance_instruction("ADS", EffectiveAddress.specific, Microinstructions.add_specific_to_a, 2)
 ERR = __single_advance_instruction("ERR", EffectiveAddress.no_address, Microinstructions.error, 1)
 HLT = __single_advance_instruction("HLT", EffectiveAddress.no_address, Microinstructions.halt, 1)
 LCB = __single_advance_instruction("LCB", EffectiveAddress.relative_backward, Microinstructions.s_relative_complement_to_a, 2)

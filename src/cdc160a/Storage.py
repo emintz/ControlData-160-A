@@ -145,6 +145,13 @@ class Storage:
     def a_to_z(self) -> None:
         self.z_register = self.a_register
 
+    def add_e_to_a(self) -> None:
+        self.__sum_to_a(self.a_register, self.f_e)
+
+    def add_s_address_to_a(self, bank: int) -> None:
+        from_memory = int(self.memory[bank, self.s_register])
+        self.__sum_to_a(self.a_register, from_memory)
+
     def complement_a(self) -> None:
         self.a_register = self.a_register ^ 0o7777
 
@@ -455,7 +462,8 @@ class Storage:
     def __difference_to_a(self, minuend: int, subtrahend: int) -> None:
         """
         Move subtrahend to the Z register and minuend - subtrahend to the
-        A register
+        A register. Note that it is assumed that the subtrahend was
+        just retrieved from memory.
 
         :param minuend: the value to subtract from
         :param subtrahend: the value to subtract
@@ -463,6 +471,19 @@ class Storage:
         """
         self.z_register = subtrahend
         self.a_register = Arithmetic.subtract(minuend, subtrahend)
+
+    def __sum_to_a(self, existing_value: int, value_from_memory: int):
+        """
+        Move value_from_memory to Z and existing_value + value_from_memory
+        to A. It assumed that value_from_memory was just retrieved from
+        storage.
+
+        :param existing_value: current value, probably from A
+        :param value_from_memory: value just retrieved from storage
+        :return: None
+        """
+        self.z_register = value_from_memory
+        self.a_register = Arithmetic.add(existing_value, value_from_memory)
 
 if __name__ == "__main__":
     print('Running storage in stand-alone mode.\n')

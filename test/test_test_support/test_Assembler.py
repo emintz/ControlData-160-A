@@ -178,11 +178,31 @@ class TestAssembler(TestCase):
         assert assembler.words_written() == 1
         assert self.__storage.read_absolute(0o3, 0o0100) == 0o7700
 
-    # def test_add_no_address(self) -> None:
-    #     assembler = self.assembler(Programs.ADD_NO_ADDRESS)
-    #     assembler.run()
-    #     assert assembler.address() == 0o103
-    #     assert self.__storage.a_register == 0o1234
+    def test_adb(self) -> None:
+        self.__single_instruction_test("ADB 4", [0o3304])
+
+    def test_adc(self) -> None:
+        self.__single_instruction_test(
+            "ADC 4321", [0o3200, 0o4321])
+
+    def test_add(self) -> None:
+        self.__single_instruction_test("ADD 40", [0o3040])
+
+    def test_adf(self) -> None:
+        self.__single_instruction_test("ADF 14", [0o3214])
+
+    def test_adi(self) -> None:
+        self.__single_instruction_test("ADI 20", [0O3120])
+
+    def test_adm(self) -> None:
+        self.__single_instruction_test(
+            "ADM 1234", [0o3100, 0o1234])
+
+    def test_adn(self) -> None:
+        self.__single_instruction_test("ADN 40", [0o0640])
+
+    def test_ads(self) -> None:
+        self.__single_instruction_test("ADS", [0o3300])
 
     def test_nop_then_halt(self) -> None:
         assembler = self.assembler(Programs.NOOP_THEN_HALT)

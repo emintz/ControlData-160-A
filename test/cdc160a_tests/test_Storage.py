@@ -84,6 +84,21 @@ class TestStorage(TestCase):
         assert self.storage.z_register == 0o0770
         assert self.storage.read_relative_bank(READ_AND_WRITE_ADDRESS) == 0o0770
 
+    def test_add_e_to_a(self) -> None:
+        self.storage.a_register = 0o1211
+        self.storage.f_e = 0o23
+        self.storage.add_e_to_a()
+        assert self.storage.a_register == 0o1234
+        assert self.storage.z_register == 0o23
+
+    def test_add_s_address_to_a(self) -> None:
+        self.storage.a_register = 0o1211
+        self.storage.s_register = 0o7777
+        self.storage.write_absolute(0, 0o7777, 0o23)
+        self.storage.add_s_address_to_a(0)
+        assert self.storage.a_register == 0o1234
+        assert self.storage.z_register == 0o23
+
     def test_and_a_with_a(self) -> None:
         self.storage.a_register = 0o4363
         self.storage.f_e = 0o31

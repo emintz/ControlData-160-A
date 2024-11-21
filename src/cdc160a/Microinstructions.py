@@ -21,6 +21,29 @@
 """
 from cdc160a.Storage import Storage
 
+def add_e_to_a(storage: Storage) -> None:
+    storage.add_e_to_a()
+
+def add_direct_to_a(storage: Storage) -> None:
+    storage.add_s_address_to_a(storage.direct_storage_bank)
+
+def add_indirect_to_a(storage: Storage) -> None:
+    storage.add_s_address_to_a(storage.indirect_storage_bank)
+
+def add_relative_to_a(storage: Storage) -> None:
+    storage.add_s_address_to_a(storage.relative_storage_bank)
+
+def add_specific_to_a(storage: Storage) -> None:
+    """
+    Add the value at 7777(0) to A. It is presumed that
+    storage.s_register is set to 7777, which it will be
+    during operation.
+
+    :param storage: register file and memory
+    :return: None
+    """
+    storage.add_s_address_to_a(0)
+
 def and_e_with_a(storage: Storage) -> None:
     storage.and_e_with_a()
 

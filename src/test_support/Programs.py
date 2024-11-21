@@ -21,13 +21,90 @@ SET_ADDRESS = """
           END
 
 """
+
 # Individual instructions
+ADD_BACKWARD = """
+          REM Test add backward: A -> A + [P - E]
+          BNK 3
+          ORG 77
+          OCT 34
+          LDC 1200
+          ADB 3
+          HLT
+          END
+"""
+ADD_CONSTANT = """
+          REM Test add constant: A -> A + G
+          BNK 3
+          ORG 100
+          LDC 1200
+          ADC 34
+          HLT
+          END
+"""
+ADD_DIRECT = """
+          REM Test add direct A -> A + 40(d)
+          BNK 2
+          ORG 40
+          OCT 34
+          BNK 3
+          ORG 100
+          LDC 1200
+          ADD 40
+          HLT
+          END
+"""
+ADD_FORWARD = """
+          REM Test add forward A -> A + [P + E]
+          BNK 3
+          ORG 100
+          LDC 1200
+          ADF 2
+          HLT
+          OCT 34
+          END
+"""
+ADD_INDIRECT = """
+          REM Test add indirect, A -> A + [40(i)
+          BNK 1
+          ORG 40
+          OCT 34
+          BNK 3
+          ORG 100
+          LDC 1200
+          ADI 40
+          HLT
+          END
+"""
 ADD_NO_ADDRESS = """
-          REM Test add no address
+          REM Test add no address A -> A + 34
           BNK 3
           ORG 100
           LDC 1200
           ADN 34
+          HLT
+          END
+"""
+ADD_MEMORY = """
+          REM Test add memory A -> A + [120]
+          BNK 3
+          ORG 100
+          LDC 1200
+          ADM 120
+          HLT
+          ORG 120
+          OCT 34
+          END
+"""
+ADD_SPECIFIC = """
+          REM Test add specific, A -> A + [7777(0)]
+          BNK 0
+          ORG 7777
+          OCT 34
+          BNK 3
+          ORG 100
+          LDC 1200
+          ADS
           HLT
           END
 """

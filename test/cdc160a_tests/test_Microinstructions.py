@@ -65,6 +65,57 @@ class Test(TestCase):
         assert self.storage.z_register == 0o0330
         assert self.storage.read_relative_bank(READ_AND_WRITE_ADDRESS) == 0o0330
 
+    def test_add_e_to_a(self) -> None:
+        self.storage.f_e = 0o31
+        self.storage.a_register = 0o1203
+        Microinstructions.add_e_to_a(self.storage)
+        assert self.storage.z_register == 0o31
+        assert self.storage.a_register == 0o1234
+        assert not self.storage.err_status
+
+    def test_add_direct_to_a(self) -> None:
+        self.storage.a_register = 0o1203
+        self.storage.direct_storage_bank = 4
+        self.storage.write_direct_bank(0o40, 0o31)
+        self.storage.s_register = 0o40
+        Microinstructions.add_direct_to_a(self.storage)
+        assert self.storage.a_register == 0o1234
+        assert self.storage.z_register == 0o31
+        assert not self.storage.err_status
+        assert self.storage.run_stop_status
+
+    def test_add_indirect_to_a(self) -> None:
+        self.storage.a_register = 0o1203
+        self.storage.indirect_storage_bank = 4
+        self.storage.write_indirect_bank(0o40, 0o31)
+        self.storage.s_register = 0o40
+        Microinstructions.add_indirect_to_a(self.storage)
+        assert self.storage.a_register == 0o1234
+        assert self.storage.z_register == 0o31
+        assert not self.storage.err_status
+        assert self.storage.run_stop_status
+
+    def test_add_relative_to_a(self) -> None:
+        self.storage.a_register = 0o1203
+        self.storage.relative_storage_bank = 4
+        self.storage.write_relative_bank(0o40, 0o31)
+        self.storage.s_register = 0o40
+        Microinstructions.add_relative_to_a(self.storage)
+        assert self.storage.a_register == 0o1234
+        assert self.storage.z_register == 0o31
+        assert not self.storage.err_status
+        assert self.storage.run_stop_status
+
+    def test_add_specific_to_a(self) -> None:
+        self.storage.a_register = 0o1203
+        self.storage.write_specific(0o31)
+        self.storage.s_register = 0o7777
+        Microinstructions.add_specific_to_a(self.storage)
+        assert self.storage.a_register == 0o1234
+        assert self.storage.z_register == 0o31
+        assert not self.storage.err_status
+        assert self.storage.run_stop_status
+
     def test_and_direct_with_a(self) -> None:
         self.storage.set_direct_storage_bank(5)
         self.storage.a_register = 0o5733

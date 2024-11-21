@@ -46,6 +46,62 @@ class TestRunLoop(TestCase):
         assert not self.__storage.err_status
         assert not self.__storage.run_stop_status
 
+    def test_adb(self) -> None:
+        self.load_test_program(Programs.ADD_BACKWARD)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o1234
+        assert self.__storage.p_register == 0o103
+        assert not self.__storage.err_status
+
+    def test_adc(self) -> None:
+        self.load_test_program(Programs.ADD_CONSTANT)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o1234
+        assert self.__storage.p_register == 0o104
+        assert not self.__storage.err_status
+
+    def test_add(self) -> None:
+        self.load_test_program(Programs.ADD_DIRECT)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o1234
+        assert self.__storage.p_register == 0o103
+        assert not self.__storage.err_status
+
+    def test_adf(self) -> None:
+        self.load_test_program(Programs.ADD_FORWARD)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o1234
+        assert self.__storage.p_register == 0o103
+        assert not self.__storage.err_status
+
+    def test_adi(self) -> None:
+        self.load_test_program(Programs.ADD_INDIRECT)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o1234
+        assert self.__storage.p_register == 0o103
+        assert not self.__storage.err_status
+
+    def test_adm(self) -> None:
+        self.load_test_program(Programs.ADD_MEMORY)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o1234
+        assert self.__storage.p_register == 0o104
+        assert not self.__storage.err_status
+
+    def test_adn(self) -> None:
+        self.load_test_program(Programs.ADD_NO_ADDRESS)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o1234
+        assert self.__storage.p_register == 0o103
+        assert not self.__storage.err_status
+
+    def test_ads(self) -> None:
+        self.load_test_program(Programs.ADD_SPECIFIC)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o1234
+        assert self.__storage.p_register == 0o103
+        assert not self.__storage.err_status
+
     def test_lpb(self) -> None:
         self.load_test_program(Programs.LOGICAL_PRODUCT_BACKWARD)
         self.__run_loop.run()
