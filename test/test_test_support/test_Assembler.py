@@ -374,6 +374,33 @@ class TestAssembler(TestCase):
         self.__single_instruction_test(
             "PJF 40",[0o6240])
 
+    def test_ras(self) -> None:
+        self.__single_instruction_test(
+            "RAB 24", [0o5324])
+
+    def test_rac(self) -> None:
+        self.__single_instruction_test(
+            "RAC 1234", [0o5200, 0o1234])
+
+    def test_rad(self) -> None:
+        self.__single_instruction_test(
+            "RAD 10", [0o5010])
+
+    def test_raf(self) -> None:
+        self.__single_instruction_test(
+            "RAF 20", [0o5220])
+
+    def test_rai(self) -> None:
+        self.__single_instruction_test(
+            "RAI 30", [0o5130])
+
+    def test_ram(self) -> None:
+        self.__single_instruction_test(
+            "RAM 2000", [0o5100, 0o2000])
+
+    def test_ras(self) -> None:
+        self.__single_instruction_test("RAS", [0o5300])
+
     def test_rs1(self) -> None:
         self.__single_instruction_test("RS1", [0o0114])
 

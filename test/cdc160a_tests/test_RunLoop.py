@@ -10,8 +10,8 @@ class TestRunLoop(TestCase):
     def setUp(self) -> None:
         self.__storage = Storage()
         self.__run_loop = RunLoop(self.__storage)
-        self.__storage.set_direct_storage_bank(2)
-        self.__storage.set_indirect_storage_bank(1)
+        self.__storage.set_direct_storage_bank(0o2)
+        self.__storage.set_indirect_storage_bank(0o1)
         self.__storage.set_relative_storage_bank(0o3)
         self.__storage.set_program_counter(0o0100)
 
@@ -217,6 +217,55 @@ class TestRunLoop(TestCase):
         self.__run_loop.run()
         assert not self.__storage.err_status
         assert self.__storage.p_register ==  0o104
+
+    def test_rab(self) -> None:
+        self.load_test_program(Programs.REPLACE_ADD_BACKWARD)
+        self.__run_loop.run()
+        assert not self.__storage.err_status
+        assert self.__storage.a_register == 0o1234
+        assert self.__storage.read_absolute(0o3, 0o77) == 0o1234
+
+    def test_rac(self) -> None:
+        self.load_test_program(Programs.REPLACE_ADD_CONSTANT)
+        self.__run_loop.run()
+        assert not self.__storage.err_status
+        assert self.__storage.a_register == 0o1234
+        assert self.__storage.read_absolute(0o3, 0o103) == 0o1234
+
+    def test_rad(self) -> None:
+        self.load_test_program(Programs.REPLACE_ADD_DIRECT)
+        self.__run_loop.run()
+        assert not self.__storage.err_status
+        assert self.__storage.a_register == 0o1234
+        assert self.__storage.read_absolute(0o2, 0o20) == 0o1234
+
+    def test_raf(self) -> None:
+        self.load_test_program(Programs.REPLACE_ADD_FORWARD)
+        self.__run_loop.run()
+        assert not self.__storage.err_status
+        assert self.__storage.a_register == 0o1234
+        assert self.__storage.read_absolute(0o3, 0o104) == 0o1234
+
+    def test_rai(self) -> None:
+        self.load_test_program(Programs.REPLACE_ADD_INDIRECT)
+        self.__run_loop.run()
+        assert not self.__storage.err_status
+        assert self.__storage.a_register == 0o1234
+        assert self.__storage.read_absolute(0o1, 0o14) == 0o1234
+
+    def test_ram(self) -> None:
+        self.load_test_program(Programs.REPLACE_ADD_MEMORY)
+        self.__run_loop.run()
+        assert not self.__storage.err_status
+        assert self.__storage.a_register == 0o1234
+        assert self.__storage.read_absolute(0o3, 0o200)
+
+    def test_ras(self) -> None:
+        self.load_test_program(Programs.REPLACE_ADD_SPECIFIC)
+        self.__run_loop.run()
+        assert not self.__storage.err_status
+        assert self.__storage.a_register == 0o1234
+        assert self.__storage.read_absolute(0, 0o7777) == 0o1234
 
     def test_sbb(self) -> None:
         self.load_test_program(Programs.SUBTRACT_BACKWARD)

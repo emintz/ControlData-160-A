@@ -327,6 +327,84 @@ POSITIVE_JUMP_FORWARD_ZERO_A = """
           HLT      # +2
           END
 """
+REPLACE_ADD_BACKWARD = """
+          REM Test Replace Add Backward, [(P - YY)(r)] + A -> A, [(P - YY)(r)]
+          BNK 3
+          ORG 77
+          OCT 1200
+          LDN 34
+          RAB 2
+          HLT
+          END
+"""
+REPLACE_ADD_CONSTANT = """
+          REM Test Replace Add Constant, [G(r)] + A -> A and [G(r)]
+          BNK 3
+          ORG 100
+          LDC 34
+          RAC 1200
+          HLT
+          END
+"""
+REPLACE_ADD_DIRECT = """
+          REM Test Replace Add Direct, [YY(d)] + A -> A and [YY(d)]
+          REM Direct 2, Indirect 1, Relative 3
+          BNK 2
+          ORG 20
+          OCT 1200
+          BNK 3
+          ORG 100
+          LDC 34
+          RAD 20
+          HLT
+          END
+"""
+REPLACE_ADD_FORWARD = """
+          REM Test Replace Add Forward, [(P + YY)(r)] + A -> A and
+          REM [(P + YY)(r)]
+          BNK 3
+          ORG 100
+          LDC 34
+          RAF 2
+          HLT
+          OCT 1200
+          END
+"""
+REPLACE_ADD_INDIRECT = """
+          REM Test Replace Add Indirect, A + [YY(d)] -> A and [YY(i)]
+          BNK 1
+          ORG 14
+          OCT 1200
+          BNK 3
+          ORG 100
+          LDC 34
+          RAI 14
+          HLT
+          END
+"""
+REPLACE_ADD_MEMORY = """
+          REM Test Replace Add Memory,  A + [G(r)] -> A and [G(r)]
+          BNK 3
+          ORG 100
+          LDC 34
+          RAM 200
+          HLT
+          ORG 200
+          OCT 1200
+          END 
+"""
+REPLACE_ADD_SPECIFIC = """
+          REM Test Replace Add Storage, A + [7777(0)] -> A and [7777(0)]
+          BNK 0
+          ORG 7777
+          OCT 1200
+          BNK 3
+          ORG 100
+          LDC 34
+          RAS
+          HLT
+          END
+"""
 SET_LITERAL = """
           REM set a literal value
           BNK 3

@@ -206,6 +206,15 @@ class Storage:
     def s_address_relative_to_z(self)-> None:
         self.z_register = self.read_relative_bank(self.s_register)
 
+    def store_a(self, bank: int) -> None:
+        """
+        Store the contents of the A register in address S(bank)
+
+        :param bank: receiving memory bank
+        :return: None
+        """
+        self.memory[bank, self.s_register] = self.a_register
+
     def subtract_e_from_a(self) -> None:
         """
         A -> A - E

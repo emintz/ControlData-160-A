@@ -865,6 +865,143 @@ class Test(TestCase):
         self.storage.advance_to_next_instruction()
         assert self.storage.p_register == INSTRUCTION_ADDRESS + 0o0040
 
+    def test_rab(self) -> None:
+        address = INSTRUCTION_ADDRESS - 2
+        self.storage.write_relative_bank(address, 0o777)
+        self.storage.a_register = 0o1
+        self.storage.run_stop_status = True
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o5302)
+        self.storage.unpack_instruction()
+        Instructions.RAB.determine_effective_address(self.storage)
+        assert self.storage.s_register == address
+        assert Instructions.RAB.perform_logic(self.storage) == 3
+        assert self.storage.run_stop_status
+        assert not self.storage.err_status
+        assert self.storage.s_register == address
+        assert self.storage.read_relative_bank(self.storage.s_register) == 0o1000
+        assert self.storage.a_register == 0o1000
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_rac(self) -> None:
+        address = G_ADDRESS
+        self.storage.a_register = 0o1
+        self.storage.run_stop_status = True
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o5200)
+        self.storage.write_relative_bank(address, 0o777)
+        self.storage.unpack_instruction()
+        Instructions.RAC.determine_effective_address(self.storage)
+        assert self.storage.s_register == address
+        assert Instructions.RAC.perform_logic(self.storage) == 3
+        assert self.storage.run_stop_status
+        assert not self.storage.err_status
+        assert self.storage.s_register == address
+        assert self.storage.read_relative_bank(self.storage.s_register) == 0o1000
+        assert self.storage.a_register == 0o1000
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_DOUBLE_WORD_INSTRUCTION_ADDRESS)
+
+
+    def test_rad(self) -> None:
+        address = 0o20
+        self.storage.s_register = address
+        self.storage.write_direct_bank(self.storage.s_register, 0o777)
+        self.storage.a_register = 0o1
+        self.storage.run_stop_status = True
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o5020)
+        self.storage.unpack_instruction()
+        Instructions.RAD.determine_effective_address(self.storage)
+        assert self.storage.s_register == address
+        assert Instructions.RAD.perform_logic(self.storage) == 3
+        assert self.storage.run_stop_status
+        assert not self.storage.err_status
+        assert self.storage.s_register == address
+        assert self.storage.read_direct_bank(self.storage.s_register) == 0o1000
+        assert self.storage.a_register == 0o1000
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_raf(self) -> None:
+        address = INSTRUCTION_ADDRESS + 0o10
+        self.storage.write_relative_bank(address, 0o777)
+        self.storage.a_register = 0o1
+        self.storage.run_stop_status = True
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o5210)
+        self.storage.unpack_instruction()
+        Instructions.RAF.determine_effective_address(self.storage)
+        assert self.storage.s_register == address
+        assert Instructions.RAF.perform_logic(self.storage) == 3
+        assert self.storage.run_stop_status
+        assert not self.storage.err_status
+        assert self.storage.s_register == address
+        assert self.storage.read_relative_bank(self.storage.s_register) == 0o1000
+        assert self.storage.a_register == 0o1000
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_ras(self) -> None:
+        address = 0o7777
+        self.storage.write_specific(0o777)
+        self.storage.a_register = 0o1
+        self.storage.run_stop_status = True
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o5300)
+        self.storage.unpack_instruction()
+        Instructions.RAS.determine_effective_address(self.storage)
+        assert self.storage.s_register == address
+        assert Instructions.RAS.perform_logic(self.storage) == 3
+        assert self.storage.run_stop_status
+        assert not self.storage.err_status
+        assert self.storage.s_register == address
+        assert self.storage.read_specific() == 0o1000
+        assert self.storage.a_register == 0o1000
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_rai(self) -> None:
+        address = 0o20
+        self.storage.s_register = address
+        self.storage.write_indirect_bank(self.storage.s_register, 0o777)
+        self.storage.a_register = 0o1
+        self.storage.run_stop_status = True
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o5020)
+        self.storage.unpack_instruction()
+        Instructions.RAI.determine_effective_address(self.storage)
+        assert self.storage.s_register == 0o20
+        assert Instructions.RAI.perform_logic(self.storage) == 4
+        assert self.storage.run_stop_status
+        assert not self.storage.err_status
+        assert self.storage.s_register == address
+        assert self.storage.read_indirect_bank(self.storage.s_register) == 0o1000
+        assert self.storage.a_register == 0o1000
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_ram(self) -> None:
+        address = 0o200
+        self.storage.a_register = 0o1
+        self.storage.run_stop_status = True
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o5100)
+        self.storage.write_relative_bank(G_ADDRESS, address)
+        self.storage.write_relative_bank(address, 0o777)
+        self.storage.unpack_instruction()
+        Instructions.RAM.determine_effective_address(self.storage)
+        assert self.storage.s_register == address
+        assert Instructions.RAM.perform_logic(self.storage) == 4
+        assert self.storage.run_stop_status
+        assert not self.storage.err_status
+        assert self.storage.s_register == address
+        assert self.storage.read_relative_bank(self.storage.s_register) == 0o1000
+        assert self.storage.a_register == 0o1000
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_DOUBLE_WORD_INSTRUCTION_ADDRESS)
+
     def test_rs1(self) -> None:
         # RS1
         self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0114)

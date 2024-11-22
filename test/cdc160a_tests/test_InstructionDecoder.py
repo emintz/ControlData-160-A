@@ -148,6 +148,29 @@ class Test(TestCase):
         for e in range(1, 0o100):
             assert decoder.decode(e).name() == "SBB"
 
+    def test_decode_50(self) -> None:
+        decoder = InstructionDecoder.decoder_at(0o50)
+        for e in range(0, 0o100):
+            assert decoder.decode(e).name() == "RAD"
+
+    def test_decide_51(self) -> None:
+        decoder = InstructionDecoder.decoder_at(0o51)
+        assert decoder.decode(0o00).name() == "RAM"
+        for e in (1, 0o100):
+            assert decoder.decode(e).name() == "RAI"
+
+    def test_decode_52(self) -> None:
+        decoder = InstructionDecoder.decoder_at(0o52)
+        assert decoder.decode(0).name() == "RAC"
+        for e in range(1, 0o100):
+            assert decoder.decode(e).name() == "RAF"
+
+    def test_decode_53(self) -> None:
+        decoder = InstructionDecoder.decoder_at(0o53)
+        assert decoder.decode(0).name() == "RAS"
+        for e in range(1, 0o100):
+            assert decoder.decode(3).name() == "RAB"
+
     def test_decode_60(self) -> None:
         decoder = InstructionDecoder.decoder_at(0o60)
         for e in range(0o00, 0o100):

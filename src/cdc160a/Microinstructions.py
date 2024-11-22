@@ -85,6 +85,69 @@ def error(storage: Storage) -> None:
 def halt(storage: Storage) -> None:
     storage.stop()
 
+def replace_add(storage: Storage, bank: int) -> None:
+    """
+    Add the value in S[bank] to A and store the
+    result in S[bank]
+
+    Preconditions: S contains the target memory address
+
+    :param storage: the computers storage and register file
+    :param bank: the target memory bank
+    :return: None
+    """
+    storage.add_s_address_to_a(bank)
+    storage.store_a(bank)
+
+def replace_add_direct(storage: Storage) -> None:
+    """
+    Add the value in S[d] to A and store the
+    result in S[d]
+
+    Preconditions: S contains the target memory address
+
+    :param storage: the computers storage and register file
+    :return: None
+    """
+    replace_add(storage, storage.direct_storage_bank)
+
+def replace_add_indirect(storage: Storage) -> None:
+    """
+    Add the value in S[i] to A and store the
+    result in S[i]
+
+    Preconditions: S contains the target memory address
+
+    :param storage: the computers storage and register file
+    :return: None
+    """
+    replace_add(storage, storage.indirect_storage_bank)
+
+def replace_add_relative(storage: Storage) -> None:
+    """
+    Add the value in S[r] to A and store the
+    result in S[r]
+
+    Preconditions: S contains the target memory address
+
+    :param storage: the computers storage and register file
+    :return: None
+    """
+    replace_add(storage, storage.relative_storage_bank)
+
+def replace_add_specific(storage: Storage) -> None:
+    """
+    Add the value in S[o] to A and store the
+    result in S[o]
+
+    Preconditions: S contains the target memory address: 0o7777
+
+    :param storage: the computers storage and register file
+    :return: None
+    """
+    replace_add(storage, 0)
+
+
 # A -> A rotated left by one
 def rotate_a_left_one(storage: Storage) -> None:
     end_around = 0 if storage.a_register & 0o4000 == 0 else 1

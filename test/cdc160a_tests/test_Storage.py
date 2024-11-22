@@ -324,6 +324,17 @@ class TestStorage(TestCase):
         self.storage.stop()
         assert not self.storage.run_stop_status
 
+    def test_store_a(self) -> None:
+        self.storage.run_stop_status = True
+        self.storage.s_register = 0o777
+        self.storage.a_register = 0o123
+        assert self.storage.memory[3, 0o777] == 0
+        self.storage.store_a(3)
+        assert self.storage.memory[3, 0o777] == 0o123
+        assert self.storage.run_stop_status
+        assert self.storage.s_register == 0o777
+        assert self.storage.s_register == 0o777
+
     def test_subtract_e_from_a(self) -> None:
         self.storage.a_register = 0o1255
         self.storage.f_e = 0o21

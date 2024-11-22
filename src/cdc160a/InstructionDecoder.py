@@ -141,10 +141,10 @@ __DECODERS = [
     __UNIMPLEMENTED,            # 45
     __UNIMPLEMENTED,            # 46
     __UNIMPLEMENTED,            # 47
-    __UNIMPLEMENTED,            # 50
-    __UNIMPLEMENTED,            # 51
-    __UNIMPLEMENTED,            # 52
-    __UNIMPLEMENTED,            # 53
+    Singleton(Instructions.RAD, 0o50),              # 50
+    Bimodal(Instructions.RAM, Instructions.RAI, 0o51),   # 51
+    Bimodal(Instructions.RAC, Instructions.RAF, 0o52),   # 52
+    Bimodal(Instructions.RAS, Instructions.RAB, 0o53),   # 53
     __UNIMPLEMENTED,            # 54
     __UNIMPLEMENTED,            # 55
     __UNIMPLEMENTED,            # 56

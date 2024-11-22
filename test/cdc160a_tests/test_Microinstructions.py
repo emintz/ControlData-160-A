@@ -294,6 +294,49 @@ class Test(TestCase):
         Microinstructions.rotate_a_left_one(self.storage)
         assert self.storage.a_register == 0x0003
 
+    def test_replace_add(self) -> None:
+        self.storage.memory[0o3, 0o200] = 0o0777
+        self.storage.s_register = 0o200
+        self.storage.a_register = 1
+        Microinstructions.replace_add(self.storage, 3)
+        assert self.storage.a_register == 0o1000
+        assert self.storage.memory[3, 0o200] == 0o1000
+
+    def test_replace_add_direct(self) -> None:
+        self.storage.memory[0o3, 0o200] = 0o0777
+        self.storage.s_register = 0o200
+        self.storage.a_register = 1
+        self.storage.direct_storage_bank = 3
+        Microinstructions.replace_add_direct(self.storage)
+        assert self.storage.a_register == 0o1000
+        assert self.storage.memory[3, 0o200] == 0o1000
+
+    def test_replace_add_indirect(self) -> None:
+        self.storage.memory[0o3, 0o200] = 0o0777
+        self.storage.s_register = 0o200
+        self.storage.a_register = 1
+        self.storage.indirect_storage_bank = 3
+        Microinstructions.replace_add_indirect(self.storage)
+        assert self.storage.a_register == 0o1000
+        assert self.storage.memory[3, 0o200] == 0o1000
+
+    def test_replace_add_relative(self) -> None:
+        self.storage.memory[0o3, 0o200] = 0o0777
+        self.storage.s_register = 0o200
+        self.storage.a_register = 1
+        self.storage.relative_storage_bank = 3
+        Microinstructions.replace_add_relative(self.storage)
+        assert self.storage.a_register == 0o1000
+        assert self.storage.memory[3, 0o200] == 0o1000
+
+    def test_replace_add_specific(self) -> None:
+        self.storage.memory[0o0, 0o7777] = 0o0777
+        self.storage.s_register = 0o7777
+        self.storage.a_register = 1
+        Microinstructions.replace_add_specific(self.storage)
+        assert self.storage.a_register == 0o1000
+        assert self.storage.memory[0, 0o7777] == 0o1000
+
     def test_rotate_a_left_two(self) -> None:
         self.storage.a_register = 0o6000
         Microinstructions.rotate_a_left_two(self.storage)
