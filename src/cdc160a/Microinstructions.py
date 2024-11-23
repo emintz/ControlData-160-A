@@ -229,8 +229,7 @@ def specific_complement_to_a(storage: Storage) -> None:
 
 # [0o7777](0) -> A
 def specific_to_a(storage: Storage) -> None:
-    storage.z_register = storage.read_specific()
-    storage.z_to_a()
+    storage.specific_to_a()
 
 # ~[S](d) -> A
 def s_direct_complement_to_a(storage: Storage) -> None:
@@ -239,8 +238,7 @@ def s_direct_complement_to_a(storage: Storage) -> None:
 
 # [S](d) -> A
 def s_direct_to_a(storage: Storage) -> None:
-    storage.z_register = storage.read_direct_bank(storage.s_register)
-    storage.z_to_a()
+    storage.s_direct_to_a()
 
 # ~[S](d) -> A
 def s_indirect_complement_to_a(storage: Storage) -> None:
@@ -249,8 +247,7 @@ def s_indirect_complement_to_a(storage: Storage) -> None:
 
 # [S](i) -> A
 def s_indirect_to_a(storage: Storage) -> None:
-    storage.z_register = storage.read_indirect_bank(storage.s_register)
-    storage.z_to_a()
+    storage.s_indirect_to_a()
 
 # ~[S](r) -> A
 def s_relative_complement_to_a(storage: Storage) -> None:
@@ -259,8 +256,7 @@ def s_relative_complement_to_a(storage: Storage) -> None:
 
 # [S](r) -> A
 def s_relative_to_a(storage: Storage) -> None:
-    storage.z_register = storage.read_relative_bank(storage.s_register)
-    storage.z_to_a()
+    storage.s_relative_to_a()
 
 def subtract_e_from_a(storage: Storage) -> None:
     storage.subtract_e_from_a()
@@ -282,20 +278,19 @@ def a_to_buffer(storage: Storage) -> None:
     storage.a_to_s_buffer()
 
 # A -> [S](d)
-def a_to_direct(storage: Storage) -> None:
+def a_to_s_direct(storage: Storage) -> None:
     storage.a_to_s_direct()
 
 # A -> [S](i)
-def a_to_indirect(storage: Storage) -> None:
+def a_to_s_indirect(storage: Storage) -> None:
     storage.a_to_s_indirect()
 
-def a_to_relative(storage: Storage) -> None:
+def a_to_s_relative(storage: Storage) -> None:
     storage.a_to_s_relative()
 
 # A -> [0o7777](0)
 def a_to_specific(storage: Storage) -> None:
-    storage.a_to_z()
-    storage.write_specific(storage.z_register)
+    storage.a_to_specific()
 
 def jump_if_a_negative(storage: Storage) -> None:
     if storage.a_negative():

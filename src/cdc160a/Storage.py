@@ -126,25 +126,39 @@ class Storage:
     def advance_to_next_instruction(self) -> None:
         self.p_register = self.__next_address
 
+    def a_to_absolute(self, bank: int, address: int) -> None:
+        """
+        A -> Z and [address(bank)]
+
+        :param bank: memory bank
+        :param address: target address
+        :return: None
+        """
+        self.z_register = self.a_register
+        self.memory[bank, address] = self.z_register
+
+    def a_to_s_absolute(self, bank: int):
+        self.a_to_absolute(bank, self.s_register)
+
     def a_to_s_buffer(self) -> None:
-        self.a_to_z()
-        self.write_buffer_bank(self.s_register, self.a_register)
+        self.a_to_s_absolute(self.buffer_storage_bank)
+        self.mode_buffer()
 
     def a_to_s_direct(self) -> None:
-        self.a_to_z()
-        self.write_direct_bank(self.s_register, self.a_register)
+        self.a_to_s_absolute(self.direct_storage_bank)
+        self.mode_direct()
 
     def a_to_s_indirect(self) -> None:
-        self.a_to_z()
-        self.write_indirect_bank(self.s_register, self.z_register)
+        self.a_to_s_absolute(self.indirect_storage_bank)
+        self.mode_indirect()
 
     def a_to_s_relative(self) -> None:
-        self.a_to_z()
-        self.write_relative_bank(self.s_register, self.z_register)
+        self.a_to_s_absolute(self.relative_storage_bank)
+        self.mode_relative()
 
     def a_to_specific(self) -> None:
-        self.a_to_z()
-        self.write_specific(self.a_register)
+        self.a_to_absolute(0, 0o7777)
+        self.mode_specific()
 
     def a_to_z(self) -> None:
         self.z_register = self.a_register
@@ -174,53 +188,90 @@ class Storage:
         self.z_register = self.memory[0, 0o7777]
         self.a_register &= self.z_register
 
-    # Declares that the next memory access will be in the buffer bank.
+    def load_a(self, bank: int, address: int)-> None:
+        """
+        Move [address(bank)] -> Z and A
+
+        :param bank: storage bank
+        :param address: memory address
+        :return: None
+        """
+        self.z_register = self.memory[bank, address]
+        self.a_register = self.z_register
+
+    def load_a_from_s(self, bank: int) -> None:
+        """
+        Move the value at [S](bank) to the Z and A registers
+
+        :param bank: memory bank containing the desired value
+        :return: None
+        """
+        self.load_a(bank, self.s_register)
+
     def mode_buffer(self) -> None:
+        """
+        Declares that data was retrieved from the buffer bank.
+
+        :return: None
+        """
         self.storage_cycle = MCS_MODE_BFR
 
-    # Declares that the next memory access will be in the direct bank.
     def mode_direct(self):
+        """
+        Declares that data was retrieved from the direct storage bank
+
+        :return: None
+        """
         self.storage_cycle = MCS_MODE_DIR
 
     # Declares that the next memory access will be in the indirect bank.
     def mode_indirect(self) -> None:
+        """
+        Declares that data was retrieved from the indirect storage bank
+
+        :return: None
+        """
         self.storage_cycle = MCS_MODE_IND
 
     # Declares that the next memory access will be in the relative bank.
     def mode_relative(self) -> None:
+        """
+        Declares that data was retrieved from the relative bank.
+
+        :return: None
+        """
         self.storage_cycle = MCS_MODE_REL
 
-    # Storage mode for specific memory mode. This is a placeholder,
-    # as the documentation is unclear what should happen.
     def mode_specific(self) -> None:
+        """
+        Declares that data was retrieved from the specific memory
+        location 0o7777(0). This is a placeholder
+
+        TODO(emintz): discover what this method should do and do it.
+
+        :return: None
+        """
         self.storage_cycle = MCS_MODE_REL
 
-    # Move the contents of the P (program counter) register to the
-    # S (storage address to reference) register.
     def p_to_s(self) -> None:
+        """
+        Move the contents of the P (program counter) register to the
+        S (storage address to reference) register.
+
+        :return: None
+        """
         self.s_register = self.p_register
-
-    # Take the contents in the direct bank and the address contained
-    # in the S register to the Z (transient) register.
-    def s_direct_to_z(self) -> None:
-        self.z_register = self.read_direct_from_s()
-
-    def s_indirect_to_z(self) -> None:
-        self.z_register = self.read_indirect_from_s()
-
-    # Take the contents in the relative bank and the address contained
-    # in the S register to the Z (transient) register.
-    def s_address_relative_to_z(self)-> None:
-        self.z_register = self.read_relative_bank(self.s_register)
 
     def store_a(self, bank: int) -> None:
         """
-        Store the contents of the A register in address S(bank)
+        Store the contents of the A register in address S(bank) via
+        the Z register
 
         :param bank: receiving memory bank
         :return: None
         """
-        self.memory[bank, self.s_register] = self.a_register
+        self.z_register = self.a_register
+        self.memory[bank, self.s_register] = self.z_register
 
     def subtract_e_from_a(self) -> None:
         """
@@ -257,36 +308,52 @@ class Storage:
 
     def unpack_instruction(self) -> None:
         self.p_to_s()
-        self.s_address_relative_to_z()
+        self.z_register = self.memory[
+            self.relative_storage_bank, self.s_register]
         self.f_e = self.z_register & 0o77
         self.f_instruction = (self.z_register >> 6) & 0o77
 
     def e_to_s(self) -> None:
         self.s_register = self.f_e
 
-    # Copy the contents of the E register to Z. This is used by No Address
-    # instructions
     def e_to_z(self) -> None:
+        """
+        Copy the contents of the E register to Z. This is used by No Address
+        instructions
+
+        :return: None
+        """
         self.z_register = self.f_e
 
     def forward_indirect_to_s(self) -> None:
-        self.s_register = self.read_relative_bank(self.p_register + self.f_e)
+        """
+        Calculate the forward indirect address and store the result
+        in S. The address is [(P + YY)(r)]
+
+        :return: None
+        """
+        self.z_register = self.read_relative_bank(self.p_register + self.f_e)
+        self.s_register = self.z_register
 
     def get_program_counter(self) -> int:
         return self.p_register
 
-    # Take the memory address from the G address, the current instruction
-    # location plus 1.
     def g_address_to_s(self) -> None:
+        """
+        Sets S, the effective address register, to G
+
+        :return: None
+        """
         self.s_register = self.p_register + 1
 
-    # Take the memory address from a two word instruction's G (second word)
     def g_to_s(self) -> None:
-        self.s_register = self.read_relative_bank(self.p_register + 1)
+        """
+        Sets S, the effective address register, to [G(r)]
 
-    def g_to_z(self) -> None:
-        self.s_register = self.p_register + 1
-        self.z_register = self.read_relative_bank(self.s_register)
+        :return: None
+        """
+        self.z_register = self.read_relative_bank(self.p_register + 1)
+        self.s_register = self.z_register
 
     def next_address(self) -> int:
         """
@@ -303,17 +370,25 @@ class Storage:
     def next_after_two_word_instruction(self) -> None:
         self.__next_address = Arithmetic.add(self.p_register, 2)
 
-    # Calculate the relative backward address, the contents of P
-    # minus the contents of E, and place the result in S. Relative
-    # backward instructions invoke this to move their operand
-    # address to S.
     def relative_backward_to_s(self) -> None:
+        """
+        Calculate the relative backward address, the contents of P
+        minus the contents of E, and place the result in S. Relative
+        backward instructions invoke this to move their operand
+        address to S.
+
+        :return: None
+        """
         self.s_register = self.p_register - self.f_e
 
-    # Calculate the relative forward address, the contents of P plus
-    # the contents of E, and place the result in S. Relative forward
-    # instructions invoke this to move their operand addresses to S
     def relative_forward_to_s(self) -> None:
+        """
+        Calculate the relative forward address, the contents of P plus
+        the contents of E, and place the result in S. Relative forward
+        instructions invoke this to move their operand addresses to S
+
+        :return: None
+        """
         self.s_register = self.p_register + self.f_e
 
     def s_to_p(self) -> None:
@@ -325,30 +400,65 @@ class Storage:
         """
         self.p_register = self.s_register
 
-    # Set the buffer storage bank to the least significant bits in
-    # the specified value.
     def set_buffer_storage_bank(self, value: int) -> None:
+        """
+        Set the buffer storage bank to the least significant bits in
+        the specified value.
+
+        :param value: the bank number for the buffer storage bank
+        :return:
+        """
         self.buffer_storage_bank = value & 0o7
 
-    # Set the direct storage bank to the least significant bits in
-    # the specified value.
     def set_direct_storage_bank(self, value: int) -> None:
+        """
+        Set the direct storage bank to the least significant bits in
+        the specified value.
+
+        :param value: the bank number for the direct storage bank
+        :return: None
+        """
         self.direct_storage_bank = value & 0o7
 
-    # Set the indirect storage bank to the least significant bits in
-    # the specified value.
     def set_indirect_storage_bank(self, value: int) -> None:
+        """
+        Set the indirect storage bank to the least significant bits in
+        the specified value.
+
+        :param value: the bank number for the indirect storage bank
+        :return: None
+        """
         self.indirect_storage_bank = value & 0o7
 
     def set_next_instruction_address(self, next_address: int) -> None:
+        """
+        Set the address of the next instruction. Note that the current
+        address does not change. The program actually advance when the
+        user invokes self.advance_to_next_instruction().
+
+        :param next_address: address of next instruction.
+        :return:
+        """
         self.__next_address = next_address
 
     def set_program_counter(self, address: int) -> None:
+        """
+        Set the program counter to the specified address, branching the
+        program to address.
+
+        :param address: branch address
+        :return: None
+        """
         self.p_register = address
 
-    # Set the relative storage bank to the least significant bits in
-    # the specified value.
     def set_relative_storage_bank(self, value: int) -> None:
+        """
+        Set the relative storage bank to the least significant bits in
+        the specified value.
+
+        :param value: memory bank number in [0 .. 7]
+        :return: None
+        """
         self.relative_storage_bank = value & 0o7
 
     def read_absolute(self, bank: int, address: int):
@@ -363,53 +473,66 @@ class Storage:
         """
         return self.memory[bank, address]
 
-    # Read and return the value from a specified address in the
-    # buffer storage bank. The least significant 12 bits in the
-    # provided address argument specifies the address to be read.
     def read_buffer_bank(self, address: int):
+        """
+        Read and return the value from a specified address in the
+        buffer storage bank. The least significant 12 bits in the
+        provided address argument specifies the address to be read.
+
+        :param address: address in the buffer bank
+        :return: the contents of the specified memory location
+        """
         return self.memory[self.buffer_storage_bank, address & 0o7777]
 
-    # Read and return the value from a specified address in the
-    # direct storage bank. The least significant 12 bits in the
-    # provided address argument specifies the address to be read.
     def read_direct_bank(self, address: int):
+        """
+        Read and return the value from a specified address in the
+        direct storage bank. The least significant 12 bits in the
+        provided address argument specifies the address to be read.
+
+        :param address: the address in the direct memory bank
+        :return: the contents of the specified memory location
+        """
         return self.memory[self.direct_storage_bank, address & 0o7777]
 
-    def read_direct_from_s(self):
-        return self.read_direct_bank(self.s_register)
-
-    # Read and return the value from a specified address in the
-    # indirect storage bank. The least significant 12 bits in the
-    # provided address argument specifies the address to be read.
     def read_indirect_bank(self, address: int):
+        """
+        Read and return the value from a specified address in the
+        indirect storage bank. The least significant 12 bits in the
+        provided address argument specifies the address to be read.
+
+        :param address: the address in the indirect memory bank
+        :return: the contents of the specified memory location
+        """
         return self.memory[self.indirect_storage_bank, address & 0o7777]
 
-    def read_indirect_from_s(self):
-        return self.read_indirect_bank(self.s_register)
-
-    # Read and return the value from a specified address in the
-    # relative storage bank. The least significant 12 bits in the
-    # provided address argument specifies the address to be read.
     def read_relative_bank(self, address: int):
+        """
+        Read and return the value from a specified address in the
+        relative storage bank. The least significant 12 bits in the
+        provided address argument specifies the address to be read.
+
+        :param address: the memory address in the relative storage bank
+        :return: the contents of the specified memory location
+        """
         return self.memory[self.relative_storage_bank, address & 0o7777]
 
-    # Read the contents of the specific address: bank 0, location
-    # 0o7777
     def read_specific(self):
+        """
+        Read the contents of the specific address: bank 0, location
+        0o7777
+
+        :return: the contents of 0o7777(0)
+        """
         return self.memory[0, 0o7777]
-
-    def set_s_and_read_indirect(self, address: int):
-        self.s_register = address
-        return self.read_indirect_bank(self.s_register)
-
-    def p_plus_one_to_s(self):
-        self.s_register = self.p_register + 1
 
     def run(self) -> None:
         self.run_stop_status = True
 
     def specific_to_a(self) -> None:
-        self.a_register = self.memory[0o0, 0o7777]
+        self.z_register = self.memory[0o0, 0o7777]
+        self.a_register = self.z_register
+        self.mode_specific()
 
     def specific_to_s(self) -> None:
         self.s_register = 0o7777
@@ -417,14 +540,27 @@ class Storage:
     def stop(self) -> None:
         self.run_stop_status = False
 
+    def s_absolute_to_a(self, bank: int) -> None:
+        """
+        [S(bank)] -> Z, A
+
+        :param bank: memory bank
+        :return: None
+        """
+        self.z_register = self.memory[bank, self.s_register]
+        self.a_register = self.z_register
+
     def s_direct_to_a(self):
-        self.a_register = self.read_direct_from_s()
+        self.s_absolute_to_a(self.direct_storage_bank)
+        self.mode_direct()
 
     def s_indirect_to_a(self):
-        self.a_register = self.read_indirect_bank(self.s_register)
+        self.s_absolute_to_a(self.indirect_storage_bank)
+        self.mode_indirect()
 
     def s_relative_to_a(self) -> None:
-        self.a_register = self.read_relative_bank(self.s_register)
+        self.s_absolute_to_a(self.relative_storage_bank)
+        self.mode_relative()
 
     def s_to_next_address(self) -> None:
         self.__next_address = self.s_register
@@ -443,36 +579,65 @@ class Storage:
         """
         self.memory[bank, address] = value
 
-    # Write the specified value to the specified address in the
-    # buffer storage bank. The least significant 12 bits in the
-    # provided address argument specifies the address to be written.
     def write_buffer_bank(self, address: int, value: int) -> None:
+        """
+        Write the specified value to the specified address in the
+        buffer storage bank. The least significant 12 bits in the
+        provided address argument specifies the address to be written.
+
+        :param address: the destination address in the buffer memory bank
+        :param value: the value to write
+        :return: None
+        """
         self.memory[self.buffer_storage_bank, address & 0o7777] = (
                 value & 0o7777)
 
-    # Write the specified value to the specified address in the
-    # direct storage bank. The least significant 12 bits in the
-    # provided address argument specifies the address to be written.
     def write_direct_bank(self, address: int, value: int) -> None:
+        """
+        Write the specified value to the specified address in the
+        direct storage bank. The least significant 12 bits in the
+        provided address argument specifies the address to be written.
+
+        :param address: the destination address in the direct memory bank
+        :param value: the value to write
+        :return: None
+        """
         self.memory[self.direct_storage_bank, address & 0o7777] = (
                 value & 0o7777)
 
-    # Write the specified value to the specified address in the
-    # indirect storage bank. The least significant 12 bits in the
-    # provided address argument specifies the address to be written.
     def write_indirect_bank(self, address: int, value: int) -> None:
+        """
+        Write the specified value to the specified address in the
+        indirect storage bank. The least significant 12 bits in the
+        provided address argument specifies the address to be written.
+
+        :param address: the destination address in the indirect memory bank
+        :param value: the value to write
+        :return: None
+        """
         self.memory[self.indirect_storage_bank, address & 0o7777] = (
                 value & 0o7777)
 
-    # Write the specified value to the specified address in the
-    # relative storage bank. The least significant 12 bits in the
-    # provided address argument specifies the address to be written.
     def write_relative_bank(self, address: int, value: int) -> None:
+        """
+        Write the specified value to the specified address in the
+        relative storage bank. The least significant 12 bits in the
+        provided address argument specifies the address to be written.
+
+        :param address: destination address in the relative storage bank
+        :param value: value to write
+        :return: None
+        """
         self.memory[self.relative_storage_bank, address & 0o7777] =  value & 0o7777
 
-    # Write the specified value to the specific address, bank 0,
-    # location 0o7777.
     def write_specific(self, value: int):
+        """
+        Write the specified value to the specific address, bank 0,
+        location 0o7777.
+
+        :param value: value to write
+        :return: None
+        """
         self.memory[0, 0o7777] = value
 
     def z_to_a(self) -> None:
@@ -508,4 +673,3 @@ if __name__ == "__main__":
     print('Running storage in stand-alone mode.\n')
     storage = Storage()
     print('Program completed.\n')
-

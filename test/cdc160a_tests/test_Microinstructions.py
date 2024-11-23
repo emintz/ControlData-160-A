@@ -45,7 +45,7 @@ class Test(TestCase):
         self.storage.set_direct_storage_bank(1)
         self.storage.a_register = 0o0330
         self.storage.s_register = READ_AND_WRITE_ADDRESS
-        Microinstructions.a_to_direct(self.storage)
+        Microinstructions.a_to_s_direct(self.storage)
         assert self.storage.z_register == 0o0330
         assert self.storage.read_direct_bank(READ_AND_WRITE_ADDRESS) == 0o0330
 
@@ -53,7 +53,7 @@ class Test(TestCase):
         self.storage.set_indirect_storage_bank(1)
         self.storage.a_register = 0o0330
         self.storage.s_register = READ_AND_WRITE_ADDRESS
-        Microinstructions.a_to_indirect(self.storage)
+        Microinstructions.a_to_s_indirect(self.storage)
         assert self.storage.z_register == 0o0330
         assert self.storage.read_indirect_bank(READ_AND_WRITE_ADDRESS) == 0o0330
 
@@ -61,7 +61,7 @@ class Test(TestCase):
         self.storage.set_relative_storage_bank(1)
         self.storage.a_register = 0o0330
         self.storage.s_register = READ_AND_WRITE_ADDRESS
-        Microinstructions.a_to_relative(self.storage)
+        Microinstructions.a_to_s_relative(self.storage)
         assert self.storage.z_register == 0o0330
         assert self.storage.read_relative_bank(READ_AND_WRITE_ADDRESS) == 0o0330
 
