@@ -102,6 +102,54 @@ class TestRunLoop(TestCase):
         assert self.__storage.p_register == 0o103
         assert not self.__storage.err_status
 
+    def test_aob(self) -> None:
+        self.load_test_program(Programs.REPLACE_ADD_ONE_BACKWARD)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o1234
+        assert self.__storage.read_relative_bank(0o77) == 0o1234
+        assert not self.__storage.err_status
+
+    def test_aoc(self) -> None:
+        self.load_test_program(Programs.REPLACE_ADD_ONE_CONSTANT)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o1234
+        assert self.__storage.read_relative_bank(0o101) == 0o1234
+        assert not self.__storage.err_status
+
+    def test_aod(self) -> None:
+        self.load_test_program(Programs.REPLACE_ADD_ONE_DIRECT)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o1234
+        assert self.__storage.p_register == 0o101
+        assert self.__storage.read_direct_bank(0o40) == 0o1234
+
+    def test_aof(self) -> None:
+        self.load_test_program(Programs.REPLACE_ADD_ONE_FORWARD)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o1234
+        assert self.__storage.read_relative_bank(0o102) == 0o1234
+
+    def test_aoi(self) -> None:
+        self.load_test_program(Programs.REPLACE_ADD_ONE_INDIRECT)
+        self.__run_loop.run()
+        assert self.__storage.read_indirect_bank(0o40) == 0o1234
+        assert self.__storage.a_register == 0o1234
+        assert not self.__storage.err_status
+
+    def test_aom(self) -> None:
+        self.load_test_program(Programs.REPLACE_ADD_ONE_MEMORY)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o1234
+        assert self.__storage.read_relative_bank(0o200) == 0o1234
+        assert not self.__storage.err_status
+
+    def test_aos(self) -> None:
+        self.load_test_program(Programs.REPLACE_ADD_ONE_SPECIFIC)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o1234
+        assert self.__storage.read_specific() == 0o1234
+        assert not self.__storage.err_status
+
     def test_lpb(self) -> None:
         self.load_test_program(Programs.LOGICAL_PRODUCT_BACKWARD)
         self.__run_loop.run()

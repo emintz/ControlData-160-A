@@ -393,6 +393,74 @@ REPLACE_ADD_MEMORY = """
           OCT 1200
           END 
 """
+REPLACE_ADD_ONE_BACKWARD = """
+          REM Replace Add One Backward [(P - YY)(r)] + 1 -> A and [(P - YY)(r)]
+          BNK 3
+          ORG 77
+          OCT 1233
+          AOB 1
+          HLT
+          END
+"""
+REPLACE_ADD_ONE_CONSTANT = """
+          REM Replace Add One Constant [G(r)} + 1 -> A and [G(r)]
+          BNK 3
+          ORG 100
+          AOC 1233
+          HLT
+          END
+"""
+REPLACE_ADD_ONE_DIRECT = """
+          REM Replace Add One Direct [XX(d)] + 1 -> A and [XX(d)]
+          BNK 2
+          ORG 40
+          OCT 1233
+          BNK 3
+          ORG 100
+          AOD 40
+          HLT
+          END
+"""
+REPLACE_ADD_ONE_FORWARD = """
+          REM Replace Add One Forward, [(P + YY)(r)] + 1 -> A and [(P + YY)(r)]
+          BNK 3
+          ORG 100
+          AOF 2
+          HLT
+          OCT 1233
+          END
+"""
+REPLACE_ADD_ONE_INDIRECT = """
+          REM Replace Add One Indirect  [XX(i)] + 1 -> A and [XX(i)]
+          BNK 1
+          ORG 40
+          OCT 1233
+          BNK 3
+          ORG 100
+          AOI 40
+          HLT
+          END
+"""
+REPLACE_ADD_ONE_MEMORY = """
+          REM Replace Add One Memory [G(r)] + 1 -> A, [G(r)]
+          BNK 3
+          ORG 100
+          AOM 200
+          HLT
+          ORG 200
+          OCT 1233
+          END
+"""
+REPLACE_ADD_ONE_SPECIFIC = """
+          REM Replace Add One Specific [7777(0)] + 1 -> A and [7777(0)]
+          BNK 0
+          ORG 7777
+          OCT 1233
+          BNK 3
+          ORG 100
+          AOS
+          HLT
+"""
 REPLACE_ADD_SPECIFIC = """
           REM Test Replace Add Storage, A + [7777(0)] -> A and [7777(0)]
           BNK 0

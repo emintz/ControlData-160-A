@@ -204,6 +204,27 @@ class TestAssembler(TestCase):
     def test_ads(self) -> None:
         self.__single_instruction_test("ADS", [0o3300])
 
+    def test_aob(self) -> None:
+        self.__single_instruction_test("AOB 6", [0o5706])
+
+    def test_aoc(self) -> None:
+        self.__single_instruction_test("AOC 4321", [0o5600, 0o4321])
+
+    def test_aod(self) -> None:
+        self.__single_instruction_test("AOD 20", [0o5420])
+
+    def test_aof(self) -> None:
+        self.__single_instruction_test("AOF 4", [0o5604])
+
+    def test_aoi(self) -> None:
+        self.__single_instruction_test("AOI 14", [0o5514])
+
+    def test_aom(self) -> None:
+        self.__single_instruction_test("AOM 1234", [0o5500, 0o1234])
+
+    def test_aos(self) -> None:
+        self.__single_instruction_test("AOS", [0o5700])
+
     def test_nop_then_halt(self) -> None:
         assembler = self.assembler(Programs.NOOP_THEN_HALT)
         assert assembler.run()

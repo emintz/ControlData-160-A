@@ -337,6 +337,42 @@ class Test(TestCase):
         assert self.storage.a_register == 0o1000
         assert self.storage.memory[0, 0o7777] == 0o1000
 
+    def test_replace_add_one_direct(self) -> None:
+        address = 0o20
+        self.storage.direct_storage_bank =0o1
+        self.storage.memory[0o1, address] = 0o1233
+        self.storage.s_register = address
+        Microinstructions.replace_add_one_direct(self.storage)
+        assert not self.storage.err_status
+        assert self.storage.a_register == 0o1234
+        assert self.storage.memory[0o1, address] == 0o1234
+
+    def test_replace_add_one_indirect(self) -> None:
+        address = 0o20
+        self.storage.indirect_storage_bank =0o1
+        self.storage.memory[0o1, address] = 0o1233
+        self.storage.s_register = address
+        Microinstructions.replace_add_one_indirect(self.storage)
+        assert not self.storage.err_status
+        assert self.storage.a_register == 0o1234
+        assert self.storage.memory[0o1, address] == 0o1234
+
+    def test_replace_add_one_relative(self) -> None:
+        address = 0o200
+        self.storage.relative_storage_bank =0o1
+        self.storage.memory[0o1, address] = 0o1233
+        self.storage.s_register = address
+        Microinstructions.replace_add_one_relative(self.storage)
+        assert not self.storage.err_status
+        assert self.storage.a_register == 0o1234
+        assert self.storage.memory[0o1, address] == 0o1234
+
+    def test_replace_add_one_specific(self) -> None:
+        self.storage.memory[0o0, 0o7777] = 0o1233
+        Microinstructions.replace_add_one_specific(self.storage)
+        assert self.storage.read_specific() == 0o1234
+        assert self.storage.memory[0o0, 0o7777] == 0o1234
+
     def test_rotate_a_left_two(self) -> None:
         self.storage.a_register = 0o6000
         Microinstructions.rotate_a_left_two(self.storage)

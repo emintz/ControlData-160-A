@@ -169,6 +169,108 @@ class Test(TestCase):
         assert (self.storage.get_program_counter() ==
                 AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
 
+    def test_aob(self) -> None:
+        # aob
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o5701)
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS - 1, 0o1233)
+        self.storage.unpack_instruction()
+        Instructions.AOB.determine_effective_address(self.storage)
+        assert self.storage.s_register == INSTRUCTION_ADDRESS - 1
+        assert self.storage.run_stop_status
+        assert not self.storage.err_status
+        assert Instructions.AOB.perform_logic(self.storage) == 3
+        assert self.storage.a_register == 0o1234
+        assert self.storage.read_relative_bank(INSTRUCTION_ADDRESS - 1) == 0o1234
+        assert self.storage.run_stop_status
+        assert not self.storage.err_status
+
+    def test_aoc(self) -> None:
+        # aoc
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o5600)
+        self.storage.write_relative_bank(G_ADDRESS, 0o1233)
+        self.storage.unpack_instruction()
+        Instructions.AOC.determine_effective_address(self.storage)
+        assert self.storage.s_register == G_ADDRESS
+        assert not self.storage.err_status
+        assert self.storage.run_stop_status
+        assert Instructions.AOC.perform_logic(self.storage) == 3
+        assert self.storage.read_relative_bank(G_ADDRESS) == 0o1234
+        assert not self.storage.err_status
+        assert self.storage.run_stop_status
+        self.storage.advance_to_next_instruction()
+        assert self.storage.get_program_counter() == AFTER_DOUBLE_WORD_INSTRUCTION_ADDRESS
+
+    def test_aod(self) -> None:
+        # aod
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o5410)
+        self.storage.write_direct_bank(0o10, 0o1233)
+        self.storage.unpack_instruction()
+        Instructions.AOD.determine_effective_address(self.storage)
+        assert self.storage.s_register == 0o10
+        assert self.storage.run_stop_status
+        assert not self.storage.err_status
+        assert Instructions.AOD.perform_logic(self.storage) == 3
+        assert not self.storage.err_status
+        assert self.storage.run_stop_status
+        assert self.storage.a_register == 0o1234
+        assert self.storage.read_direct_bank(0o10) == 0o1234
+        assert not self.storage.err_status
+        assert self.storage.run_stop_status
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_aof(self) -> None:
+        # aof
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o5610)
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS + 0o10, 0o1233)
+        self.storage.unpack_instruction()
+        Instructions.AOF.determine_effective_address(self.storage)
+        assert self.storage.s_register == INSTRUCTION_ADDRESS + 0o10
+        assert Instructions.AOF.perform_logic(self.storage) == 3
+        assert self.storage.a_register == 0o1234
+        assert self.storage.read_relative_bank(INSTRUCTION_ADDRESS + 0o10) == 0o1234
+        assert not self.storage.err_status
+        assert self.storage.run_stop_status
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_aoi(self) -> None:
+        # aoi
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o5514)
+        self.storage.write_indirect_bank(0o14, 0o1233)
+        self.storage.unpack_instruction()
+        Instructions.AOI.determine_effective_address(self.storage)
+        assert self.storage.s_register == 0o14
+        assert not self.storage.err_status
+        assert self.storage.run_stop_status
+        assert Instructions.AOI.perform_logic(self.storage) == 4
+        assert self.storage.a_register == 0o1234
+        assert self.storage.read_indirect_bank(0o14) == 0o1234
+        assert not self.storage.err_status
+        assert self.storage.run_stop_status
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_aom(self) -> None:
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o5500)
+        self.storage.write_relative_bank(G_ADDRESS, 0o200)
+        self.storage.write_relative_bank(0o200, 0o1233)
+        self.storage.unpack_instruction()
+        Instructions.AOM.determine_effective_address(self.storage)
+        assert self.storage.s_register == 0o200
+        assert not self.storage.err_status
+        assert self.storage.run_stop_status
+        assert Instructions.AOM.perform_logic(self.storage) == 4
+        assert self.storage.a_register == 0o1234
+        assert self.storage.read_relative_bank(0o200) == 0o1234
+        assert not self.storage.err_status
+        assert self.storage.run_stop_status
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() == AFTER_DOUBLE_WORD_INSTRUCTION_ADDRESS)
+
     def test_err(self) -> None:
         # err
         self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0000)

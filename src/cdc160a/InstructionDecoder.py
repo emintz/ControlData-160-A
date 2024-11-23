@@ -145,10 +145,10 @@ __DECODERS = [
     Bimodal(Instructions.RAM, Instructions.RAI, 0o51),   # 51
     Bimodal(Instructions.RAC, Instructions.RAF, 0o52),   # 52
     Bimodal(Instructions.RAS, Instructions.RAB, 0o53),   # 53
-    __UNIMPLEMENTED,            # 54
-    __UNIMPLEMENTED,            # 55
-    __UNIMPLEMENTED,            # 56
-    __UNIMPLEMENTED,            # 57
+    Singleton(Instructions.AOD, 0o54),              # 54
+    Bimodal(Instructions.AOM, Instructions.AOI, 0o55),   # 55
+    Bimodal(Instructions.AOC, Instructions.AOF, 0o56),   # 56
+    Bimodal(Instructions.AOS, Instructions.AOB, 0o57),   # 57
     Singleton(Instructions.ZJF, 0o60),           # 60
     Singleton(Instructions.NZF, 0o61),           # 61
     Singleton(Instructions.PJF, 0o62),           # 62

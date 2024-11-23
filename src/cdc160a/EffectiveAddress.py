@@ -45,7 +45,7 @@ def indirect(storage: Storage) -> None:
 # storage bank
 def memory(storage: Storage) -> None:
     storage.g_to_s()
-    storage.mode_indirect()
+    storage.mode_relative()
 
 # No Address Mode (N): E contains the operand. Since
 # instructions always run from the relative bank, access becomes relative.

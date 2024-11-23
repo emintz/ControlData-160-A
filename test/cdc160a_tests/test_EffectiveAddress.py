@@ -74,7 +74,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         EffectiveAddress.memory(self.storage)
         assert self.storage.s_register == 0o5555
-        assert self.storage.storage_cycle == MCS_MODE_IND
+        assert self.storage.storage_cycle == MCS_MODE_REL
 
     def test_no_address(self):
         # LDN 55

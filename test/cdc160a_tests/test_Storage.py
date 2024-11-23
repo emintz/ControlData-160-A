@@ -99,6 +99,12 @@ class TestStorage(TestCase):
         assert self.storage.a_register == 0o1234
         assert self.storage.z_register == 0o23
 
+    def test_add_to_a(self) -> None:
+        self.storage.a_register = 0o1200
+        self.storage.add_to_a(0o34)
+        assert not self.storage.err_status
+        assert self.storage.a_register == 0o1234
+
     def test_and_a_with_a(self) -> None:
         self.storage.a_register = 0o4363
         self.storage.f_e = 0o31

@@ -85,6 +85,7 @@ def error(storage: Storage) -> None:
 def halt(storage: Storage) -> None:
     storage.stop()
 
+# Replace Add Instruction Suite
 def replace_add(storage: Storage, bank: int) -> None:
     """
     Add the value in S[bank] to A and store the
@@ -147,6 +148,50 @@ def replace_add_specific(storage: Storage) -> None:
     """
     replace_add(storage, 0)
 
+# Replace Add One instruction suite
+def replace_add_one_direct(storage: Storage) -> None:
+    """
+    1 + [S(d)] + 1 to A and [S(d)]
+
+    Preconditions: S contains the target memory address
+
+    :param storage: memory and register file
+    :return: None
+    """
+    storage.s_direct_to_a()
+    storage.add_to_a(1)
+    storage.a_to_s_direct()
+
+def replace_add_one_indirect(storage: Storage) -> None:
+    """
+    1 + [S(i)] + 1 to A and [S(i)]
+
+    Preconditions: S contains the target memory address
+
+    :param storage: memory and register file
+    :return: None
+    """
+    storage.s_indirect_to_a()
+    storage.add_to_a(1)
+    storage.a_to_s_indirect()
+
+def replace_add_one_relative(storage: Storage) -> None:
+    """
+    1 + [S(r)] + 1 to A and [S(r)]
+
+    Preconditions: S contains the target memory address
+
+    :param storage: memory and register file
+    :return: None
+    """
+    storage.s_relative_to_a()
+    storage.add_to_a(1)
+    storage.a_to_s_relative()
+
+def replace_add_one_specific(storage: Storage) -> None:
+    storage.specific_to_a()
+    storage.add_to_a(1)
+    storage.a_to_specific()
 
 # A -> A rotated left by one
 def rotate_a_left_one(storage: Storage) -> None:

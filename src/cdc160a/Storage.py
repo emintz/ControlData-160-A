@@ -142,15 +142,22 @@ class Storage:
         self.a_to_z()
         self.write_relative_bank(self.s_register, self.z_register)
 
+    def a_to_specific(self) -> None:
+        self.a_to_z()
+        self.write_specific(self.a_register)
+
     def a_to_z(self) -> None:
         self.z_register = self.a_register
 
     def add_e_to_a(self) -> None:
-        self.__sum_to_a(self.a_register, self.f_e)
+        self.add_to_a(self.f_e)
 
     def add_s_address_to_a(self, bank: int) -> None:
         from_memory = int(self.memory[bank, self.s_register])
-        self.__sum_to_a(self.a_register, from_memory)
+        self.add_to_a(from_memory)
+
+    def add_to_a(self, increment: int) -> None:
+        self.__sum_to_a(self.a_register, increment)
 
     def complement_a(self) -> None:
         self.a_register = self.a_register ^ 0o7777
@@ -401,6 +408,9 @@ class Storage:
     def run(self) -> None:
         self.run_stop_status = True
 
+    def specific_to_a(self) -> None:
+        self.a_register = self.memory[0o0, 0o7777]
+
     def specific_to_s(self) -> None:
         self.s_register = 0o7777
 
@@ -408,7 +418,7 @@ class Storage:
         self.run_stop_status = False
 
     def s_direct_to_a(self):
-        self.z_register = self.read_direct_from_s()
+        self.a_register = self.read_direct_from_s()
 
     def s_indirect_to_a(self):
         self.a_register = self.read_indirect_bank(self.s_register)
