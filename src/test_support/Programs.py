@@ -217,6 +217,24 @@ LOGICAL_PRODUCT_SPECIFIC = """
           LPS
           HLT
 """
+MULTIPLY_BY_10 = """
+          REM Multiply By 100 A * 100 -> A
+          BNK 3
+          ORG 100
+          LDN 1
+          MUT
+          HLT
+          END
+"""
+MULTIPLY_BY_100 = """
+          REM Multiply By 100 A * 100 -> A
+          BNK 3
+          ORG 100
+          LDN 1
+          MUH
+          HLT
+          END
+"""
 NOOP_THEN_HALT = """
           REM  no-op followed by a halt
           BNK 3

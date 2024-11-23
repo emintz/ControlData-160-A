@@ -56,6 +56,16 @@ class TestStorage(TestCase):
         assert not self.storage.a_positive()
         assert self.storage.a_not_zero()
 
+    def test_a_times_10(self) -> None:
+        self.storage.a_register = 1
+        self.storage.a_times_10()
+        assert self.storage.a_register == 10
+
+    def test_a_times_100(self) -> None:
+        self.storage.a_register = 1
+        self.storage.a_times_100()
+        assert self.storage.a_register == 100
+
     def test_a_to_absolute(self) -> None:
         self.storage.a_register = 0o1234
         self.storage.a_to_absolute(1, 0o100)

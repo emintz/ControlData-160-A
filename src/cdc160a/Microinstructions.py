@@ -85,6 +85,12 @@ def error(storage: Storage) -> None:
 def halt(storage: Storage) -> None:
     storage.stop()
 
+def multiply_a_by_10(storage: Storage) -> None:
+    storage.a_times_10()
+
+def multiply_a_by_100(storage: Storage) -> None:
+    storage.a_times_100()
+
 # Replace Add Instruction Suite
 def replace_add(storage: Storage, bank: int) -> None:
     """

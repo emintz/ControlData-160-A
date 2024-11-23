@@ -52,6 +52,10 @@ class Test(TestCase):
                     assert instruction_name == "LS3"
                 case 0o11:
                     assert instruction_name == "LS6"
+                case 0o12:
+                    assert instruction_name == "MUT"
+                case 0o13:
+                    assert instruction_name == "MUH"
                 case 0o14:
                     assert instruction_name == "RS1"
                 case 0o15:

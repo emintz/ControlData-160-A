@@ -663,6 +663,34 @@ class Test(TestCase):
         self.storage.advance_to_next_instruction()
         assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
 
+    def test_muh(self) -> None:
+        # MUH
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0113)
+        self.storage.unpack_instruction()
+        self.storage.a_register = 1
+        Instructions.MUH.determine_effective_address(self.storage) # Does nothing.
+        assert Instructions.MUH.perform_logic(self.storage) == 1
+        assert self.storage.run_stop_status
+        assert self.storage.a_register == 100
+        assert not self.storage.err_status
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.p_register ==
+                AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_mut(self) -> None:
+        # MUT
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0112)
+        self.storage.unpack_instruction()
+        self.storage.a_register = 1
+        Instructions.MUT.determine_effective_address(self.storage) # Does nothing.
+        assert Instructions.MUT.perform_logic(self.storage) == 1
+        assert self.storage.run_stop_status
+        assert self.storage.a_register == 10
+        assert not self.storage.err_status
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.p_register ==
+                AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
+
     def test_njb_a_minus_zero(self) -> None:
         self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o6402)
         self.storage.a_register = 0o7777

@@ -337,6 +337,8 @@ class Assembler:
             "LS2": FixedEValue(self, "LS2", 0o0103),
             "LS3": FixedEValue(self, "LS3", 0o0110),
             "LS6": FixedEValue(self,"LS6", 0o0111),
+            "MUH": FixedEValue(self, "MUH", 0o0113),
+            "MUT": FixedEValue(self, "MUT", 0o0112),
             "NJB": OneWordAnyE(self, "NJB", 0o67),
             "NJF": OneWordAnyE(self, "NJF", 0o63),
             "NOP": FixedEValue(self, "NOP", 0o0007),

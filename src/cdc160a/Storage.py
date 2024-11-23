@@ -126,6 +126,12 @@ class Storage:
     def advance_to_next_instruction(self) -> None:
         self.p_register = self.__next_address
 
+    def a_times_10(self) -> None:
+        self.a_register = Arithmetic.times_ten(self.a_register)
+
+    def a_times_100(self) -> None:
+        self.a_register = Arithmetic.times_hundred(self.a_register)
+
     def a_to_absolute(self, bank: int, address: int) -> None:
         """
         A -> Z and [address(bank)]

@@ -6,6 +6,15 @@ subtracter, together with multiply by 10 and multiply by 100
 instructions.
 """
 
+def negate(value: int) -> int:
+    """
+    Return the ones complement of value.
+
+    :param value: the value to negate (ones complement)
+    :return: the negation as described above.
+    """
+    return (value & 0o7777) ^ 0o7777
+
 def subtract(minuend: int, subtrahend: int) -> int:
     """
     Calculate minuend - subtrahend using one's complement arithmetic
@@ -31,4 +40,39 @@ def add(lhs: int, rhs: int) -> int:
     :return: the sum, as described above, also a 12-bit signed
              integer
     """
-    return subtract(lhs, (rhs & 0o7777) ^ 0o7777)
+    return subtract(lhs, negate(rhs))
+
+def times_ten(multiplier: int) -> int:
+    """
+    Multiply the multiplier by 10.
+
+    From the reference manual:
+
+    For the range of multipliers -0o314 to +0o314, the result will be
+    algebraically correct. If the multiplier is > +0o314 or < -0o314,
+    the result will be correct modulo 2^12 - 1, i.e. 4095.
+
+    :param multiplier: the value to multiply by 10
+    :return: the result, multiplier * 10
+    """
+    doubled = add(multiplier, multiplier)
+    quadrupled = add(doubled, doubled)
+    octupled = add(quadrupled, quadrupled)
+    return add(octupled, doubled)
+
+def times_hundred(multiplier: int) -> int:
+    """
+    Multiply the multiplier by 10.
+
+    From the reference manual:
+
+    For the range of numbers [-0o24 .. 0o24], the result will be
+    algebraically correct. If the multiplier is outside the range,
+    the result will be correct modulo 2^12 - 1, i.e. 4095.
+
+    :param multiplier: the value to multiply
+    :return: multiplier * 100
+    """
+    by_10 = times_ten(multiplier)
+    by_100 = times_ten(by_10)
+    return by_100

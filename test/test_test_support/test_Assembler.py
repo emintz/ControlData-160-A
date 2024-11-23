@@ -361,6 +361,12 @@ class TestAssembler(TestCase):
     def test_ls6(self) -> None:
         self.__single_instruction_test("LS6", [0o0111])
 
+    def test_muh(self) -> None:
+        self.__single_instruction_test("MUH", [0o0113])
+
+    def test_mut(self) -> None:
+        self.__single_instruction_test("MUT", [0o112])
+
     def test_oct(self) -> None:
         assembler = self.assembler(Programs.SET_LITERAL)
         assembler.run()

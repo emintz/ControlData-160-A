@@ -206,6 +206,18 @@ class TestRunLoop(TestCase):
         assert self.__storage.p_register == 0o103
         assert not self.__storage.err_status
 
+    def test_muh(self) -> None:
+        self.load_test_program(Programs.MULTIPLY_BY_100)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 100
+        assert not self.__storage.err_status
+
+    def test_mut(self) -> None:
+        self.load_test_program(Programs.MULTIPLY_BY_10)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 10
+        assert not self.__storage.err_status
+
     def test_njb_a_minus_zero(self) -> None:
         self.load_test_program(Programs.NEGATIVE_JUMP_BACKWARD_MINUS_ZERO_A)
         self.__run_loop.run()

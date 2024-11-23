@@ -166,6 +166,23 @@ class Test(TestCase):
         assert self.storage.z_register == 0o33
         assert self.storage.a_register == 0o33
 
+    def test_multiply_a_by_10(self) -> None:
+        # MUT
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0112)
+        self.storage.unpack_instruction()
+        self.storage.a_register = 1
+        Microinstructions.multiply_a_by_10(self.storage)
+        assert not self.storage.err_status
+        assert self.storage.a_register == 10
+
+    def test_multiply_a_by_100(self) -> None:
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0113)
+        self.storage.unpack_instruction()
+        self.storage.a_register = 1
+        Microinstructions.multiply_a_by_100(self.storage)
+        assert not self.storage.err_status
+        assert self.storage.a_register == 100
+
     def test_s_to_a(self) -> None:
         # LDN 37
         self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0437)

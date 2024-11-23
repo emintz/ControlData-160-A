@@ -77,6 +77,8 @@ class OpCode01:
         0o03: Instructions.LS2,
         0o10: Instructions.LS3,
         0o11: Instructions.LS6,
+        0o12: Instructions.MUT,
+        0o13: Instructions.MUH,
         0o14: Instructions.RS1,
         0o15: Instructions.RS2,
     }
