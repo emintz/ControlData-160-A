@@ -460,6 +460,28 @@ class TestAssembler(TestCase):
     def test_sbs(self) -> None:
         self.__single_instruction_test("SBS", [0o3700])
 
+    def test_srb(self) -> None:
+        self.__single_instruction_test("SRB 2", [0o4702])
+
+    def test_src(self) -> None:
+        self.__single_instruction_test("SRC 2000", [0o4600, 0o2000])
+
+    def test_srd(self) -> None:
+        self.__single_instruction_test("SRD 20", [0o4420])
+        self.__single_instruction_test("SRD 0", [0o4400])
+
+    def test_srf(self) -> None:
+        self.__single_instruction_test("SRF 31", [0o4631])
+
+    def test_sri(self) -> None:
+        self.__single_instruction_test("SRI 77", [0o4577])
+
+    def test_srm(self) -> None:
+        self.__single_instruction_test("SRM 1234", [0o4500, 0o1234])
+
+    def test_srs(self) -> None:
+        self.__single_instruction_test("SRS", [0o4700])
+
     def test_stb(self) -> None:
         self.__single_instruction_test("STB 24", [0o4324])
 

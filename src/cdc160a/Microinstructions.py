@@ -228,6 +228,26 @@ def shift_a_right_two(storage: Storage) -> None:
     sign_extension = 0 if storage.a_register & 0o4000 == 0 else 0o6000
     storage.a_register = (storage.a_register >> 2) | sign_extension
 
+def shift_replace_direct(storage: Storage) -> None:
+    s_direct_to_a(storage)
+    rotate_a_left_one(storage)
+    a_to_s_direct(storage)
+
+def shift_replace_indirect(storage: Storage) -> None:
+    s_indirect_to_a(storage)
+    rotate_a_left_one(storage)
+    a_to_s_indirect(storage)
+
+def shift_replace_relative(storage: Storage) -> None:
+    s_relative_to_a(storage)
+    rotate_a_left_one(storage)
+    a_to_s_relative(storage)
+
+def shift_replace_specific(storage: Storage) -> None:
+    specific_to_a(storage)
+    rotate_a_left_one(storage)
+    a_to_specific(storage)
+
 # ~[0o7777](0) -> A
 def specific_complement_to_a(storage: Storage) -> None:
     specific_to_a(storage)

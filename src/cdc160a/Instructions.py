@@ -224,6 +224,13 @@ SBI = __single_advance_instruction("SBI", EffectiveAddress.indirect, Microinstru
 SBM = __double_advance_instruction("SBM", EffectiveAddress.memory, Microinstructions.subtract_relative_from_a, 3)
 SBN = __single_advance_instruction("SBN", EffectiveAddress.no_address, Microinstructions.subtract_e_from_a, 1)
 SBS = __single_advance_instruction("SBS", EffectiveAddress.specific, Microinstructions.subtract_specific_from_a, 2)
+SRB = __single_advance_instruction("SRB", EffectiveAddress.relative_backward, Microinstructions.shift_replace_relative, 3)
+SRC = __double_advance_instruction("SRC", EffectiveAddress.constant, Microinstructions.shift_replace_relative, 3)
+SRD = __single_advance_instruction("SRD", EffectiveAddress.direct, Microinstructions.shift_replace_direct, 3)
+SRF = __single_advance_instruction("SRF", EffectiveAddress.relative_forward, Microinstructions.shift_replace_relative, 3)
+SRI = __single_advance_instruction("SRI", EffectiveAddress.indirect, Microinstructions.shift_replace_indirect, 4)
+SRM = __double_advance_instruction("SRM", EffectiveAddress.memory, Microinstructions.shift_replace_relative, 4)
+SRS = __single_advance_instruction("SRS", EffectiveAddress.specific, Microinstructions.shift_replace_specific, 3)
 STB = __single_advance_instruction("STB", EffectiveAddress.relative_backward, Microinstructions.a_to_s_relative, 3)
 # TODO(emintz): verify STC behavior, which makes no sense to me.
 STC = __double_advance_instruction("STC", EffectiveAddress.constant, Microinstructions.a_to_s_relative, 3)

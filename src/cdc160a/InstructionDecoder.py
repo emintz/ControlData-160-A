@@ -52,9 +52,10 @@ class Bimodal:
     Decoder for bimodal op-codes, which means one instruction when e == 0
     and another when e != 0
     """
-    def __init__(self, e_zero: Instruction, e_nonzero: Instruction, _):
+    def __init__(self, e_zero: Instruction, e_nonzero: Instruction, opcode: int):
         self.__e_zero = e_zero
         self.__e_nonzero = e_nonzero
+        self.opcode = opcode
 
     def decode(self, e: int) -> Instruction:
         if e == 0:
@@ -104,61 +105,61 @@ __UNIMPLEMENTED = Unimplemented()
 
 __DECODERS = [
     __UNIMPLEMENTED,            # 00
-    OpCode01(),                 # 01
-    Singleton(Instructions.LPN, 0o02),            # 02
+    OpCode01(),                                                  # 01
+    Singleton(Instructions.LPN, 0o02),                   # 02
     __UNIMPLEMENTED,            # 03
-    Singleton(Instructions.LDN, 0o04),            # 04
-    Singleton(Instructions.LCN, 0o05),            # 05
-    Singleton(Instructions.ADN, 0o06),            # 06
-    Singleton(Instructions.SBN, 0o07),            # 07
-    Singleton(Instructions.LPD, 0o10),            # 10
-    Bimodal(Instructions.LPM, Instructions.LPI, 0o11),            # 11
-    Bimodal(Instructions.LPC, Instructions.LPF, 0o12),            # 12
-    Bimodal(Instructions.LPS, Instructions.LPB, 0o13),            # 13
+    Singleton(Instructions.LDN, 0o04),                   # 04
+    Singleton(Instructions.LCN, 0o05),                   # 05
+    Singleton(Instructions.ADN, 0o06),                   # 06
+    Singleton(Instructions.SBN, 0o07),                   # 07
+    Singleton(Instructions.LPD, 0o10),                   # 10
+    Bimodal(Instructions.LPM, Instructions.LPI, 0o11),   # 11
+    Bimodal(Instructions.LPC, Instructions.LPF, 0o12),   # 12
+    Bimodal(Instructions.LPS, Instructions.LPB, 0o13),   # 13
     __UNIMPLEMENTED,            # 14
     __UNIMPLEMENTED,            # 15
     __UNIMPLEMENTED,            # 16
     __UNIMPLEMENTED,            # 17
-    Singleton(Instructions.LDD, 0o20),              # 20
+    Singleton(Instructions.LDD, 0o20),                   # 20
     Bimodal(Instructions.LDM, Instructions.LDI, 0o21),   # 21
     Bimodal(Instructions.LDC, Instructions.LDF, 0o22),   # 22
     Bimodal(Instructions.LDS, Instructions.LDB, 0o23),   # 23
-    Singleton(Instructions.LCD, 0o24),              # 24
-    Bimodal(Instructions.LDM, Instructions.LCI, 0o25),   # 25
+    Singleton(Instructions.LCD, 0o24),                   # 24
+    Bimodal(Instructions.LCM, Instructions.LCI, 0o25),   # 25
     Bimodal(Instructions.LCC, Instructions.LCF, 0o26),   # 26
     Bimodal(Instructions.LCS, Instructions.LCB, 0o27),   # 27
-    Singleton(Instructions.ADD, 0o30),              # 30
+    Singleton(Instructions.ADD, 0o30),                   # 30
     Bimodal(Instructions.ADM, Instructions.ADI, 0o31),   # 31
     Bimodal(Instructions.ADC, Instructions.ADF, 0o32),   # 32
     Bimodal(Instructions.ADS, Instructions.ADB, 0o33),   # 33
-    Singleton(Instructions.SBD, 0o34),              # 34
+    Singleton(Instructions.SBD, 0o34),                   # 34
     Bimodal(Instructions.SBM, Instructions.SBI, 0o35),   # 35
     Bimodal(Instructions.SBC, Instructions.SBF, 0o36),   # 36
     Bimodal(Instructions.SBS, Instructions.SBB, 0o37),   # 37
-    Singleton(Instructions.STD, 0o40),              # 40
+    Singleton(Instructions.STD, 0o40),                   # 40
     Bimodal(Instructions.STM, Instructions.STI, 0o41),   # 41
     Bimodal(Instructions.STC, Instructions.STF, 0o42),   # 42
     Bimodal(Instructions.STS, Instructions.STB, 0o43),   # 43
-    __UNIMPLEMENTED,            # 44
-    __UNIMPLEMENTED,            # 45
-    __UNIMPLEMENTED,            # 46
-    __UNIMPLEMENTED,            # 47
-    Singleton(Instructions.RAD, 0o50),              # 50
+    Singleton(Instructions.SRD, 0o44),                   # 44
+    Bimodal(Instructions.SRM, Instructions.SRI, 0o45),   # 45
+    Bimodal(Instructions.SRC, Instructions.SRF, 0o46),   # 46
+    Bimodal(Instructions.SRS, Instructions.SRB, 0o47),   # 47
+    Singleton(Instructions.RAD, 0o50),                   # 50
     Bimodal(Instructions.RAM, Instructions.RAI, 0o51),   # 51
     Bimodal(Instructions.RAC, Instructions.RAF, 0o52),   # 52
     Bimodal(Instructions.RAS, Instructions.RAB, 0o53),   # 53
-    Singleton(Instructions.AOD, 0o54),              # 54
+    Singleton(Instructions.AOD, 0o54),                   # 54
     Bimodal(Instructions.AOM, Instructions.AOI, 0o55),   # 55
     Bimodal(Instructions.AOC, Instructions.AOF, 0o56),   # 56
     Bimodal(Instructions.AOS, Instructions.AOB, 0o57),   # 57
-    Singleton(Instructions.ZJF, 0o60),           # 60
-    Singleton(Instructions.NZF, 0o61),           # 61
-    Singleton(Instructions.PJF, 0o62),           # 62
-    Singleton(Instructions.NJF, 0o63),           # 63
-    Singleton(Instructions.ZJB, 0o64),           # 64
-    Singleton(Instructions.NZB, 0o65),           # 65
-    Singleton(Instructions.PJB, 0o66),           # 66
-    Singleton(Instructions.NJB, 0o67),           # 67
+    Singleton(Instructions.ZJF, 0o60),                   # 60
+    Singleton(Instructions.NZF, 0o61),                   # 61
+    Singleton(Instructions.PJF, 0o62),                   # 62
+    Singleton(Instructions.NJF, 0o63),                   # 63
+    Singleton(Instructions.ZJB, 0o64),                   # 64
+    Singleton(Instructions.NZB, 0o65),                   # 65
+    Singleton(Instructions.PJB, 0o66),                   # 66
+    Singleton(Instructions.NJB, 0o67),                   # 67
     __UNIMPLEMENTED,            # 70
     __UNIMPLEMENTED,            # 71
     __UNIMPLEMENTED,            # 72

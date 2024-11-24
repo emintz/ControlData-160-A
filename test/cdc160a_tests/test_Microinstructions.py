@@ -216,6 +216,41 @@ class Test(TestCase):
         assert self.storage.z_register == 0o7654
         assert self.storage.a_register == 0o7654 ^ 0o7777
 
+    def test_shift_replace_direct(self) -> None:
+        self.storage.s_register = 0o40
+        self.storage.write_direct_bank(self.storage.s_register, 0o4001)
+        Microinstructions.shift_replace_direct(self.storage)
+        assert self.storage.run_stop_status
+        assert not self.storage.err_status
+        assert self.storage.a_register == 0o0003
+        assert self.storage.read_direct_bank(self.storage.s_register) == 0o0003
+
+    def test_shift_replace_indirect(self) -> None:
+        self.storage.s_register = 0o40
+        self.storage.write_indirect_bank(self.storage.s_register, 0o4001)
+        Microinstructions.shift_replace_indirect(self.storage)
+        assert self.storage.run_stop_status
+        assert not self.storage.err_status
+        assert self.storage.a_register == 0o0003
+        assert self.storage.read_indirect_bank(self.storage.s_register) == 0o0003
+
+    def test_shift_replace_relative(self) -> None:
+        self.storage.s_register = 0o40
+        self.storage.write_relative_bank(self.storage.s_register, 0o4001)
+        Microinstructions.shift_replace_relative(self.storage)
+        assert self.storage.run_stop_status
+        assert not self.storage.err_status
+        assert self.storage.a_register == 0o0003
+        assert self.storage.read_relative_bank(self.storage.s_register) == 0o0003
+
+    def test_replace_specific(self) -> None:
+        self.storage.write_specific(0o4001)
+        Microinstructions.shift_replace_specific(self.storage)
+        assert self.storage.run_stop_status
+        assert not self.storage.err_status
+        assert self.storage.a_register == 0o0003
+        assert self.storage.read_specific() == 0o0003
+
     def test_jump_if_a_negative(self) -> None:
         self.__prepare_for_jump()
         self.storage.a_register = 0

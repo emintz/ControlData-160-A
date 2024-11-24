@@ -2,6 +2,9 @@ import unittest
 from unittest import TestCase
 
 from cdc160a import Instructions
+from cdc160a.Storage import MCS_MODE_DIR
+from cdc160a.Storage import MCS_MODE_IND
+from cdc160a.Storage import MCS_MODE_REL
 from cdc160a.Storage import Storage
 from typing import Final
 
@@ -1163,7 +1166,6 @@ class Test(TestCase):
         assert self.storage.z_register == 0o4007
         assert self.storage.a_register == 0o7001
 
-
     def test_sdb(self) -> None:
         # STB 15
         self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o4315)
@@ -1280,6 +1282,120 @@ class Test(TestCase):
         self.storage.advance_to_next_instruction()
         assert (self.storage.get_program_counter() ==
                 AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_srb(self) -> None:
+        assert Instructions.SRB.name() == "SRB"
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o4702)
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS - 2, 0o4001)
+        self.storage.unpack_instruction()
+        Instructions.SRB.determine_effective_address(self.storage)
+        assert self.storage.s_register == INSTRUCTION_ADDRESS - 2
+        assert Instructions.SRB.perform_logic(self.storage) == 3
+        assert self.storage.storage_cycle == MCS_MODE_REL
+        assert self.storage.a_register == 0o0003
+        assert self.storage.z_register == 0o0003
+        assert self.storage.read_relative_bank(
+            INSTRUCTION_ADDRESS - 2) == 0o0003
+        assert not self.storage.err_status
+        assert self.storage.run_stop_status
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_src(self) -> None:
+        assert Instructions.SRC.name() == "SRC"
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o4600)
+        self.storage.write_relative_bank(G_ADDRESS, 0o4001)
+        self.storage.unpack_instruction()
+        Instructions.SRC.determine_effective_address(self.storage)
+        assert self.storage.s_register == G_ADDRESS
+        assert Instructions.SRC.perform_logic(self.storage) == 3
+        assert self.storage.storage_cycle == MCS_MODE_REL
+        assert self.storage.a_register == 0o0003
+        assert self.storage.z_register == 0o0003
+        assert self.storage.read_relative_bank(G_ADDRESS) == 0o0003
+        assert not self.storage.err_status
+        assert self.storage.run_stop_status
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_DOUBLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_srd(self) -> None:
+        assert Instructions.SRD.name() == "SRD"
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o4430)
+        self.storage.write_direct_bank(0o30, 0o4001)
+        self.storage.unpack_instruction()
+        Instructions.SRD.determine_effective_address(self.storage)
+        assert self.storage.s_register == 0o30
+        assert Instructions.SRD.perform_logic(self.storage) == 3
+        assert self.storage.storage_cycle == MCS_MODE_DIR
+        assert self.storage.a_register == 0o0003
+        assert self.storage.z_register == 0o0003
+        assert self.storage.read_direct_bank(0o30) == 0o0003
+        assert not self.storage.err_status
+        assert self.storage.run_stop_status
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_srf(self) -> None:
+        assert Instructions.SRF.name() == "SRF"
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o4602)
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS + 2, 0o4001)
+        self.storage.unpack_instruction()
+        Instructions.SRF.determine_effective_address(self.storage)
+        assert self.storage.s_register == INSTRUCTION_ADDRESS + 2
+        assert Instructions.SRF.perform_logic(self.storage) == 3
+        assert self.storage.storage_cycle == MCS_MODE_REL
+        assert self.storage.a_register == 0o0003
+        assert self.storage.z_register == 0o0003
+        assert self.storage.read_relative_bank(
+            INSTRUCTION_ADDRESS + 2) == 0o0003
+
+    def test_sri(self) -> None:
+        assert Instructions.SRI.name() == "SRI"
+        self.storage.write_indirect_bank(0o14, 0o4001)
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o4514)
+        self.storage.unpack_instruction()
+        Instructions.SRI.determine_effective_address(self.storage)
+        assert self.storage.s_register == 0o14
+        assert Instructions.SRI.perform_logic(self.storage) == 4
+        assert self.storage.storage_cycle == MCS_MODE_IND
+        assert self.storage.a_register == 0o0003
+        assert self.storage.z_register == 0o0003
+        assert self.storage.read_indirect_bank(0o14) == 0o0003
+        assert not self.storage.err_status
+        assert self.storage.run_stop_status
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_srm(self) -> None:
+        assert Instructions.SRM.name() == "SRM"
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o4500)
+        self.storage.write_relative_bank(G_ADDRESS, READ_AND_WRITE_ADDRESS)
+        self.storage.write_relative_bank(READ_AND_WRITE_ADDRESS, 0o4001)
+        self.storage.unpack_instruction()
+        Instructions.SRM.determine_effective_address(self.storage)
+        assert self.storage.s_register == READ_AND_WRITE_ADDRESS
+        assert Instructions.SRM.perform_logic(self.storage) == 4
+        assert self.storage.storage_cycle == MCS_MODE_REL
+        assert self.storage.a_register == 0o0003
+        assert self.storage.z_register == 0o0003
+        assert self.storage.read_relative_bank(
+            READ_AND_WRITE_ADDRESS) == 0o0003
+
+    def test_srs(self) -> None:
+        assert Instructions.SRS.name() == "SRS"
+        self.storage.write_specific(0o4001)
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o4000)
+        self.storage.unpack_instruction()
+        Instructions.SRS.determine_effective_address(self.storage)
+        assert self.storage.s_register == 0o7777
+        assert Instructions.SRS.perform_logic(self.storage) == 3
+        assert self.storage.a_register == 0o0003
+        assert self.storage.z_register == 0o0003
+        assert self.storage.read_specific() == 0o0003
 
     def test_sbm(self) -> None:
         assert Instructions.SBM.name() == "SBM"

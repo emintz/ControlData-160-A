@@ -498,6 +498,76 @@ SET_LITERAL = """
           OCT 1234
           END
 """
+SHIFT_REPLACE_BACKWARD = """
+          REM Test Shift Replace Backward [(P - YY)(r)] << 1 -> A and (P - YY)(r)
+          BNK 3
+          ORG 76
+          OCT 4001
+          ORG 100
+          SRB 2
+          HLT
+          END
+"""
+SHIFT_REPLACE_CONSTANT = """
+          REM Test Shift Replace Direct [G} << 1 -> A and G
+          BNK 3
+          ORG 100
+          SRC 4001
+          HLT
+          END
+"""
+SHIFT_REPLACE_DIRECT = """
+          REM Test Shift Replace Direct YY(d) << 1 -> A and YY(d)
+          BNK 2
+          ORG 14
+          OCT 4001
+          BNK 3
+          ORG 100
+          SRD 14
+          HLT
+          END
+"""
+SHIFT_REPLACE_FORWARD = """
+          REM Shift Replace Forward [(P + XX)(r)] << 1 -> A and (P + XX)(r)
+          BNK 3
+          ORG 100
+          SRF 2
+          HLT
+          OCT 4001
+          END
+"""
+SHIFT_REPLACE_INDIRECT = """
+          REM Test Shift Replace Indirect  YY(i) << 1 -> A and YY(i)
+          BNK 1
+          ORG 24
+          OCT 4001
+          BNK 3
+          ORG 100
+          SRI 24
+          HLT
+          END
+"""
+SHIFT_REPLACE_MEMORY = """
+          REM Test Shift Replace Memory YYYY(r) << 1 -> A and YYYY(r)
+          BNK 3
+          ORG 100
+          SRM 200
+          HLT
+          ORG 200
+          OCT 4001
+          END
+"""
+SHIFT_REPLACE_SPECIFIC = """
+          REM Test Shift Replace Specific [7777(0)] << 1 -> A and 7777(0)
+          BNK 0
+          ORG 7777
+          OCT 4001
+          BNK 3
+          ORG 100
+          SRS
+          HLT
+          END 
+"""
 STORE_BACKWARD = """
           REM Test store backward, which stores the A register
           REM contents to the current location minus the E

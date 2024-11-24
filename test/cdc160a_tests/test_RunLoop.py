@@ -383,6 +383,62 @@ class TestRunLoop(TestCase):
         assert self.__storage.get_program_counter() == 0o103
         assert not self.__storage.err_status
 
+    def test_srb(self) -> None:
+        self.load_test_program(Programs.SHIFT_REPLACE_BACKWARD)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o0003
+        assert self.__storage.read_relative_bank(0o76) == 0o0003
+        assert self.__storage.get_program_counter() == 0o101
+        assert not self.__storage.err_status
+
+    def test_src(self) -> None:
+        self.load_test_program(Programs.SHIFT_REPLACE_CONSTANT)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o0003
+        assert self.__storage.read_relative_bank(0o0101) == 0o0003
+        assert self.__storage.get_program_counter() == 0o102
+        assert not self.__storage.err_status
+
+    def test_srd(self) -> None:
+        self.load_test_program(Programs.SHIFT_REPLACE_DIRECT)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o0003
+        assert self.__storage.read_direct_bank(0o14) == 0o0003
+        assert self.__storage.get_program_counter() == 0o101
+        assert not self.__storage.err_status
+
+    def test_srf(self) -> None:
+        self.load_test_program(Programs.SHIFT_REPLACE_FORWARD)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o0003
+        assert self.__storage.read_relative_bank(0o102) == 0o0003
+        assert self.__storage.get_program_counter() == 0o101
+        assert not self.__storage.err_status
+
+    def test_sri(self) -> None:
+        self.load_test_program(Programs.SHIFT_REPLACE_INDIRECT)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o0003
+        assert self.__storage.read_indirect_bank(0o24) == 0o0003
+        assert self.__storage.get_program_counter() == 0o101
+        assert not self.__storage.err_status
+
+    def test_srm(self) -> None:
+        self.load_test_program(Programs.SHIFT_REPLACE_MEMORY)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o0003
+        assert self.__storage.read_relative_bank(0o200) == 0o0003
+        assert self.__storage.get_program_counter() == 0o102
+        assert not self.__storage.err_status
+
+    def test_srs(self) -> None:
+        self.load_test_program(Programs.SHIFT_REPLACE_SPECIFIC)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o0003
+        assert self.__storage.read_specific() == 0o0003
+        assert self.__storage.get_program_counter() == 0o101
+        assert not self.__storage.err_status
+
     def test_stb(self) -> None:
         self.load_test_program(Programs.STORE_BACKWARD)
         assert self.__storage.read_absolute(3, 0o77) == 0o7777
