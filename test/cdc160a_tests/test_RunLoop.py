@@ -155,6 +155,18 @@ class TestRunLoop(TestCase):
         self.__run_loop.run()
         assert self.__storage.err_status
 
+    def test_jfi(self) -> None:
+        self.load_test_program(Programs.JUMP_FORWARD_INDIRECT)
+        self.__run_loop.run()
+        assert self.__storage.get_program_counter() == 0o300
+
+    def test_jpr(self) -> None:
+        self.load_test_program(Programs.RETURN_JUMP)
+        self.__run_loop.run()
+        assert self.__storage.get_program_counter() == 0o201
+        assert self.__storage.read_relative_bank(0o200) == 0o102
+        assert not self.__storage.err_status
+
     def test_lpb(self) -> None:
         self.load_test_program(Programs.LOGICAL_PRODUCT_BACKWARD)
         self.__run_loop.run()
@@ -547,3 +559,9 @@ class TestRunLoop(TestCase):
         self.__run_loop.run()
         assert not self.__storage.err_status
         assert self.__storage.p_register == 0o104
+
+    def test_call_and_return(self) -> None:
+        self.load_test_program(Programs.CALL_AND_RETURN)
+        self.__run_loop.run()
+        assert self.__storage.read_relative_bank(0o200) == 0o102
+        assert self.__storage.get_program_counter() == 0o102

@@ -302,6 +302,33 @@ class Test(TestCase):
         self.storage.advance_to_next_instruction()
         assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
 
+    def test_jfi(self) -> None:
+        assert Instructions.JFI.name() == "JFI"
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7110)
+        self.storage.unpack_instruction()
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS + 0o10, 0o400)
+        self.storage.write_relative_bank(0o400, 0o1400)
+        Instructions.JFI.determine_effective_address(self.storage)
+        assert self.storage.s_register == INSTRUCTION_ADDRESS + 0o10
+        assert Instructions.JFI.perform_logic(self.storage) == 2
+        assert not self.storage.err_status
+        assert self.storage.run_stop_status
+        self.storage.advance_to_next_instruction()
+        assert self.storage.get_program_counter() == 0o1400
+
+    def test_jpr(self) -> None:
+        assert Instructions.JPR.name() == "JPR"
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7100)
+        self.storage.unpack_instruction()
+        self.storage.write_relative_bank(G_ADDRESS, 0o1000)
+        Instructions.JPR.determine_effective_address(self.storage)
+        assert self.storage.s_register == 0o1000
+        assert Instructions.JPR.perform_logic(self.storage) == 3
+        assert (self.storage.read_relative_bank(0o1000) ==
+                INSTRUCTION_ADDRESS + 2)
+        self.storage.advance_to_next_instruction()
+        assert self.storage.get_program_counter() == 0o1001
+
     def test_lcb(self) -> None:
         # LCB 10
         self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o2710)

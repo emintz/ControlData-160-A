@@ -353,6 +353,13 @@ class TestStorage(TestCase):
         assert self.storage.z_register == 0o1234
         assert self.storage.storage_cycle == MCS_MODE_IND
 
+    def test_relative_indirect_to_next_address(self) -> None:
+        self.storage.s_register = 0o200
+        self.storage.write_relative_bank(0o200, 0o300)
+        self.storage.write_relative_bank(0o300, 0o4132)
+        self.storage.s_relative_indirect_to_next_address()
+        assert self.storage.get_next_execution_address() == 0o4132
+
     def test_relative_to_a(self) -> None:
         self.storage.relative_storage_bank = 1
         self.storage.s_register = 0o40
@@ -540,6 +547,11 @@ class TestStorage(TestCase):
         assert self.storage.z_register == 0
         assert self.storage.a_register == 0o1234
 
+    def test_value_to_s_address_relative(self) -> None:
+        self.storage.s_register = 0o300
+        self.storage.value_to_s_address_relative(0o1234)
+        assert self.storage.read_relative_bank(0o300) == 0o1234
+
     def test_subtract_specific_from_a(self) -> None:
         self.storage.a_register = 0o2234
         self.storage.write_absolute(0, 0o7777, 0o1000)
@@ -569,6 +581,15 @@ class TestStorage(TestCase):
         assert self.storage.z_register == 0o14
         assert self.storage.a_register == 0o06
 
+    def test_z_to_a(self) -> None:
+        self.storage.z_register = 0o4321
+        self.storage.z_to_a()
+        assert self.storage.a_register == 0o4321
+
+    def test_z_to_p(self) -> None:
+        self.storage.z_register = 0o4321
+        self.storage.z_to_p()
+        assert self.storage.p_register == 0o4321
 
 if __name__ == "__main__":
     unittest.main()

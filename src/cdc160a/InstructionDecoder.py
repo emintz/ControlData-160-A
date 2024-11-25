@@ -77,7 +77,7 @@ class Opcode00:
 
     def decode(self, e: int) -> Instruction:
         decoded_instruction = Instructions.ERR
-        if e in range(0o01, 0o07) :
+        if e in range(0o01, 0o010) :
             decoded_instruction = Instructions.NOP
         return decoded_instruction
 
@@ -172,7 +172,7 @@ __DECODERS = [
     Singleton(Instructions.PJB, 0o66),                   # 66
     Singleton(Instructions.NJB, 0o67),                   # 67
     __UNIMPLEMENTED,            # 70
-    __UNIMPLEMENTED,            # 71
+    Bimodal(Instructions.JPR, Instructions.JFI, 0o71),   # 71
     __UNIMPLEMENTED,            # 72
     __UNIMPLEMENTED,            # 73
     __UNIMPLEMENTED,            # 74

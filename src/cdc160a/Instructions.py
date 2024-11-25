@@ -26,6 +26,7 @@ def __no_advance(_) -> None:
     A placeholder advance function used by instructions that
     either advance by a variable amount or change the flow of
     control.
+
     :return: None
     """
     pass
@@ -170,6 +171,8 @@ AOM = __double_advance_instruction("AOM", EffectiveAddress.memory, Microinstruct
 AOS = __single_advance_instruction("AOS", EffectiveAddress.specific, Microinstructions.replace_add_one_specific, 3)
 ERR = __single_advance_instruction("ERR", EffectiveAddress.no_address, Microinstructions.error, 1)
 HLT = __single_advance_instruction("HLT", EffectiveAddress.no_address, Microinstructions.halt, 1)
+JFI = __no_advance_instruction("JFI", EffectiveAddress.relative_forward, Microinstructions.jump_forward_indirect, 2)
+JPR = __no_advance_instruction("JPR", EffectiveAddress.memory, Microinstructions.return_jump, 3)
 LCB = __single_advance_instruction("LCB", EffectiveAddress.relative_backward, Microinstructions.s_relative_complement_to_a, 2)
 LCC = __double_advance_instruction("LCC", EffectiveAddress.constant, Microinstructions.s_relative_complement_to_a, 2)
 LCD = __single_advance_instruction("LCD", EffectiveAddress.direct, Microinstructions.s_direct_complement_to_a, 2)

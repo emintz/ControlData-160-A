@@ -309,6 +309,8 @@ class Assembler:
             "END": StopAssembly(self, "ERR"),
             "ERR": FixedEValue(self, "ERR", 0o0000),
             "HLT": FixedEValue(self, "HLT", 0o7700),
+            "JFI": OneWordNonZeroE(self, "JFI", 0o71),
+            "JPR": TwoWordFixedE(self, "JPR", 0o71),
             "LCB": OneWordNonZeroE(self, "LCB", 0o27),
             "LCC": TwoWordFixedE(self, "LCC", 0o26),
             "LCD": OneWordAnyE(self, "LCD", 0o24),

@@ -41,7 +41,7 @@ class Test(TestCase):
         decoder = InstructionDecoder.decoder_at(0o00)
         assert decoder.opcode == 0o00
         assert decoder.decode(0o00).name() == "ERR"
-        for e in range(0o01, 0o07):
+        for e in range(0o01, 0o10):
             assert decoder.decode(e).name() == "NOP"
         # TODO(emintz): test the remaining e values
 
@@ -418,6 +418,13 @@ class Test(TestCase):
         assert decoder.opcode == 0o67
         for e in range(0o00, 0o100):
             assert decoder.decode(e).name() == "NJB"
+
+    def test_decode_71(self) -> None:
+        decoder = InstructionDecoder.decoder_at(0o71)
+        assert decoder.opcode == 0o71
+        assert decoder.decode(0).name() == "JPR"
+        for e in range(1, 0o100):
+            assert decoder.decode(e).name() == "JFI"
 
     if __name__ == "__main__":
         unittest.main()

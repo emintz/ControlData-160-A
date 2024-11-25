@@ -345,6 +345,9 @@ class Storage:
     def get_program_counter(self) -> int:
         return self.p_register
 
+    def get_next_execution_address(self) -> int:
+        return self.__next_address
+
     def g_address_to_s(self) -> None:
         """
         Sets S, the effective address register, to G
@@ -601,12 +604,39 @@ class Storage:
         self.s_relative_to_z()
         self.z_to_a()
 
+    def s_relative_to_p(self) -> None:
+        self.s_relative_to_z()
+        self.z_to_p()
+
+    def s_relative_indirect_to_next_address(self) -> None:
+        """
+        [[S(r)]] -> next address
+
+        If S contains 0o200 and 0o200(r) contains 0o1400, the next
+        address will be set to 0o1400
+
+        :return: None
+        """
+        self.s_relative_to_z()
+        self.z_to_s()
+        self.s_relative_to_z()
+        self.__next_address = self.z_register
+
     def s_relative_to_z(self) -> None:
         self.s_absolute_to_z(self.relative_storage_bank)
         self.mode_relative()
 
     def s_to_next_address(self) -> None:
         self.__next_address = self.s_register
+
+    def value_to_s_address_relative(self, value: int) -> None:
+        """
+        value -> S(r)
+
+        :param value: value to store
+        :return: None
+        """
+        self.memory[self.relative_storage_bank, self.s_register] = value
 
     def write_absolute(self, bank: int, address: int, value: int) -> None:
         """
@@ -693,6 +723,12 @@ class Storage:
 
     def z_to_a(self) -> None:
         self.a_register = self.z_register
+
+    def z_to_p(self):
+        self.p_register = self.z_register
+
+    def z_to_s(self):
+        self.s_register = self.z_register
 
     def __difference_to_a(self, minuend: int, subtrahend: int) -> None:
         """

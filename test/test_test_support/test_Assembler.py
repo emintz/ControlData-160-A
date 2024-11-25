@@ -322,6 +322,12 @@ class TestAssembler(TestCase):
     def test_hlt(self) -> None:
         self.__single_instruction_test("HLT", [0o7700])
 
+    def test_jfi(self) -> None:
+        self.__single_instruction_test("JFI 12", [0o7112])
+
+    def test_jpr(self) -> None:
+        self.__single_instruction_test("JPR 2400", [0o7100, 0o2400])
+
     def test_ldb(self) -> None:
         self.__single_instruction_test("LDB 30", [0o2330])
 

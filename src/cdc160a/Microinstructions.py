@@ -85,6 +85,9 @@ def error(storage: Storage) -> None:
 def halt(storage: Storage) -> None:
     storage.stop()
 
+def jump_forward_indirect(storage: Storage) -> None:
+    storage.s_relative_indirect_to_next_address()
+
 def multiply_a_by_10(storage: Storage) -> None:
     storage.a_times_10()
 
@@ -199,23 +202,66 @@ def replace_add_one_specific(storage: Storage) -> None:
     storage.add_to_a(1)
     storage.a_to_specific()
 
-# A -> A rotated left by one
+def return_jump(storage: Storage) -> None:
+    """
+    [p] + 2 -> YYYY(r)
+    YYYY + 1 -> P
+
+    Subroutine call to address YYYY: store the return address (P + 2)
+    at the invoked address and resume execution at YYYY + 1
+
+    :param storage: memory and register file
+    :return: None
+    """
+    jump_address = storage.s_register + 1
+    storage.value_to_s_address_relative(storage.p_register + 2)
+    storage.set_next_instruction_address(jump_address)
+
 def rotate_a_left_one(storage: Storage) -> None:
+    """
+    [A] << 1 -> A
+
+    Left shift rotates bits.
+
+    :param storage: memory and register file
+    :return: None
+    """
     end_around = 0 if storage.a_register & 0o4000 == 0 else 1
     storage.a_register = ((storage.a_register << 1) & 0o7777) | end_around
 
-# A -> A rotated left by 2
 def rotate_a_left_two(storage: Storage) -> None:
+    """
+    [A] << 2 -> A
+
+    Left shift rotates bits.
+
+    :param storage: memory and register file
+    :return: None
+    """
     end_around = (storage.a_register & 0o6000) >> 10
     storage.a_register = ((storage.a_register << 2) & 0o7777) | end_around
 
-# A -> A rotated left by 6, exchange high and low half words
 def rotate_a_left_six(storage: Storage) -> None:
+    """
+    [A] << 6 -> A
+
+    Left shift rotates bits.
+
+    :param storage: memory and register file
+    :return: None
+    """
     end_around = (storage.a_register & 0o7700) >> 6
     storage.a_register = ((storage.a_register << 6) & 0o7777) | end_around
 
-# A -> A rotated left by three
 def rotate_a_left_three(storage: Storage) -> None:
+    """
+    [A] << 3 -> A
+
+    Left shift rotates bits.
+
+    :param storage: memory and register file
+    :return: None
+    """
     end_around = (storage.a_register & 0o7000) >> 9
     storage.a_register = ((storage.a_register << 3) & 0O7777) | end_around
 

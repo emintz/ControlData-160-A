@@ -251,6 +251,15 @@ class Test(TestCase):
         assert self.storage.a_register == 0o0003
         assert self.storage.read_specific() == 0o0003
 
+    def test_jump_forward_indirect(self) -> None:
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7110)
+        self.storage.s_register = INSTRUCTION_ADDRESS + 0o10
+        self.storage.write_relative_bank(
+            INSTRUCTION_ADDRESS + 0o10, 0o200)
+        self.storage.write_relative_bank(0o200, 0o2000)
+        Microinstructions.jump_forward_indirect(self.storage)
+        assert self.storage.get_next_execution_address() == 0o2000
+
     def test_jump_if_a_negative(self) -> None:
         self.__prepare_for_jump()
         self.storage.a_register = 0
@@ -424,6 +433,16 @@ class Test(TestCase):
         Microinstructions.replace_add_one_specific(self.storage)
         assert self.storage.read_specific() == 0o1234
         assert self.storage.memory[0o0, 0o7777] == 0o1234
+
+    def test_return_jump(self) -> None:
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7100)
+        self.storage.write_relative_bank(G_ADDRESS, 0o1000)
+        self.storage.s_register = 0o1000
+        Microinstructions.return_jump(self.storage)
+        assert (self.storage.read_relative_bank(0o1000) ==
+                INSTRUCTION_ADDRESS + 2)
+        self.storage.advance_to_next_instruction()
+        assert self.storage.p_register == 0o1001
 
     def test_rotate_a_left_two(self) -> None:
         self.storage.a_register = 0o6000

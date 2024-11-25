@@ -120,6 +120,19 @@ HALT = """
           HLT
           END
 """
+JUMP_FORWARD_INDIRECT = """
+          REM Jump Forward Indirect [)[P] + XX)(r)](r) -> P
+          BNK 3
+          ORG 100
+          JFI 2
+          NOP
+          OCT 200
+          ORG 200
+          OCT 300
+          ORG 300
+          HLT
+          END
+"""
 LDC_THEN_HALT = """
           REM  move 0o4321 to the accumulator and halt
           BNK 3
@@ -496,6 +509,17 @@ REPLACE_ADD_SPECIFIC = """
           HLT
           END
 """
+RETURN_JUMP = """
+          REM Return Jump [P] + 2 -> YYYY(r), YYY + 1 -> P
+          BNK 3
+          ORG 100
+          JPR 200
+          ERR
+          ORG 200
+          OCT 0
+          HLT
+          END
+"""
 SELECTIVE_COMPLEMENT_BACKWARD = """
           REM Selective Complement Backward [A] ^ [(P - YY)(r)] -> A
           BNK 3
@@ -851,5 +875,21 @@ ZERO_JUMP_FORWARD_ZERO_A = """
           ZJF 2    # +0
           HLT      # +1
           HLT      # +2
+          END
+"""
+
+# More complex programs
+CALL_AND_RETURN = """
+          REM Invoke a subroutine and return
+          BNK 3
+          ORG 100
+          JPR 200
+          HLT
+          ORG 200
+          OCT 0  Return address goes here.
+          NOP
+          JFI 2
+          NOP
+          OCT 200
           END
 """
