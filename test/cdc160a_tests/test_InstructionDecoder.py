@@ -70,6 +70,12 @@ class Test(TestCase):
         for e in range(0, 0o100):
             assert decoder.decode(e).name() == "LPN"
 
+    def test_decode_03(self) -> None:
+        decoder = InstructionDecoder.decoder_at(0o03)
+        assert decoder.opcode == 0o03
+        for e in range(0, 0o100):
+            assert decoder.decode(e).name() == "SCN"
+
     def test_decode_04(self) -> None:
         decoder = InstructionDecoder.decoder_at(0o04)
         assert decoder.opcode == 0o04
@@ -120,6 +126,32 @@ class Test(TestCase):
         assert decoder.decode(0o00).name() == "LPS"
         for e in range(0o01, 0o100):
             assert decoder.decode(e).name() == "LPB"
+
+    def test_decode_14(self) -> None:
+        decoder = InstructionDecoder.decoder_at(0o14)
+        assert decoder.opcode == 0o14
+        for e in range(0, 0o100):
+            assert decoder.decode(e).name() == "SCD"
+
+    def test_decode_15(self) -> None:
+        decoder = InstructionDecoder.decoder_at(0o15)
+        assert decoder.opcode == 0o15
+        assert decoder.decode(0).name() == "SCM"
+        for e in range(1, 0o100):
+            assert decoder.decode(e).name() == "SCI"
+
+    def test_decode_16(self) -> None:
+        decoder = InstructionDecoder.decoder_at(0o16)
+        assert decoder.decode(0).name() == "SCC"
+        for e in range(1, 0o100):
+            assert decoder.decode(e).name() == "SCF"
+
+    def test_decode_17(self) -> None:
+        decoder = InstructionDecoder.decoder_at(0o17)
+        assert decoder.opcode == 0o17
+        assert decoder.decode(0).name() == "SCS"
+        for e in range(1, 0o100):
+            assert decoder.decode(e).name() == "SCB"
 
     def test_decode_20(self) -> None:
         decoder = InstructionDecoder.decoder_at(0o20)

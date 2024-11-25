@@ -219,8 +219,65 @@ def rotate_a_left_three(storage: Storage) -> None:
     end_around = (storage.a_register & 0o7000) >> 9
     storage.a_register = ((storage.a_register << 3) & 0O7777) | end_around
 
-# A -> A shifted right by 1 with extended sign.
+def selective_complement_direct(storage: Storage) -> None:
+    """
+    [A] ^ [S](d) -> A
+
+    :param storage: memory and register file
+    :return: None
+    """
+    storage.s_direct_to_z()
+    storage.xor_a_with_z()
+
+def selective_complement_indirect(storage: Storage) -> None:
+    """
+    [A] ^ [S](I) -> A
+
+    :param storage: memory and register file
+    :return: None
+    """
+    storage.s_indirect_to_z()
+    storage.xor_a_with_z()
+
+def selective_complement_no_address(storage: Storage) -> None:
+    """
+    [A] ^ [Z] -> A
+
+    :param storage: memory and register file
+    :return: None
+    """
+    storage.e_to_z()
+    storage.xor_a_with_z()
+
+def selective_complement_relative(storage: Storage) -> None:
+    """
+    [A] ^ [R](I) -> A
+
+    :param storage: memory and register file
+    :return: None
+    """
+    storage.s_relative_to_z()
+    storage.xor_a_with_z()
+
+def selective_complement_specific(storage: Storage) -> None:
+    """
+    [A] ^ [7777(0)] -> A
+
+    :param storage: memory and register file
+    :return: None
+    """
+    storage.specific_to_z()
+    storage.xor_a_with_z()
+
 def shift_a_right_one(storage: Storage) -> None:
+    """
+    [A] >> 1 -> A
+
+    Sign extended.
+
+    :param storage: contains the A register
+    :return: None
+    """
     sign_extension = storage.a_register & 0o4000
     storage.a_register = (storage.a_register >> 1) | sign_extension
 

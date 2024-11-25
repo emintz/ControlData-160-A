@@ -330,6 +330,7 @@ class Storage:
         :return: None
         """
         self.z_register = self.f_e
+        self.storage_cycle = MCS_MODE_REL
 
     def forward_indirect_to_s(self) -> None:
         """
@@ -536,8 +537,11 @@ class Storage:
         self.run_stop_status = True
 
     def specific_to_a(self) -> None:
+        self.specific_to_z()
+        self.z_to_a()
+
+    def specific_to_z(self) -> None:
         self.z_register = self.memory[0o0, 0o7777]
-        self.a_register = self.z_register
         self.mode_specific()
 
     def specific_to_s(self) -> None:
@@ -556,16 +560,49 @@ class Storage:
         self.z_register = self.memory[bank, self.s_register]
         self.a_register = self.z_register
 
+    def s_absolute_to_z(self, bank: int) -> None:
+        """
+        [S(bank)] -> Z
+
+        :param bank: memory bank
+        :return: None
+        """
+        self.z_register = self.memory[bank, self.s_register]
+
     def s_direct_to_a(self):
-        self.s_absolute_to_a(self.direct_storage_bank)
+        """
+        [S(d)] -> Z, A
+        Memory mode -> Direct
+
+        :return: None
+        """
+        self.s_direct_to_z()
+        self.z_to_a()
+
+    def s_direct_to_z(self) -> None:
+        """
+        [S(d)] -> Z
+        Memory mode -> Direct
+
+        :return: None
+        """
+        self.s_absolute_to_z(self.direct_storage_bank)
         self.mode_direct()
 
-    def s_indirect_to_a(self):
-        self.s_absolute_to_a(self.indirect_storage_bank)
+    def s_indirect_to_a(self) -> None:
+        self.s_indirect_to_z()
+        self.z_to_a()
+
+    def s_indirect_to_z(self) -> None:
+        self.s_absolute_to_z(self.indirect_storage_bank)
         self.mode_indirect()
 
     def s_relative_to_a(self) -> None:
-        self.s_absolute_to_a(self.relative_storage_bank)
+        self.s_relative_to_z()
+        self.z_to_a()
+
+    def s_relative_to_z(self) -> None:
+        self.s_absolute_to_z(self.relative_storage_bank)
         self.mode_relative()
 
     def s_to_next_address(self) -> None:
@@ -645,6 +682,14 @@ class Storage:
         :return: None
         """
         self.memory[0, 0o7777] = value
+
+    def xor_a_with_z(self) -> None:
+        """
+        [Z] xor [A] -> A
+
+        :return: None
+        """
+        self.a_register ^= self.z_register
 
     def z_to_a(self) -> None:
         self.a_register = self.z_register

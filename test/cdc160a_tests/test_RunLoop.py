@@ -355,6 +355,41 @@ class TestRunLoop(TestCase):
         assert self.__storage.get_program_counter() == 0o103
         assert not self.__storage.err_status
 
+    def test_scb(self) -> None:
+        self.load_test_program(Programs.SELECTIVE_COMPLEMENT_BACKWARD)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o06
+
+    def test_scc(self) -> None:
+        self.load_test_program(Programs.SELECTIVE_COMPLEMENT_MEMORY)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o06
+
+    def test_scd(self) -> None:
+        self.load_test_program(Programs.SELECTIVE_COMPLEMENT_DIRECT)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o06
+
+    def test_sci(self) -> None:
+        self.load_test_program(Programs.SELECTIVE_COMPLEMENT_INDIRECT)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o06
+
+    def test_scm(self) -> None:
+        self.load_test_program(Programs.SELECTIVE_COMPLEMENT_MEMORY)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o06
+
+    def test_scn(self) -> None:
+        self.load_test_program(Programs.SELECTIVE_COMPLEMENT_NO_ADDRESS)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o06
+
+    def test_scs(self) -> None:
+        self.load_test_program(Programs.SELECTIVE_COMPLEMENT_SPECIFIC)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o06
+
     def test_shi(self) -> None:
         self.load_test_program(Programs.SUBTRACT_INDIRECT)
         self.__run_loop.run()

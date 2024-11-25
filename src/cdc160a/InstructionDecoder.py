@@ -107,7 +107,7 @@ __DECODERS = [
     __UNIMPLEMENTED,            # 00
     OpCode01(),                                                  # 01
     Singleton(Instructions.LPN, 0o02),                   # 02
-    __UNIMPLEMENTED,            # 03
+    Singleton(Instructions.SCN, 0o03),                   # 03
     Singleton(Instructions.LDN, 0o04),                   # 04
     Singleton(Instructions.LCN, 0o05),                   # 05
     Singleton(Instructions.ADN, 0o06),                   # 06
@@ -116,10 +116,10 @@ __DECODERS = [
     Bimodal(Instructions.LPM, Instructions.LPI, 0o11),   # 11
     Bimodal(Instructions.LPC, Instructions.LPF, 0o12),   # 12
     Bimodal(Instructions.LPS, Instructions.LPB, 0o13),   # 13
-    __UNIMPLEMENTED,            # 14
-    __UNIMPLEMENTED,            # 15
-    __UNIMPLEMENTED,            # 16
-    __UNIMPLEMENTED,            # 17
+    Singleton(Instructions.SCD, 0o14),                   # 14
+    Bimodal(Instructions.SCM, Instructions.SCI, 0o15),   # 15
+    Bimodal(Instructions.SCC, Instructions.SCF, 0o16),   # 16
+    Bimodal(Instructions.SCS, Instructions.SCB, 0o17),   # 17
     Singleton(Instructions.LDD, 0o20),                   # 20
     Bimodal(Instructions.LDM, Instructions.LDI, 0o21),   # 21
     Bimodal(Instructions.LDC, Instructions.LDF, 0o22),   # 22

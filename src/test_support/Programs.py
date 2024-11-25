@@ -491,6 +491,81 @@ REPLACE_ADD_SPECIFIC = """
           HLT
           END
 """
+SELECTIVE_COMPLEMENT_BACKWARD = """
+          REM Selective Complement Backward [A] ^ [(P - YY)(r)] -> A
+          BNK 3
+          ORG 76
+          OCT 12
+          ORG 100
+          LDN 14
+          SCB 3
+          END
+"""
+SELECTIVE_COMPLEMENT_CONSTANT = """
+          REM Selective Complement Constant [A] ^ [G(r)] -> A
+          BNK 3
+          ORG 100
+          LDC 14
+          SCC 12
+          HLT
+          END
+"""
+SELECTIVE_COMPLEMENT_DIRECT = """
+          REM Selective Complement Direct [A] ^ [YY(d)] -> A
+          BNK 2
+          ORG 40
+          OCT 14
+          BNK 3
+          ORG 100
+          LDN 12
+          SCD 40
+          HLT
+          END
+"""
+SELECTIVE_COMPLEMENT_INDIRECT = """
+          REM Selective Complement Direct [A] ^ [YY(i)] -> A
+          BNK 1
+          ORG 20
+          OCT 14
+          BNK 3
+          ORG 100
+          LDN 12
+          SCI 20
+          HLT
+          END
+"""
+SELECTIVE_COMPLEMENT_MEMORY = """
+          REM Selective Complement Memory [A] ^ [G(r)] -> A
+          BNK 3
+          ORG 100
+          LDN 12
+          SCM 200
+          HLT
+          ORG 200
+          OCT 14
+          END
+"""
+SELECTIVE_COMPLEMENT_NO_ADDRESS = """
+          REM Selective Complement No Address [A] ^ YY -> A
+          BNK 3
+          ORG 100
+          LDN 12
+          SCN 14
+          HLT
+          END
+"""
+SELECTIVE_COMPLEMENT_SPECIFIC = """
+          REM Selective Complement Specific [A] ^ [7777(0)] -> A
+          BNK 0
+          ORG 7777
+          OCT 14
+          BNK 3
+          ORG 100
+          LDN 12
+          SCS
+          HLT
+          END
+"""
 SET_LITERAL = """
           REM set a literal value
           BNK 3

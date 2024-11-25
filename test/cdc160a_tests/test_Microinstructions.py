@@ -445,6 +445,52 @@ class Test(TestCase):
         assert self.storage.z_register == 0o2143
         assert self.storage.a_register == 0o4321
 
+    def test_selective_complement_direct(self) -> None:
+        self.storage.direct_storage_bank = 1
+        self.storage.write_direct_bank(0o24, 0o14)
+        self.storage.s_register = 0o24
+        self.storage.a_register = 0o12
+        Microinstructions.selective_complement_direct(self.storage)
+        assert self.storage.read_direct_bank(0o24) == 0o14
+        assert self.storage.s_register == 0o24
+        assert self.storage.z_register == 0o14
+        assert self.storage.a_register == 0o06
+
+    def test_selective_complement_indirect(self) -> None:
+        self.storage.indirect_storage_bank = 1
+        self.storage.write_indirect_bank(0o24, 0o14)
+        self.storage.s_register = 0o24
+        self.storage.a_register = 0o12
+        Microinstructions.selective_complement_indirect(self.storage)
+        assert self.storage.read_indirect_bank(0o24) == 0o14
+        assert self.storage.s_register == 0o24
+        assert self.storage.z_register == 0o14
+        assert self.storage.a_register == 0o06
+
+    def test_selective_complement_no_address(self) -> None:
+        self.storage.f_e = 0o14
+        self.storage.a_register = 0o12
+        Microinstructions.selective_complement_no_address(self.storage)
+        assert self.storage.f_e == 0o14
+        assert self.storage.a_register == 0o6
+
+    def test_selective_complement_relative(self) -> None:
+        self.storage.write_relative_bank(0o200, 0o14)
+        self.storage.a_register = 0o12
+        self.storage.s_register = 0o200
+        Microinstructions.selective_complement_relative(self.storage)
+        assert self.storage.read_relative_bank(0o200) == 0o14
+        assert self.storage.z_register == 0o14
+        assert self.storage.a_register == 0o6
+
+    def selective_complement_specific(self) -> None:
+        self.storage.write_specific(0o14)
+        self.storage.a_register = 0o12
+        Microinstructions.selective_complement_specific(self.storage)
+        assert self.storage.read_specific() == 0o14
+        assert self.storage.z_register == 0o14
+        assert self.storage.a_register == 0o6
+
     def test_shift_a_right_one(self) -> None:
         self.storage.a_register = 0o4000
         Microinstructions.shift_a_right_one(self.storage)
