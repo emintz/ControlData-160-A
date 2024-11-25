@@ -1,4 +1,5 @@
 import unittest
+from email.errors import NonPrintableDefect
 from unittest import TestCase
 
 from InstructionDecoder import decode
@@ -35,6 +36,14 @@ class Test(TestCase):
         for e in range(0o00, 0o77):
             instruction = decode(0o04, e)
             assert instruction.name() == expected_instruction.name()
+
+    def test_decode_00(self) -> None:
+        decoder = InstructionDecoder.decoder_at(0o00)
+        assert decoder.opcode == 0o00
+        assert decoder.decode(0o00).name() == "ERR"
+        for e in range(0o01, 0o07):
+            assert decoder.decode(e).name() == "NOP"
+        # TODO(emintz): test the remaining e values
 
     def test_decode_01(self) -> None:
         decoder = InstructionDecoder.decoder_at(0x01)

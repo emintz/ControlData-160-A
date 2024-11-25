@@ -70,6 +70,17 @@ class Unimplemented:
     def decode(self, _) -> Instruction:
         return Instructions.ERR
 
+class Opcode00:
+
+    def __init__(self):
+        self.opcode = 0o00
+
+    def decode(self, e: int) -> Instruction:
+        decoded_instruction = Instructions.ERR
+        if e in range(0o01, 0o07) :
+            decoded_instruction = Instructions.NOP
+        return decoded_instruction
+
 class OpCode01:
     # TODO(emintz): the remaining instructions
     __e_to_instruction = {
@@ -104,7 +115,7 @@ class OpCode77:
 __UNIMPLEMENTED = Unimplemented()
 
 __DECODERS = [
-    __UNIMPLEMENTED,            # 00
+    Opcode00(),                                                  # 00
     OpCode01(),                                                  # 01
     Singleton(Instructions.LPN, 0o02),                   # 02
     Singleton(Instructions.SCN, 0o03),                   # 03

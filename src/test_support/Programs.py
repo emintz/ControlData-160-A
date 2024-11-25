@@ -108,6 +108,11 @@ ADD_SPECIFIC = """
           HLT
           END
 """
+ERROR_HALT = """
+          REM Test Error halt execution and set the error flag.
+          ERR
+          END
+"""
 HALT = """
           REM  Simplest possible non-vacuous program that just halts
           BNK 3

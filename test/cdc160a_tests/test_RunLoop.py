@@ -150,6 +150,11 @@ class TestRunLoop(TestCase):
         assert self.__storage.read_specific() == 0o1234
         assert not self.__storage.err_status
 
+    def test_err(self) -> None:
+        self.load_test_program(Programs.ERROR_HALT)
+        self.__run_loop.run()
+        assert self.__storage.err_status
+
     def test_lpb(self) -> None:
         self.load_test_program(Programs.LOGICAL_PRODUCT_BACKWARD)
         self.__run_loop.run()
