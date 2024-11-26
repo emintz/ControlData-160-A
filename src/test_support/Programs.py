@@ -595,11 +595,93 @@ SELECTIVE_COMPLEMENT_SPECIFIC = """
           HLT
           END
 """
+SET_BUFFER_STORAGE_BANK = """
+          REM Set Buffer Bank Control: low E -> Buffer Bank Control
+          BNK 3
+          ORG 100
+          SBU 6
+          HLT
+          END
+"""
+SET_DIRECT_BANK_CONTROL = """
+          REM Set Direct Bank Control: low E -> Direct Bank Control
+          BNK 3
+          ORG 100
+          SDC 6
+          HLT
+          END
+"""
+SET_DIRECT_INDIRECT_AND_RELATIVE_BANK_CONTROL_AND_JUMP = """
+          REM Set Direct, Indirect, and Relative Bank Control and jump
+          REM Low E -> Direct, Indirect, and Relative Bank Controls
+          REM [A] -> P
+          BNK 3
+          ORG 100
+          LDC 0o200
+          ACJ 6
+          BNK 6
+          ORG 200
+          HLT
+          END
+"""
+SET_DIRECT_AND_RELATIVE_BANK_CONTROL_AND_JUMP = """
+          REM Set Direct and Relative Bank Controls and Jump
+          REM Low E -> Direct and Relative Storage Banks
+          REM [A] -> P
+          BNK 3
+          ORG 100
+          LDC 200
+          DRJ 6
+          HLT
+          END
+"""
+SET_INDIRECT_BANK_CONTROL = """
+          REM Set Indirect Bank Control: low E -> Indirect Bank Control
+          BNK 3
+          ORG 100
+          SIC 6
+          HLT
+          END
+"""
+SET_INDIRECT_AND_DIRECT_BANK_CONTROL = """
+          REM Set Indirect and Direct Bank Control
+          REM Low E -> Indirect and Direct Bank Controls
+          BNK 3
+          ORG 100
+          SID 6
+          HLT
+          END
+"""
+SET_INDIRECT_AND_RELATIVE_BANK_CONTROL_AND_JUMP = """
+          REM Set Indirect and Relative Bank Control and Jump
+          REM Low E -> indirect and relative bank controls,
+          REM [A] -> P
+          BNK 3
+          ORG 100
+          LDC 200
+          IRJ 6
+          BNK 6
+          ORG 200
+          HLT
+          END
+"""
 SET_LITERAL = """
           REM set a literal value
           BNK 3
           ORG 100
           OCT 1234
+          END
+"""
+SET_RELATIVE_BANK_CONTROL_AND_JUMP = """
+          REM Set Relative Bank Control and Jump low E -> Relative Bank Control,
+          REM [A] -> P
+          BNK 3
+          ORG 100
+          LDC 0o200
+          SRJ 6
+          BNK 6
+          ORG 200
+          HLT
           END
 """
 SHIFT_REPLACE_BACKWARD = """

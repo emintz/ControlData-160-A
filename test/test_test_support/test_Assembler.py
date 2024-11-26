@@ -178,6 +178,9 @@ class TestAssembler(TestCase):
         assert assembler.words_written() == 1
         assert self.__storage.read_absolute(0o3, 0o0100) == 0o7700
 
+    def test_acj(self) -> None:
+        self.__single_instruction_test("ACJ 6", [0o0076])
+
     def test_adb(self) -> None:
         self.__single_instruction_test("ADB 4", [0o3304])
 
@@ -224,6 +227,9 @@ class TestAssembler(TestCase):
 
     def test_aos(self) -> None:
         self.__single_instruction_test("AOS", [0o5700])
+
+    def test_drj(self) -> None:
+        self.__single_instruction_test("DRJ 6", [0o0056])
 
     def test_nop_then_halt(self) -> None:
         assembler = self.assembler(Programs.NOOP_THEN_HALT)
@@ -322,6 +328,9 @@ class TestAssembler(TestCase):
     def test_hlt(self) -> None:
         self.__single_instruction_test("HLT", [0o7700])
 
+    def test_irj(self) -> None:
+        self.__single_instruction_test("IRJ 6", [0o0036])
+
     def test_jfi(self) -> None:
         self.__single_instruction_test("JFI 12", [0o7112])
 
@@ -407,7 +416,7 @@ class TestAssembler(TestCase):
         self.__single_instruction_test(
             "PJF 40",[0o6240])
 
-    def test_ras(self) -> None:
+    def test_rab(self) -> None:
         self.__single_instruction_test(
             "RAB 24", [0o5324])
 
@@ -466,6 +475,9 @@ class TestAssembler(TestCase):
     def test_sbs(self) -> None:
         self.__single_instruction_test("SBS", [0o3700])
 
+    def test_sbu(self) -> None:
+        self.__single_instruction_test("SBU 6", [0o0146])
+
     def test_scb(self) -> None:
         self.__single_instruction_test("SCB 04", [0o1704])
 
@@ -490,6 +502,15 @@ class TestAssembler(TestCase):
     def test_scs(self) -> None:
         self.__single_instruction_test("SCS", [0o1700])
 
+    def test_sdc(self) -> None:
+        self.__single_instruction_test("SDC 6", [0o0046])
+
+    def test_sic(self) -> None:
+        self.__single_instruction_test("SIC 6", [0o0026])
+
+    def test_sid(self) -> None:
+        self.__single_instruction_test("SID 6", [0o0066])
+
     def test_srb(self) -> None:
         self.__single_instruction_test("SRB 2", [0o4702])
 
@@ -505,6 +526,9 @@ class TestAssembler(TestCase):
 
     def test_sri(self) -> None:
         self.__single_instruction_test("SRI 77", [0o4577])
+
+    def test_srj(self) -> None:
+        self.__single_instruction_test("SRJ 6", [0o0016])
 
     def test_srm(self) -> None:
         self.__single_instruction_test("SRM 1234", [0o4500, 0o1234])

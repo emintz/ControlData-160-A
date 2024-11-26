@@ -629,6 +629,19 @@ class Storage:
     def s_to_next_address(self) -> None:
         self.__next_address = self.s_register
 
+    def set_buffer_bank_from_e(self) -> None:
+        self.buffer_storage_bank = self.f_e & 0o7
+
+    def set_direct_bank_from_e(self) -> None:
+        self.direct_storage_bank = self.f_e & 0o7
+
+    def set_indirect_bank_from_e(self) -> None:
+        self.indirect_storage_bank = self.f_e & 0o7
+
+    def set_relative_bank_from_e_and_jump(self) -> None:
+        self.relative_storage_bank = self.f_e & 0o07
+        self.__next_address = self.a_register
+
     def value_to_s_address_relative(self, value: int) -> None:
         """
         value -> S(r)

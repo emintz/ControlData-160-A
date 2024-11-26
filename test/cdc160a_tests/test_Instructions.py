@@ -1,6 +1,7 @@
 import unittest
 from unittest import TestCase
 
+from Microinstructions import s_relative_to_a
 from cdc160a import Instructions
 from cdc160a.Storage import MCS_MODE_DIR
 from cdc160a.Storage import MCS_MODE_IND
@@ -37,6 +38,20 @@ class Test(TestCase):
 
     def tearDown(self) -> None:
         self.storage = None
+
+    def test_acj(self) -> None:
+        assert Instructions.ACJ.name() == "ACJ"
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0076)
+        self.storage.unpack_instruction()
+        self.storage.a_register = 0o200
+        Instructions.ACJ.determine_effective_address(self.storage)
+        assert self.storage.s_register == INSTRUCTION_ADDRESS
+        assert Instructions.ACJ.perform_logic(self.storage) == 1
+        assert self.storage.direct_storage_bank == 0o06
+        assert self.storage.indirect_storage_bank == 0o06
+        assert self.storage.relative_storage_bank == 0o06
+        self.storage.advance_to_next_instruction()
+        assert self.storage.get_next_execution_address() == 0o200
 
     def test_adb(self) -> None:
         self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o3301)
@@ -273,6 +288,18 @@ class Test(TestCase):
         assert self.storage.run_stop_status
         self.storage.advance_to_next_instruction()
         assert (self.storage.get_program_counter() == AFTER_DOUBLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_drj(self) -> None:
+        assert Instructions.DRJ.name() == "DRJ"
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0056)
+        self.storage.unpack_instruction()
+        self.storage.a_register = 0o200
+        assert self.storage.s_register == INSTRUCTION_ADDRESS
+        assert Instructions.DRJ.perform_logic(self.storage) == 1
+        assert self.storage.direct_storage_bank == 0o06
+        assert self.storage.relative_storage_bank == 0o06
+        self.storage.advance_to_next_instruction()
+        assert self.storage.get_program_counter() == 0o200
 
     def test_err(self) -> None:
         # err
@@ -1063,7 +1090,6 @@ class Test(TestCase):
         assert (self.storage.get_program_counter() ==
                 AFTER_DOUBLE_WORD_INSTRUCTION_ADDRESS)
 
-
     def test_rad(self) -> None:
         address = 0o20
         self.storage.s_register = address
@@ -1193,6 +1219,19 @@ class Test(TestCase):
         assert self.storage.z_register == 0o4007
         assert self.storage.a_register == 0o7001
 
+    def test_sbu(self) -> None:
+        assert Instructions.SBU.name() == "SBU"
+        self.storage.a_register = 0o200
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0146)
+        self.storage.unpack_instruction()
+        Instructions.SBU.determine_effective_address(self.storage)
+        assert self.storage.get_program_counter() == INSTRUCTION_ADDRESS
+        assert Instructions.SBU.perform_logic(self.storage) == 1
+        assert self.storage.buffer_storage_bank == 0o06
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
+
     def test_scb(self) -> None:
         assert Instructions.SCB.name() == "SCB"
         self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o1702)
@@ -1272,6 +1311,31 @@ class Test(TestCase):
         assert (self.storage.get_program_counter() ==
                 AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
 
+    def test_sic(self) -> None:
+        assert Instructions.SIC.name() == "SIC"
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o26)
+        self.storage.unpack_instruction()
+        Instructions.SIC.determine_effective_address(self.storage)
+        assert self.storage.s_register == INSTRUCTION_ADDRESS
+        assert Instructions.SIC.perform_logic(self.storage) == 1
+        assert self.storage.indirect_storage_bank == 0o06
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_sid(self) -> None:
+        assert Instructions.SID.name() == "SID"
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o66)
+        self.storage.unpack_instruction()
+        Instructions.SID.determine_effective_address(self.storage)
+        assert self.storage.s_register == INSTRUCTION_ADDRESS
+        assert Instructions.SID.perform_logic(self.storage) == 1
+        assert self.storage.direct_storage_bank == 0o06
+        assert self.storage.indirect_storage_bank == 0o06
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
+
     def test_scm(self) -> None:
         assert Instructions.SCM.name() == "SCM"
         self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o1500)
@@ -1331,6 +1395,43 @@ class Test(TestCase):
         self.storage.advance_to_next_instruction()
         assert (self.storage.get_program_counter() ==
                 AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_irj(self) -> None:
+        assert Instructions.IRJ.name() == "IRJ"
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0036)
+        self.storage.unpack_instruction()
+        self.storage.a_register = 0o200
+        Instructions.IRJ.determine_effective_address(self.storage)
+        assert self.storage.s_register == INSTRUCTION_ADDRESS
+        assert Instructions.IRJ.perform_logic(self.storage) == 1
+        assert self.storage.indirect_storage_bank == 0o06
+        assert self.storage.relative_storage_bank == 0o06
+        self.storage.advance_to_next_instruction()
+        assert self.storage.get_program_counter() == 0o200
+
+    def test_sdc(self) -> None:
+        assert Instructions.SDC.name() == "SDC"
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0046)
+        self.storage.unpack_instruction()
+        Instructions.SDC.determine_effective_address(self.storage)
+        assert self.storage.s_register == INSTRUCTION_ADDRESS
+        assert Instructions.SDC.perform_logic(self.storage) == 1
+        assert self.storage.direct_storage_bank == 0o06
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_srj(self) -> None:
+        assert Instructions.SRJ.name() == "SRJ"
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0016)
+        self.storage.unpack_instruction()
+        self.storage.a_register = 0o200
+        Instructions.SRJ.determine_effective_address(self.storage)
+        assert self.storage.get_program_counter() == INSTRUCTION_ADDRESS
+        assert Instructions.SRJ.perform_logic(self.storage) == 1
+        assert self.storage.relative_storage_bank == 0o06
+        self.storage.advance_to_next_instruction()
+        assert self.storage.get_program_counter() == 0o200
 
     # TODO(emintz): verify STC behavior, which makes no sense to me.
     def test_stc(self) -> None:

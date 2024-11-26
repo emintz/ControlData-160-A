@@ -46,6 +46,15 @@ class TestRunLoop(TestCase):
         assert not self.__storage.err_status
         assert not self.__storage.run_stop_status
 
+    def test_acj(self) -> None:
+        self.load_test_program(
+            Programs.SET_DIRECT_INDIRECT_AND_RELATIVE_BANK_CONTROL_AND_JUMP)
+        self.__run_loop.run()
+        assert self.__storage.direct_storage_bank == 0o06
+        assert self.__storage.indirect_storage_bank == 0o06
+        assert self.__storage.relative_storage_bank == 0o06
+        assert self.__storage.get_program_counter() == 0o200
+
     def test_adb(self) -> None:
         self.load_test_program(Programs.ADD_BACKWARD)
         self.__run_loop.run()
@@ -150,10 +159,25 @@ class TestRunLoop(TestCase):
         assert self.__storage.read_specific() == 0o1234
         assert not self.__storage.err_status
 
+    def test_drj(self) -> None:
+        self.load_test_program(
+            Programs.SET_DIRECT_AND_RELATIVE_BANK_CONTROL_AND_JUMP)
+        self.__run_loop.run()
+        assert self.__storage.direct_storage_bank == 0o06
+        assert self.__storage.relative_storage_bank == 0o06
+        assert self.__storage.get_program_counter() == 0o200
+
     def test_err(self) -> None:
         self.load_test_program(Programs.ERROR_HALT)
         self.__run_loop.run()
         assert self.__storage.err_status
+
+    def test_irj(self) -> None:
+        self.load_test_program(Programs.SET_INDIRECT_AND_RELATIVE_BANK_CONTROL_AND_JUMP)
+        self.__run_loop.run()
+        assert self.__storage.indirect_storage_bank == 0o06
+        assert self.__storage.relative_storage_bank == 0o06
+        assert self.__storage.get_program_counter() == 0o200
 
     def test_jfi(self) -> None:
         self.load_test_program(Programs.JUMP_FORWARD_INDIRECT)
@@ -372,6 +396,12 @@ class TestRunLoop(TestCase):
         assert self.__storage.get_program_counter() == 0o103
         assert not self.__storage.err_status
 
+    def test_sbu(self) -> None:
+        self.load_test_program(Programs.SET_BUFFER_STORAGE_BANK)
+        self.__run_loop.run()
+        assert self.__storage.buffer_storage_bank == 0o06
+        assert self.__storage.get_program_counter() == 0o101
+
     def test_scb(self) -> None:
         self.load_test_program(Programs.SELECTIVE_COMPLEMENT_BACKWARD)
         self.__run_loop.run()
@@ -402,10 +432,24 @@ class TestRunLoop(TestCase):
         self.__run_loop.run()
         assert self.__storage.a_register == 0o06
 
+    def test_sid(self) -> None:
+        self.load_test_program(Programs.SET_INDIRECT_AND_DIRECT_BANK_CONTROL)
+        self.__run_loop.run()
+        assert self.__storage.direct_storage_bank == 0o06
+        assert self.__storage.indirect_storage_bank == 0o06
+        assert self.__storage.get_program_counter() == 0o101
+
     def test_scs(self) -> None:
         self.load_test_program(Programs.SELECTIVE_COMPLEMENT_SPECIFIC)
         self.__run_loop.run()
         assert self.__storage.a_register == 0o06
+
+    def test_sdc(self) -> None:
+        self.load_test_program(Programs.SET_DIRECT_BANK_CONTROL)
+        self.__run_loop.run()
+        assert self.__storage.direct_storage_bank == 0o06
+        assert self.__storage.relative_storage_bank == 0o03
+        assert self.__storage.s_register == 0o101
 
     def test_shi(self) -> None:
         self.load_test_program(Programs.SUBTRACT_INDIRECT)
@@ -443,6 +487,12 @@ class TestRunLoop(TestCase):
         assert self.__storage.get_program_counter() == 0o101
         assert not self.__storage.err_status
 
+    def test_sic(self) -> None:
+        self.load_test_program(Programs.SET_INDIRECT_BANK_CONTROL)
+        self.__run_loop.run()
+        assert self.__storage.indirect_storage_bank == 0o06
+        assert self.__storage.get_program_counter() == 0o101
+
     def test_src(self) -> None:
         self.load_test_program(Programs.SHIFT_REPLACE_CONSTANT)
         self.__run_loop.run()
@@ -474,6 +524,12 @@ class TestRunLoop(TestCase):
         assert self.__storage.read_indirect_bank(0o24) == 0o0003
         assert self.__storage.get_program_counter() == 0o101
         assert not self.__storage.err_status
+
+    def test_srj(self) -> None:
+        self.load_test_program(Programs.SET_RELATIVE_BANK_CONTROL_AND_JUMP)
+        self.__run_loop.run()
+        assert self.__storage.relative_storage_bank == 0o06
+        assert self.__storage.get_program_counter() == 0o200
 
     def test_srm(self) -> None:
         self.load_test_program(Programs.SHIFT_REPLACE_MEMORY)

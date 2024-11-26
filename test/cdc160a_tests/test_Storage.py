@@ -389,6 +389,33 @@ class TestStorage(TestCase):
         self.storage.s_to_next_address()
         assert self.storage.next_address() == 0o321
 
+    def test_set_buffer_bank_from_e(self) -> None:
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0146)
+        self.storage.unpack_instruction()
+        self.storage.set_buffer_bank_from_e()
+        assert self.storage.buffer_storage_bank == 0o06
+
+    def test_set_direct_bank_from_e(self) -> None:
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0046)
+        self.storage.unpack_instruction()
+        self.storage.set_direct_bank_from_e()
+        assert self.storage.direct_storage_bank == 0o06
+
+    def test_set_indirect_bank_from_e(self) -> None:
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0026)
+        self.storage.unpack_instruction()
+        self.storage.set_indirect_bank_from_e()
+        assert self.storage.indirect_storage_bank == 0o06
+
+    def test_set_relative_bank_from_e_and_jump(self) -> None:
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0016)
+        self.storage.unpack_instruction()
+        self.storage.a_register = 0o200
+        self.storage.set_relative_bank_from_e_and_jump()
+        assert self.storage.relative_storage_bank == 0o06
+        self.storage.advance_to_next_instruction()
+        assert self.storage.get_program_counter() == 0o200
+
     def test_set_buffer_storage_bank(self) -> None:
         assert self.storage.buffer_storage_bank == 0
         assert self.storage.read_buffer_bank(READ_AND_WRITE_ADDRESS) == 0o10

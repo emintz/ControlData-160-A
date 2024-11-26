@@ -315,6 +315,100 @@ def selective_complement_specific(storage: Storage) -> None:
     storage.specific_to_z()
     storage.xor_a_with_z()
 
+def set_buf_bank_from_e(storage: Storage) -> None:
+    """
+    [E] & 0o07 -> Buffer Bank Control
+
+    Set the buffer bank control to the lower three bits of E.
+
+    :param storage: memory and register file
+    :return: None
+    """
+    storage.set_buffer_bank_from_e()
+
+def set_dir_bank_from_e(storage: Storage) -> None:
+    """
+    [E] & 0o07 -> Direct Bank Control
+
+    Sets the direct bank control to the lower three bits of E
+
+    :param storage: memory and storage bank
+    :return: None
+    """
+    storage.set_direct_bank_from_e()
+
+
+def set_dir_ind_rel_bank_from_e_and_jump(storage: Storage) -> None:
+    """
+    [E] & 0o07 -> Direct, Indirect, and Relative Bank Control, [A] -> P
+
+    Sets the direct and relative bank controls to the lower three bits of E
+    and P to the value in A, jumping to [A](r), where r represents the
+    newly set relative storage bank.
+
+    :param storage: memory and storage bank
+    :return: None
+    """
+    storage.set_direct_bank_from_e()
+    storage.set_indirect_bank_from_e()
+    storage.set_relative_bank_from_e_and_jump()
+
+def set_dir_rel_bank_from_e_and_jump(storage: Storage) -> None:
+    """
+    [E] & 0o07 -> Direct and Relative Bank Control, [A] -> P
+
+    Sets the direct and relative bank controls to the lower three bits of E
+    and P to the value in A, jumping to [A](r), where r represents the
+    newly set relative storage bank.
+
+    :param storage: memory and storage bank
+    :return: None
+    """
+    storage.set_direct_bank_from_e()
+    storage.set_relative_bank_from_e_and_jump()
+
+def set_ind_bank_from_e(storage: Storage) -> None:
+    """
+    [E] & 0o07 -> Indirect Bank Control
+
+    Set the indirect bank control to the lower three bits of E
+
+    :param storage: memory and register file
+    :return: None
+    """
+    storage.set_indirect_bank_from_e()
+
+def set_ind_dir_bank_from_e(storage: Storage) -> None:
+    storage.set_direct_bank_from_e()
+    storage.set_indirect_bank_from_e()
+
+def set_ind_rel_bank_from_e_and_jump(storage: Storage) -> None:
+    """
+    [E] & 0o07 -> Indirect and Relative Bank Control, [A] -> P
+
+    Set the indirect and relative storage banks to the lower three bits of E
+    and P to the value of A, causing the program to branch to [A](r) where
+    r represents the newly set relative bank.
+
+    :param storage: memory and register file
+    :return: None
+    """
+    storage.set_indirect_bank_from_e()
+    storage.set_relative_bank_from_e_and_jump()
+
+def set_rel_bank_from_e_and_jump(storage: Storage) -> None:
+    """
+    [E] & 0o07 -> Relative Storage Control, [A] -> P
+
+    Set the relative storage bank to the lower three bits of E and
+    P to the value of A, causing the program to branch to [A](r) where
+    r represents the newly set relative bank.
+
+    :param storage: register and memory file
+    :return: None
+    """
+    storage.set_relative_bank_from_e_and_jump()
+
 def shift_a_right_one(storage: Storage) -> None:
     """
     [A] >> 1 -> A

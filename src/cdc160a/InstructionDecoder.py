@@ -77,8 +77,26 @@ class Opcode00:
 
     def decode(self, e: int) -> Instruction:
         decoded_instruction = Instructions.ERR
-        if e in range(0o01, 0o010) :
-            decoded_instruction = Instructions.NOP
+        match e >> 3:
+            case 0:
+                if e in range(0o01, 0o010) :
+                    decoded_instruction = Instructions.NOP
+            case 1:
+                decoded_instruction = Instructions.SRJ
+            case 2:
+                decoded_instruction = Instructions.SIC
+            case 3:
+                decoded_instruction = Instructions.IRJ
+            case 4:
+                decoded_instruction = Instructions.SDC
+            case 5:
+                decoded_instruction = Instructions.DRJ
+            case 6:
+                decoded_instruction = Instructions.SID
+            case 7:
+                decoded_instruction = Instructions.ACJ
+            case _:
+                pass
         return decoded_instruction
 
 class OpCode01:
@@ -99,8 +117,12 @@ class OpCode01:
         self.opcode = 0o01
 
     def decode(self, e: int) -> Instruction:
-        return Instructions.ERR if e not in self.__e_to_instruction \
-            else self.__e_to_instruction[e]
+        decoded_instruction = Instructions.ERR
+        if e in self.__e_to_instruction:
+            decoded_instruction = self.__e_to_instruction[e]
+        elif e & 0o70 == 0o40:
+            decoded_instruction = Instructions.SBU
+        return decoded_instruction
 
 class OpCode77:
     def __init__(self):

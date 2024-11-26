@@ -102,6 +102,9 @@ class AddressSetter:
         return self.__name
 
 class BankSetter:
+    """
+    Implements BNK, which sets the bank to receive assembler output
+    """
     def __init__(self, assembler: Assembler, name: str):
         self.__assembler = assembler
         self.__name = name
@@ -216,6 +219,27 @@ class OneWordAnyE:
         """
         return self.__name
 
+class OneWordLowE:
+
+    def __init__(
+            self, assembler: Assembler,  name: str, opcode: int, high_e: int):
+        self.__assembler = assembler
+        self.__name = name
+        self.__opcode = opcode << 6
+        self.__high_e = (high_e << 3) & 0o70
+
+    def emit(self, tokens: [str]) -> None:
+        low_e = 0o07
+        if len(tokens) < 2:
+            self.__assembler.error(
+                "Bank number missing, using 7")
+        else:
+            low_e = self.__assembler.token_to_bank(tokens[1])
+        self.__assembler.emit_word(self.__opcode | self.__high_e | low_e)
+
+    def name(self) -> str:
+        return self.__name
+
 class OneWordNonZeroE:
     """
     An instruction with n E in [0o01 .. 0o77]
@@ -290,6 +314,7 @@ class Assembler:
         self.__words_written = 0
 
         self.__emitters = {
+            "ACJ": OneWordLowE(self, "ACJ", 0o00, 0o07),
             "ADB": OneWordNonZeroE(self, "ADB", 0o33),
             "ADC": TwoWordFixedE(self, "ADC", 0o32),
             "ADD": OneWordAnyE(self, "ADD", 0o30),
@@ -306,9 +331,11 @@ class Assembler:
             "AOM": TwoWordFixedE(self, "AOM", 0o55),
             "AOS": FixedEValue(self, "AOS", 0o5700),
             "BNK": BankSetter(self, "BNK"),
+            "DRJ": OneWordLowE(self, "DRJ", 0o00, 0o05),
             "END": StopAssembly(self, "ERR"),
             "ERR": FixedEValue(self, "ERR", 0o0000),
             "HLT": FixedEValue(self, "HLT", 0o7700),
+            "IRJ": OneWordLowE(self, "IRJ", 0o00, 0o03),
             "JFI": OneWordNonZeroE(self, "JFI", 0o71),
             "JPR": TwoWordFixedE(self, "JPR", 0o71),
             "LCB": OneWordNonZeroE(self, "LCB", 0o27),
@@ -368,19 +395,24 @@ class Assembler:
             "SBM": TwoWordFixedE(self, "SBM", 0o35),
             "SBN": OneWordAnyE(self, "SBN", 0o07),
             "SBS": FixedEValue(self, "SBS", 0o3700),
+            "SBU": OneWordLowE(self, "SBU", 0o01, 0o04),
             "SCB": OneWordNonZeroE(self, "SCB", 0o17),
             "SCC": TwoWordFixedE(self, "SCC", 0o16),
             "SCD": OneWordAnyE(self, "SCD", 0o14),
             "SCF": OneWordNonZeroE(self, "SCF", 0o16),
             "SCI": OneWordNonZeroE(self, "SCI", 0o15),
+            "SIC": OneWordLowE(self, "SIC", 0o00, 0o02),
+            "SID": OneWordLowE(self, "SID", 0o00, 0o06),
             "SCM": TwoWordFixedE(self, "SCM", 0o15),
             "SCN": OneWordAnyE(self, "SCN", 0o03),
             "SCS": FixedEValue(self, "SCS", 0o1700),
+            "SDC": OneWordLowE(self, "SDC", 0o00, 0o04),
             "SRB": OneWordNonZeroE(self, "SRB", 0o47),
             "SRC": TwoWordFixedE(self, "SRC", 0o46),
             "SRD": OneWordAnyE(self, "SRD", 0o44),
-            "SRI": OneWordNonZeroE(self, "SRI", 0o45),
             "SRF": OneWordNonZeroE(self, "SRF", 0o46),
+            "SRI": OneWordNonZeroE(self, "SRI", 0o45),
+            "SRJ": OneWordLowE(self, "SRJ", 0o00, 0o01),
             "SRS": FixedEValue(self, "SRS", 0o4700),
             "SRM": TwoWordFixedE(self, "SRM", 0o45),
             "STB": OneWordNonZeroE(self, "STB", 0o43),

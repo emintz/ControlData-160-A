@@ -43,35 +43,51 @@ class Test(TestCase):
         assert decoder.decode(0o00).name() == "ERR"
         for e in range(0o01, 0o10):
             assert decoder.decode(e).name() == "NOP"
-        # TODO(emintz): test the remaining e values
+        for e in range(0o10, 0o20):
+            assert decoder.decode(e).name() == "SRJ"
+        for e in range(0o20, 0o30):
+            assert decoder.decode(e).name() == "SIC"
+        for e in range(0o30, 0o40):
+            assert decoder.decode(e).name() == "IRJ"
+        for e in range(0o40, 0o50):
+            assert decoder.decode(e).name() == "SDC"
+        for e in range(0o50, 0o60):
+            assert decoder.decode(e).name() == "DRJ"
+        for e in range(0o60, 0o70):
+            assert decoder.decode(e).name() == "SID"
+        for e in range(0o70, 0o100):
+            assert decoder.decode(e).name() == "ACJ"
 
     def test_decode_01(self) -> None:
         decoder = InstructionDecoder.decoder_at(0x01)
         assert decoder.opcode == 0o01
         for e in range(0o00, 0o100):
             instruction_name = decoder.decode(e).name()
-            match e:
-                case 0o00:
-                    assert instruction_name == "ERR"
-                case 0o02:
-                    assert instruction_name == "LS1"
-                case 0o03:
-                    assert instruction_name == "LS2"
-                case 0o10:
-                    assert instruction_name == "LS3"
-                case 0o11:
-                    assert instruction_name == "LS6"
-                case 0o12:
-                    assert instruction_name == "MUT"
-                case 0o13:
-                    assert instruction_name == "MUH"
-                case 0o14:
-                    assert instruction_name == "RS1"
-                case 0o15:
-                    assert instruction_name == "RS2"
-                case _:
-                    assert instruction_name == "ERR", \
-                           f"At {e} expected ERR and got {instruction_name}"
+            if 0o40 <= e < 0o50:
+                assert instruction_name == "SBU"
+            else:
+                match e:
+                    case 0o00:
+                        assert instruction_name == "ERR"
+                    case 0o02:
+                        assert instruction_name == "LS1"
+                    case 0o03:
+                        assert instruction_name == "LS2"
+                    case 0o10:
+                        assert instruction_name == "LS3"
+                    case 0o11:
+                        assert instruction_name == "LS6"
+                    case 0o12:
+                        assert instruction_name == "MUT"
+                    case 0o13:
+                        assert instruction_name == "MUH"
+                    case 0o14:
+                        assert instruction_name == "RS1"
+                    case 0o15:
+                        assert instruction_name == "RS2"
+                    case _:
+                        assert instruction_name == "ERR", \
+                               f"At {e} expected ERR and got {instruction_name}"
 
     def test_decode_02(self) -> None:
         decoder = InstructionDecoder.decoder_at(0o02)

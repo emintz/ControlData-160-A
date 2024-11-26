@@ -502,6 +502,72 @@ class Test(TestCase):
         assert self.storage.z_register == 0o14
         assert self.storage.a_register == 0o6
 
+    def test_set_buf_bank_from_e(self) -> None:
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0146)
+        self.storage.unpack_instruction()
+        Microinstructions.set_buf_bank_from_e(self.storage)
+        assert self.storage.buffer_storage_bank == 0o06
+
+    def test_set_dir_bank_from_e(self) -> None:
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0046)
+        self.storage.unpack_instruction()
+        Microinstructions.set_dir_bank_from_e(self.storage)
+        assert self.storage.direct_storage_bank == 0o06
+
+    def test_set_dir_ind_rel_bank_from_e_and_jump(self) -> None:
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0046)
+        self.storage.unpack_instruction()
+        self.storage.a_register = 0o200
+        Microinstructions.set_dir_ind_rel_bank_from_e_and_jump(self.storage)
+        assert self.storage.direct_storage_bank == 0o06
+        assert self.storage.indirect_storage_bank == 0o06
+        assert self.storage.relative_storage_bank == 0o06
+        self.storage.advance_to_next_instruction()
+        assert self.storage.get_program_counter() == 0o200
+
+    def test_set_dir_rel_bank_from_e_and_jump(self) -> None:
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0046)
+        self.storage.unpack_instruction()
+        self.storage.a_register = 0o200
+        Microinstructions.set_dir_rel_bank_from_e_and_jump(self.storage)
+        assert self.storage.direct_storage_bank == 0o06
+        assert self.storage.relative_storage_bank == 0o06
+        self.storage.advance_to_next_instruction()
+        assert self.storage.get_program_counter() == 0o200
+
+    def test_set_ind_bank_from_e(self) -> None:
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0026)
+        self.storage.unpack_instruction()
+        Microinstructions.set_ind_bank_from_e(self.storage)
+        assert self.storage.indirect_storage_bank == 0o06
+
+    def test_ind_dir_bank_from_e(self) -> None:
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o056)
+        self.storage.unpack_instruction()
+        Microinstructions.set_ind_dir_bank_from_e(self.storage)
+        assert self.storage.direct_storage_bank == 0o06
+        assert self.storage.indirect_storage_bank == 0o06
+
+    def test_ind_rel_bank_from_e_and_jump(self) -> None:
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0026)
+        self.storage.unpack_instruction()
+        self.storage.a_register = 0o200
+        Microinstructions.set_ind_rel_bank_from_e_and_jump(self.storage)
+        assert self.storage.indirect_storage_bank == 0o06
+        assert self.storage.relative_storage_bank == 0o06
+        self.storage.advance_to_next_instruction()
+        assert self.storage.get_program_counter() == 0o200
+
+    def test_set_rel_bank_from_e_and_jump(self) -> None:
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0016)
+        self.storage.unpack_instruction()
+        self.storage.a_register = 0o200
+        Microinstructions.set_rel_bank_from_e_and_jump(
+            self.storage)
+        assert self.storage.relative_storage_bank == 0o06
+        self.storage.advance_to_next_instruction()
+        assert self.storage.get_program_counter() == 0o200
+
     def selective_complement_specific(self) -> None:
         self.storage.write_specific(0o14)
         self.storage.a_register = 0o12
