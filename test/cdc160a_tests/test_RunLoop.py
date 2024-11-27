@@ -180,6 +180,11 @@ class TestRunLoop(TestCase):
         self.__run_loop.run()
         assert self.__storage.err_status
 
+    def test_hwi(self) -> None:
+        self.load_test_program(Programs.HALF_WRITE_INDIRECT)
+        self.__run_loop.run()
+        assert self.__storage.read_indirect_bank(0o2100) == 0o4321
+
     def test_irj(self) -> None:
         self.load_test_program(Programs.SET_INDIRECT_AND_RELATIVE_BANK_CONTROL_AND_JUMP)
         self.__run_loop.run()

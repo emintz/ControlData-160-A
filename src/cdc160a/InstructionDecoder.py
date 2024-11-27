@@ -150,6 +150,18 @@ class OpCode01:
 
         return decoded_instruction
 
+class OpCode76:
+    def __init__(self):
+        self.opcode = 0o76
+
+    def decode(self, e: int) -> Instruction:
+        if e == 0o00:
+            return Instructions.ERR # TODO(emintz): INA
+        if e == 0o77:
+            return Instructions.ERR # TODO(emintz): OTA
+        return Instructions.HWI
+
+
 class OpCode77:
     def __init__(self):
         self.opcode = 0o77
@@ -225,7 +237,7 @@ __DECODERS = [
     __UNIMPLEMENTED,            # 73
     __UNIMPLEMENTED,            # 74
     __UNIMPLEMENTED,            # 75
-    __UNIMPLEMENTED,            # 76
+    OpCode76(),                                                # 76
     OpCode77(),                 # 77
 ]
 

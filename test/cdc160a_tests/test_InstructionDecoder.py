@@ -448,5 +448,12 @@ class Test(TestCase):
         for e in range(1, 0o100):
             assert decoder.decode(e).name() == "JFI"
 
+    def test_decode_76(self) -> None:
+        decoder = InstructionDecoder.decoder_at(0o76)
+        assert decoder.opcode == 0o76
+        # TODO(emintz): 00 (INA), 77 (OTA)
+        for e in range(0o01, 0o77):
+            assert decoder.decode(e).name() == "HWI"
+
     if __name__ == "__main__":
         unittest.main()

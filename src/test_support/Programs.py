@@ -135,6 +135,26 @@ ERROR_HALT = """
           ERR
           END
 """
+HALF_WRITE_INDIRECT = """
+          REM Half Write Indirect: [E](d) -> S, A(0 .. 6) -> [S](i)
+          REM Form the effective address from the value at E in the
+          REM indirect storage bank, and store the lower 6 bits
+          REM of A at the effective address in the direct storage
+          REM bank. The upper 6 bits of the destination are unchanged.
+          REM
+          BNK 2     Indirect storage bank.
+          ORG 44    E in the half write indirect instruction
+          OCT 2100  Destination address in the indirect bank.
+          BNK 1     Indirect storage bank
+          ORG 2100  Destination address
+          OCT 4377
+          BNK 3     Relative storage bank
+          ORG 100   Program start address
+          LDC 7621
+          HWI 44    Half write indirect via [44](i)
+          HLT
+          END
+"""
 HALT = """
           REM  Simplest possible non-vacuous program that just halts
           BNK 3
