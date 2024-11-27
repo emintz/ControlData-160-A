@@ -194,6 +194,24 @@ class Storage:
         self.z_register = self.memory[0, 0o7777]
         self.a_register &= self.z_register
 
+    def bank_controls_to_a(self) -> None:
+        self.a_register = self.buffer_storage_bank
+        self.a_register <<= 3
+        self.a_register |= self.direct_storage_bank
+        self.a_register <<= 3
+        self.a_register |= self.indirect_storage_bank
+        self.a_register <<= 3
+        self.a_register |= self.relative_storage_bank
+
+    def e_direct_to_s(self) -> None:
+        self.s_register = self.read_direct_bank(self.f_e)
+
+    def half_write_to_s_indirect(self) -> None:
+        self.s_indirect_to_z()
+        self.z_register &= 0o7700
+        self.z_register |= self.a_register & 0o77
+        self.z_to_s_indirect()
+
     def load_a(self, bank: int, address: int)-> None:
         """
         Move [address(bank)] -> Z and A
@@ -267,6 +285,14 @@ class Storage:
         :return: None
         """
         self.s_register = self.p_register
+
+    def p_to_s_direct(self) -> None:
+        """
+        Write [P] to E{d). In practice, [E] will be in [50 .. 57]
+
+        :return: None
+        """
+        self.write_direct_bank(self.f_e, self.p_register)
 
     def store_a(self, bank: int) -> None:
         """
@@ -379,6 +405,9 @@ class Storage:
 
     def next_after_two_word_instruction(self) -> None:
         self.__next_address = Arithmetic.add(self.p_register, 2)
+
+    def p_to_a(self) -> None:
+        self.a_register = self.p_register
 
     def relative_backward_to_s(self) -> None:
         """
@@ -737,11 +766,15 @@ class Storage:
     def z_to_a(self) -> None:
         self.a_register = self.z_register
 
-    def z_to_p(self):
+    def z_to_p(self) -> None:
         self.p_register = self.z_register
 
-    def z_to_s(self):
+    def z_to_s(self) -> None:
         self.s_register = self.z_register
+
+    def z_to_s_indirect(self) -> None:
+        self.write_indirect_bank(self.s_register, self.z_register)
+        self.storage_cycle = MCS_MODE_IND
 
     def __difference_to_a(self, minuend: int, subtrahend: int) -> None:
         """

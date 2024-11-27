@@ -2,7 +2,7 @@ from unittest import TestCase
 
 from test_support import Programs
 from cdc160a.Storage import Storage
-from test_support.Assembler import Assembler, two_digit_octal, four_digit_octal
+from test_support.Assembler import Assembler, two_digit_octal, four_digit_octal, OneWordRangeE
 from test_support.Assembler import one_digit_octal
 
 SINGLE_INSTRUCTION_TEMPLATE = """
@@ -22,6 +22,54 @@ class TestAssembler(TestCase):
 
     def assembler(self, source: str = '') -> Assembler:
         return Assembler(source, self.__storage)
+
+    def empty_assembler(self) -> Assembler:
+        assembler = self.assembler("          END\n")
+        assembler.set_bank(3)
+        assembler.set_address(0o100)
+        return assembler
+
+    def test_one_word_range_e_valid(self) -> None:
+        assembler = self.empty_assembler()
+        self.__storage.set_relative_storage_bank(0o03)
+        emitter = OneWordRangeE(
+            assembler,
+            "STP",
+            0o01,
+            0o50,
+            0o57)
+        assert emitter.name() == "STP"
+        emitter.emit(["STP", "51"])
+        assert self.__storage.read_relative_bank(0o100) == 0o0151
+        assert assembler.error_count() == 0
+
+    def test_one_word_range_e_too_small(self) -> None:
+        assembler = self.empty_assembler()
+        self.__storage.set_relative_storage_bank(0o03)
+        emitter = OneWordRangeE(
+            assembler,
+            "STP",
+            0o01,
+            0o50,
+            0o57)
+        assert emitter.name() == "STP"
+        emitter.emit(["STP", "47"])
+        assert self.__storage.read_relative_bank(0o100) == 0o0157
+        assert assembler.error_count() == 1
+
+    def test_one_word_range_e_too_big(self) -> None:
+        assembler = self.empty_assembler()
+        self.__storage.set_relative_storage_bank(0o03)
+        emitter = OneWordRangeE(
+            assembler,
+            "STP",
+            0o01,
+            0o50,
+            0o57)
+        assert emitter.name() == "STP"
+        emitter.emit(["STP", "60"])
+        assert self.__storage.read_relative_bank(0o100) == 0o0157
+        assert assembler.error_count() == 1
 
     def test_one_digit_octal(self) -> None:
         assert one_digit_octal(0o0) == "0"
@@ -228,8 +276,24 @@ class TestAssembler(TestCase):
     def test_aos(self) -> None:
         self.__single_instruction_test("AOS", [0o5700])
 
+    def test_cta(self) -> None:
+        self.__single_instruction_test("CTA", [0o0130])
+
     def test_drj(self) -> None:
         self.__single_instruction_test("DRJ 6", [0o0056])
+
+    def test_hwi(self) -> None:
+        self.__single_instruction_test("HWI 64", [0o7664])
+
+    def test_hwI_e_too_small(self) -> None:
+        assembler = self.assembler(SINGLE_INSTRUCTION_TEMPLATE.format("HWI 0"))
+        assert not assembler.run()
+        assert assembler.error_count() == 1
+
+    def test_hwi_e_too_large(self) -> None:
+        assembler = self.assembler(SINGLE_INSTRUCTION_TEMPLATE.format("HWI 77"))
+        assert not assembler.run()
+        assert assembler.error_count() == 1
 
     def test_nop_then_halt(self) -> None:
         assembler = self.assembler(Programs.NOOP_THEN_HALT)
@@ -416,6 +480,10 @@ class TestAssembler(TestCase):
         self.__single_instruction_test(
             "PJF 40",[0o6240])
 
+    def test_pta(self) -> None:
+        self.__single_instruction_test(
+            "PTA", [0o0101])
+
     def test_rab(self) -> None:
         self.__single_instruction_test(
             "RAB 24", [0o5324])
@@ -558,6 +626,10 @@ class TestAssembler(TestCase):
     def test_stm(self) -> None:
         self.__single_instruction_test(
             "STM 5432", [0o4100, 0o5432])
+
+    def test_stp(self) -> None:
+        self.__single_instruction_test("STP 53", [0o0153])
+
 
     def test_sts(self) -> None:
         self.__single_instruction_test("STS", [0o4300])

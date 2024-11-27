@@ -2,6 +2,8 @@ import unittest
 from typing import Final
 from unittest import TestCase
 
+from numpy.compat import open_latin1
+
 from Storage import MCS_MODE_BFR
 from Storage import MCS_MODE_DIR
 from Storage import MCS_MODE_IND
@@ -183,6 +185,14 @@ class TestStorage(TestCase):
         assert self.storage.z_register == 0o6365
         assert self.storage.a_register == 0o4321
 
+    def test_bank_controls_to_a(self) -> None:
+        self.storage.set_buffer_storage_bank(0o1)
+        self.storage.set_direct_storage_bank(0o2)
+        self.storage.set_indirect_storage_bank(0o3)
+        self.storage.set_relative_storage_bank(0o4)
+        self.storage.bank_controls_to_a()
+        assert self.storage.a_register == 0o1234
+
     def test_complement_a(self) -> None:
         self.storage.a_register = 0o7777
         self.storage.complement_a()
@@ -198,6 +208,15 @@ class TestStorage(TestCase):
         assert self.storage.f_instruction == 0o04
         assert self.storage.f_e == 0o17
 
+    def test_e_direct_to_s(self) -> None:
+        self.storage.set_direct_storage_bank(1)
+        self.storage.set_indirect_storage_bank(2)
+        self.storage.set_relative_storage_bank(3)
+        self.storage.f_e = 0o23
+        self.storage.write_direct_bank(0o23, 0o2000)
+        self.storage.e_direct_to_s()
+        assert self.storage.s_register == 0o2000
+
     def test_e_to_s(self) -> None:
         self.storage.relative_storage_bank = 3
         self.storage.unpack_instruction()
@@ -211,6 +230,15 @@ class TestStorage(TestCase):
         self.storage.g_to_s()
         assert self.storage.s_register == 0o4321
         assert self.storage.z_register == 0o4321
+
+    def test_half_write_to_s_indirect(self) -> None:
+        self.storage.relative_storage_bank = 0o03
+        self.storage.indirect_storage_bank = 0o01
+        self.storage.a_register = 0o7621
+        self.storage.s_register = 0o200
+        self.storage.write_indirect_bank(self.storage.s_register, 0o4367)
+        self.storage.half_write_to_s_indirect()
+        assert self.storage.read_indirect_bank(0o200) == 0o4321
 
     def test_load_a(self) -> None:
         self.storage.write_absolute(1, 0o100, 0o1234)
@@ -281,6 +309,17 @@ class TestStorage(TestCase):
         self.storage.advance_to_next_instruction()
         assert self.storage.get_program_counter() == 0o0001
 
+    def test_p_to_a(self) -> None:
+        self.storage.p_register = 0o3241
+        self.storage.p_to_a()
+        assert self.storage.p_register == 0o3241
+
+    def test_p_to_s_direct(self) -> None:
+        self.storage.p_register = 0o1324
+        self.storage.f_e = 0o54
+        self.storage.f_instruction = 0o01
+        self.storage.p_to_s_direct()
+        assert self.storage.read_direct_bank(0o54) == 0o1324
 
     def test_relative_backward_address_to_s(self) -> None:
         self.storage.relative_storage_bank = 4
@@ -617,6 +656,14 @@ class TestStorage(TestCase):
         self.storage.z_register = 0o4321
         self.storage.z_to_p()
         assert self.storage.p_register == 0o4321
+
+    def test_z_to_s_indirect(self) -> None:
+        self.storage.s_register = 0o4400
+        self.storage.z_register = 0o1234
+        self.storage.set_indirect_storage_bank(0o6)
+        self.storage.z_to_s_indirect()
+        assert self.storage.read_indirect_bank(0o4400) == 0o1234
+        assert self.storage.storage_cycle == MCS_MODE_IND
 
 if __name__ == "__main__":
     unittest.main()

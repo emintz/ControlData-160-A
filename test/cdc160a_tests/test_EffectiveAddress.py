@@ -108,6 +108,13 @@ class Test(TestCase):
         assert self.storage.s_register == 0o7777
         assert self.storage.storage_cycle == MCS_MODE_REL
 
+    def test_via_direct_at_e(self) -> None:
+        # NWI
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7615)
+        self.storage.unpack_instruction()
+        self.storage.write_direct_bank(0o15, 0o2400)
+        EffectiveAddress.via_direct_at_e(self.storage)
+        assert self.storage.s_register == 0o2400
 
 if __name__ == "__main__":
     unittest.main()

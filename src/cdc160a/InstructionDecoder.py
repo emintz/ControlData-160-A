@@ -101,10 +101,14 @@ class Opcode00:
 
 class OpCode01:
     # TODO(emintz): the remaining instructions
-    __e_to_instruction = {
+    __e_to_instruction_00 = {
         0o00: Instructions.ERR,
+        0o01: Instructions.PTA,
         0o02: Instructions.LS1,
         0o03: Instructions.LS2,
+    }
+
+    __e_to_instruction_01 = {
         0o10: Instructions.LS3,
         0o11: Instructions.LS6,
         0o12: Instructions.MUT,
@@ -113,15 +117,37 @@ class OpCode01:
         0o15: Instructions.RS2,
     }
 
+    __e_to_instruction_03 = {
+        0o30: Instructions.CTA,
+    }
+
     def __init__(self):
         self.opcode = 0o01
 
     def decode(self, e: int) -> Instruction:
         decoded_instruction = Instructions.ERR
-        if e in self.__e_to_instruction:
-            decoded_instruction = self.__e_to_instruction[e]
-        elif e & 0o70 == 0o40:
-            decoded_instruction = Instructions.SBU
+        e_high = (e & 0o70) >> 3
+        match e_high:
+            case 0:
+                if e in self.__e_to_instruction_00:
+                    decoded_instruction = self.__e_to_instruction_00[e]
+            case 1:
+                if e in self.__e_to_instruction_01:
+                    decoded_instruction = self.__e_to_instruction_01[e]
+            case 2:
+                pass
+            case 3:
+                if e in self.__e_to_instruction_03:
+                    decoded_instruction = self.__e_to_instruction_03[e]
+            case 4:
+                decoded_instruction = Instructions.SBU
+            case 5:
+                decoded_instruction = Instructions.STP
+            case 6:
+                pass
+            case 7:
+                pass
+
         return decoded_instruction
 
 class OpCode77:

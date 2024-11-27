@@ -59,13 +59,16 @@ def and_relative_with_a(storage: Storage) -> None:
 def and_specific_with_a(storage: Storage) -> None:
     storage.and_specific_with_a()
 
-# No operation
-def do_nothing(_: Storage) -> None:
-    pass
+def bank_controls_to_a(storage: Storage) -> None:
+    storage.bank_controls_to_a()
 
 # A -> ~A
 def complement_a(storage: Storage) -> None:
     storage.complement_a()
+
+# No operation
+def do_nothing(_: Storage) -> None:
+    pass
 
 def e_complement_to_a(storage: Storage) -> None:
     e_to_a(storage)
@@ -75,11 +78,29 @@ def e_complement_to_a(storage: Storage) -> None:
 def e_to_a(storage: Storage) -> None:
     storage.e_to_z()
     storage.z_to_a()
-
 # Halt the machine and set the error status
 def error(storage: Storage) -> None:
+    """
+    Halt the machine and set the error status to true.
+
+    :param storage: memory and register file
+    :return: None
+    """
     storage.stop()
     storage.err_status = True
+
+def half_write_indirect(storage: Storage) -> None:
+    """
+    Set S tp the operand address at [E](d) and store the
+    lower 6 bits of the E register to [S](i)
+
+    Preconditions: S must contain the destination address
+                   in the indirect storage bank.
+
+    :param storage: memory and register file
+    :return: None
+    """
+    storage.half_write_to_s_indirect()
 
 # Halt the machine without setting the error status
 def halt(storage: Storage) -> None:
@@ -93,6 +114,12 @@ def multiply_a_by_10(storage: Storage) -> None:
 
 def multiply_a_by_100(storage: Storage) -> None:
     storage.a_times_100()
+
+def p_to_a(storage: Storage) -> None:
+    storage.p_to_a()
+
+def p_to_e_direct(storage: Storage) -> None:
+    storage.p_to_s_direct()
 
 # Replace Add Instruction Suite
 def replace_add(storage: Storage, bank: int) -> None:

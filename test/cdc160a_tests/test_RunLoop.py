@@ -159,6 +159,14 @@ class TestRunLoop(TestCase):
         assert self.__storage.read_specific() == 0o1234
         assert not self.__storage.err_status
 
+    def test_cta(self) -> None:
+        self.load_test_program(Programs.BANK_CONTROLS_TO_A)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o1234
+        assert not self.__storage.err_status
+        assert self.__storage.relative_storage_bank == 0o04
+        assert self.__storage.get_program_counter() == 0o201
+
     def test_drj(self) -> None:
         self.load_test_program(
             Programs.SET_DIRECT_AND_RELATIVE_BANK_CONTROL_AND_JUMP)
@@ -312,6 +320,13 @@ class TestRunLoop(TestCase):
         self.__run_loop.run()
         assert not self.__storage.err_status
         assert self.__storage.p_register ==  0o103
+
+    def test_pta(self) -> None:
+        self.load_test_program(Programs.P_TO_A)
+        self.__run_loop.run()
+        assert not self.__storage.err_status
+        assert self.__storage.a_register == 0o100
+        assert self.__storage.p_register == 0o101
 
     def test_pjf_a_zero(self) -> None:
         self.load_test_program(Programs.POSITIVE_JUMP_FORWARD_ZERO_A)
@@ -585,6 +600,12 @@ class TestRunLoop(TestCase):
         self.__run_loop.run()
         assert not self.__storage.err_status
         assert self.__storage.read_absolute(3, 0o1000) == 0o1234
+
+    def test_stp(self) -> None:
+        self.load_test_program(Programs.STORE_P_REGISTER)
+        self.__run_loop.run()
+        assert not self.__storage.err_status
+        assert self.__storage.read_direct_bank(0o56) == 0o100
 
     def test_sts(self) -> None:
         self.load_test_program(Programs.STORE_SPECIFIC)

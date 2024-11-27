@@ -1,6 +1,7 @@
 import unittest
 from unittest import TestCase
 
+from Storage import MCS_MODE_IND
 from cdc160a import Microinstructions
 from cdc160a.Storage import Storage
 from typing import Final
@@ -143,6 +144,14 @@ class Test(TestCase):
         assert self.storage.z_register == 0o6365
         assert self.storage.a_register == 0o4321
 
+    def test_bank_control_to_a(self) -> None:
+        self.storage.set_buffer_storage_bank(0o1)
+        self.storage.set_direct_storage_bank(0o2)
+        self.storage.set_indirect_storage_bank(0o3)
+        self.storage.set_relative_storage_bank(0o4)
+        Microinstructions.bank_controls_to_a(self.storage)
+        assert self.storage.a_register == 0o1234
+
     def test_complement_a(self) -> None:
         self.storage.a_register = 0o7070
         self.storage.complement_a()
@@ -166,6 +175,14 @@ class Test(TestCase):
         assert self.storage.z_register == 0o33
         assert self.storage.a_register == 0o33
 
+    def test_half_write_indirect(self):
+        self.storage.s_register = 0o2300
+        self.storage.write_indirect_bank(0o2300, 0o1267)
+        self.storage.a_register = 0o6534
+        Microinstructions.half_write_indirect(self.storage)
+        assert self.storage.read_indirect_bank(0o2300) == 0o1234
+        assert self.storage.storage_cycle == MCS_MODE_IND
+
     def test_multiply_a_by_10(self) -> None:
         # MUT
         self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0112)
@@ -182,6 +199,13 @@ class Test(TestCase):
         Microinstructions.multiply_a_by_100(self.storage)
         assert not self.storage.err_status
         assert self.storage.a_register == 100
+
+    def test_p_to_e_direct(self) -> None:
+        self.storage.p_register = 0o4132
+        self.storage.f_instruction = 0o01
+        self.storage.f_e = 0o53
+        Microinstructions.p_to_e_direct(self.storage)
+        assert self.storage.read_direct_bank(0o53) == 0o4132
 
     def test_s_to_a(self) -> None:
         # LDN 37
@@ -558,6 +582,11 @@ class Test(TestCase):
         self.storage.advance_to_next_instruction()
         assert self.storage.get_program_counter() == 0o200
 
+    def test_p_to_a(self) -> None:
+        self.storage.p_register = 0o4132
+        Microinstructions.p_to_a(self.storage)
+        assert self.storage.a_register == 0o4132
+
     def test_set_rel_bank_from_e_and_jump(self) -> None:
         self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0016)
         self.storage.unpack_instruction()
@@ -568,7 +597,7 @@ class Test(TestCase):
         self.storage.advance_to_next_instruction()
         assert self.storage.get_program_counter() == 0o200
 
-    def selective_complement_specific(self) -> None:
+    def test_selective_complement_specific(self) -> None:
         self.storage.write_specific(0o14)
         self.storage.a_register = 0o12
         Microinstructions.selective_complement_specific(self.storage)

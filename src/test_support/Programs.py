@@ -108,6 +108,28 @@ ADD_SPECIFIC = """
           HLT
           END
 """
+BANK_CONTROLS_TO_A = """
+          REM Bank Controls to A
+          REM     Buffer Bank Control Register -> A(11 - 9)
+          REM     Direct Bank Control Register -> A(8 - 6)
+          REM     Indirect Bank Control Register -> A(5 - 3)
+          REM     Relative Bank Control Register -> A(2 - 0)
+          REM
+          REM     Note: subscripts indicate the bit positions in A with
+          REM           11 being the most significant.
+          BNK 3
+          ORG 100
+          SBU 1
+          SDC 2
+          SIC 3
+          LDC 200
+          SRJ 4
+          BNK 4
+          ORG 200
+          CTA
+          HLT
+          END
+"""
 ERROR_HALT = """
           REM Test Error halt execution and set the error flag.
           ERR
@@ -322,6 +344,13 @@ NONZERO_JUMP_FORWARD_ZERO_A = """
           HLT
           HLT
           END
+"""
+P_TO_A = """
+          REM P to A, [P] -> A
+          BNK 3
+          ORG 100
+          PTA
+          HLT
 """
 POSITIVE_JUMP_BACKWARD_MINUS_ZERO_A = """
           REM Test positive jump backward with a set to minus zero
@@ -820,6 +849,14 @@ STORE_MEMORY = """
           HLT
           ORG 1000
           OCT 7777
+          END
+"""
+STORE_P_REGISTER = """
+          REM Store P, [P] -> E(d), 50 <= E <= 57
+          BNK 3
+          ORG 100
+          STP 56
+          HLT
           END
 """
 STORE_SPECIFIC = """

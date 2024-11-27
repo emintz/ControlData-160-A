@@ -273,6 +273,59 @@ class OneWordNonZeroE:
     def name(self) -> str:
         return self.__name
 
+class OneWordRangeE:
+    """
+    Emitter for an instruction whose E value must be in a fixed range.
+    The range is set at construction.
+
+    """
+    def __init__(
+            self,
+            assembler: Assembler,
+            name: str,
+            instruction: int,
+            e_lower_bound: int,
+            e_upper_bound):
+        """
+        Constructor
+
+        :param assembler: emits the instruction
+        :param name: instruction name
+        :param instruction: op-code in [0o00 .. 0o77]
+        :param e_lower_bound: lowest permissible E
+        :param e_upper_bound: highest permissible E
+        """
+        self.__assembler = assembler
+        self.__name = name
+        self.__instruction = (instruction << 6) & 0o7700
+        self.__e_lower_bound = e_lower_bound
+        self.__e_upper_bound = e_upper_bound
+
+    def emit(self, tokens: [str]):
+        e_value = self.__e_upper_bound
+        if len(tokens) < 2:
+            self.__assembler.error(
+                "E not provided, using {0}.".format(e_value))
+        else:
+            maybe_e_value = self.__assembler.token_to_e(tokens[1], e_value)
+            if (maybe_e_value < self.__e_lower_bound
+                or self.__e_upper_bound < maybe_e_value):
+                self.__assembler.error(
+                    "E must be between {0} and {1} inclusive, {2} provided. Using {3}."
+                        .format(
+                        oct(self.__e_lower_bound),
+                              oct(self.__e_upper_bound),
+                              oct(maybe_e_value),
+                              oct(e_value)))
+            else:
+                e_value = maybe_e_value
+
+            self.__assembler.emit_word(self.__instruction | e_value)
+
+
+    def name(self):
+        return self.__name
+
 class TwoWordFixedE:
     def __init__(self, assembler: Assembler, name: str, instruction: int):
         """
@@ -331,10 +384,12 @@ class Assembler:
             "AOM": TwoWordFixedE(self, "AOM", 0o55),
             "AOS": FixedEValue(self, "AOS", 0o5700),
             "BNK": BankSetter(self, "BNK"),
+            "CTA": FixedEValue(self, "CTA", 0o0130),
             "DRJ": OneWordLowE(self, "DRJ", 0o00, 0o05),
             "END": StopAssembly(self, "ERR"),
             "ERR": FixedEValue(self, "ERR", 0o0000),
             "HLT": FixedEValue(self, "HLT", 0o7700),
+            "HWI": OneWordRangeE(self, "HWI", 0o76, 0o01, 0o76),
             "IRJ": OneWordLowE(self, "IRJ", 0o00, 0o03),
             "JFI": OneWordNonZeroE(self, "JFI", 0o71),
             "JPR": TwoWordFixedE(self, "JPR", 0o71),
@@ -373,10 +428,11 @@ class Assembler:
             "NOP": FixedEValue(self, "NOP", 0o0007),
             "NZB": OneWordAnyE(self, "NZB", 0o65),
             "NZF": OneWordAnyE(self, "NZF", 0o61),
-            "PJB": OneWordAnyE(self, "PJB", 0o66),
-            "PJF": OneWordAnyE(self, "PJF", 0o62),
             "OCT": MemorySetter(self, "OCT"),
             "ORG": AddressSetter(self, "ORG"),
+            "PJB": OneWordAnyE(self, "PJB", 0o66),
+            "PJF": OneWordAnyE(self, "PJF", 0o62),
+            "PTA": FixedEValue(self, "PTA", 0o0101),
             "RAB": OneWordNonZeroE(self, "RAB", 0o53),
             "RAC": TwoWordFixedE(self, "RAC", 0o52),
             "RAD": OneWordAnyE(self, "RAD", 0o50),
@@ -421,6 +477,7 @@ class Assembler:
             "STF": OneWordNonZeroE(self, "STF", 0o42),
             "STI": OneWordAnyE(self, "STI", 0o41),
             "STM": TwoWordFixedE(self, "STM", 0o41),
+            "STP": OneWordRangeE(self, "STP", 0o01, 0o50, 0o57),
             "STS": FixedEValue(self, "STS", 0o4300),
             "ZJB": OneWordAnyE(self, "ZJB", 0o64),
             "ZJF": OneWordAnyE(self, "ZJF", 0o60),

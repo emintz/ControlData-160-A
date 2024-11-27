@@ -65,10 +65,14 @@ class Test(TestCase):
             instruction_name = decoder.decode(e).name()
             if 0o40 <= e < 0o50:
                 assert instruction_name == "SBU"
+            elif 0o50 <= e < 0o60:
+                assert instruction_name == "STP"
             else:
                 match e:
                     case 0o00:
                         assert instruction_name == "ERR"
+                    case 0o01:
+                        assert instruction_name == "PTA"
                     case 0o02:
                         assert instruction_name == "LS1"
                     case 0o03:
@@ -85,6 +89,8 @@ class Test(TestCase):
                         assert instruction_name == "RS1"
                     case 0o15:
                         assert instruction_name == "RS2"
+                    case 0o30:
+                        assert instruction_name == "CTA"
                     case _:
                         assert instruction_name == "ERR", \
                                f"At {e} expected ERR and got {instruction_name}"

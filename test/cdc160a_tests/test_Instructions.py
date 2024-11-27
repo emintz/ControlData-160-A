@@ -273,6 +273,7 @@ class Test(TestCase):
                 AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
 
     def test_aom(self) -> None:
+        assert Instructions.AOM.name() == "AOM"
         self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o5500)
         self.storage.write_relative_bank(G_ADDRESS, 0o200)
         self.storage.write_relative_bank(0o200, 0o1233)
@@ -288,6 +289,22 @@ class Test(TestCase):
         assert self.storage.run_stop_status
         self.storage.advance_to_next_instruction()
         assert (self.storage.get_program_counter() == AFTER_DOUBLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_cta(self) -> None:
+        assert Instructions.CTA.name() == "CTA"
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0130)
+        self.storage.set_buffer_storage_bank(0o1)
+        self.storage.set_direct_storage_bank(0o2)
+        self.storage.set_indirect_storage_bank(0o3)
+        self.storage.set_relative_storage_bank(0o4)
+        Instructions.CTA.determine_effective_address(self.storage)
+        assert self.storage.get_program_counter() == INSTRUCTION_ADDRESS
+        Instructions.CTA.perform_logic(self.storage)
+        assert self.storage.a_register == 0o1234
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
+
 
     def test_drj(self) -> None:
         assert Instructions.DRJ.name() == "DRJ"
@@ -328,6 +345,23 @@ class Test(TestCase):
         assert self.storage.a_register == 0o3333
         self.storage.advance_to_next_instruction()
         assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+
+    def test_hwi(self) -> None:
+        assert Instructions.HWI.name() == "HWI"
+        # hwi 54
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7654)
+        self.storage.unpack_instruction()
+        self.storage.write_direct_bank(0o54, 0o3200)
+        self.storage.write_indirect_bank(0o3200, 0o4356)
+        self.storage.a_register = 0o6521
+        Instructions.HWI.determine_effective_address(self.storage)
+        assert self.storage.s_register == 0o3200
+        assert Instructions.HWI.perform_logic(self.storage) == 4
+        assert self.storage.read_indirect_bank(0o3200) == 0o4321
+        assert self.storage.storage_cycle == MCS_MODE_IND
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
 
     def test_jfi(self) -> None:
         assert Instructions.JFI.name() == "JFI"
@@ -1041,6 +1075,7 @@ class Test(TestCase):
         assert self.storage.p_register == INSTRUCTION_ADDRESS + 0o0040
 
     def test_pjf_a_zero(self) -> None:
+        assert Instructions.PJF.name() == "PJF"
         # PJF
         self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o6240)
         self.storage.a_register = 0
@@ -1051,6 +1086,16 @@ class Test(TestCase):
         assert self.storage.next_address() == INSTRUCTION_ADDRESS + 0o0040
         self.storage.advance_to_next_instruction()
         assert self.storage.p_register == INSTRUCTION_ADDRESS + 0o0040
+
+    def test_pta(self) -> None:
+        assert Instructions.PTA.name() == "PTA"
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0101)
+        self.storage.unpack_instruction()
+        Instructions.PTA.perform_logic(self.storage)
+        assert self.storage.a_register == INSTRUCTION_ADDRESS
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.p_register ==
+                AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
 
     def test_rab(self) -> None:
         address = INSTRUCTION_ADDRESS - 2
@@ -1694,7 +1739,8 @@ class Test(TestCase):
         assert (self.storage.get_program_counter() ==
                 AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
 
-    def test_sdf(self) -> None:
+    def test_stf(self) -> None:
+        assert Instructions.STF.name() == "STF"
         # STF 10
         self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o4210)
         self.storage.a_register = 0o0210
@@ -1708,8 +1754,9 @@ class Test(TestCase):
                 0o0210)
         assert self.storage.get_program_counter() == INSTRUCTION_ADDRESS + 1
 
-    def test_sdi(self) -> None:
-        # SDI 14
+    def test_sti(self) -> None:
+        assert Instructions.STI.name() == "STI"
+        # STI 14
         self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o4114)
         self.storage.a_register = 0o0210
         self.storage.unpack_instruction()
@@ -1722,6 +1769,7 @@ class Test(TestCase):
                 AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
 
     def test_stm(self) -> None:
+        assert Instructions.STM.name() == "STM"
         # STM 1234
         self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o4100)
         self.storage.write_relative_bank(G_ADDRESS, READ_AND_WRITE_ADDRESS)
@@ -1735,6 +1783,16 @@ class Test(TestCase):
         self.storage.advance_to_next_instruction()
         assert (self.storage.get_program_counter() ==
                 AFTER_DOUBLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_stp(self) -> None:
+        assert Instructions.STP.name() == "STP"
+        # STP
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0155)
+        self.storage.unpack_instruction()
+        Instructions.STP.determine_effective_address(self.storage)
+        assert self.storage.s_register == INSTRUCTION_ADDRESS
+        Instructions.STP.perform_logic(self.storage)
+        assert self.storage.read_direct_bank(0o55) == INSTRUCTION_ADDRESS
 
     def test_sts(self) -> None:
         # STS

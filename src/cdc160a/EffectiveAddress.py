@@ -16,57 +16,111 @@
 """
 from cdc160a.Storage import Storage
 
-# Constant Address Mode (C): G, the second word of a 2 word instruction,
-# contains the operand.
 def constant(storage: Storage) -> None:
+    """
+    Constant Address Mode (C): G, the second word of a 2 word instruction,
+    contains the operand.
+
+    :param storage: memory and register file
+    :return: None
+    """
     storage.g_address_to_s()
     storage.mode_relative()
 
-# Direct Address Mode (D): E selects one of the first 64 (100 octal) addresses
-# in the direct storage bank.
 def direct(storage: Storage) -> None:
+    """
+    Direct Address Mode (D): E selects one of the first 64 (100 octal)
+    addresses  in the direct storage bank.
+
+    :param storage: memory and register file
+    :return: None
+    """
     storage.e_to_s()
     storage.mode_direct()
 
-# Forward Indirect Mode (FI): E is added to the contents of P. The result
-# specifies an address in the relative storage bank which specifies the
-# operand address or a jump address in the relative storage bank.
 def forward_indirect(storage: Storage) -> None:
+    """
+    Forward Indirect Mode (FI): E is added to the contents of P. The result
+    specifies an address in the relative storage bank which specifies the
+    operand address or a jump address in the relative storage bank.
+
+    :param storage: memory and register file
+    :return: None
+    """
     storage.forward_indirect_to_s()
     storage.mode_relative()
 
-# Indirect Address Mode (I): E selects one of the first 64 (100 octal) addresses
-# in the indirect storage bank.
 def indirect(storage: Storage) -> None:
+    """
+    Indirect Address Mode (I): E selects one of the first 64 (100 octal)
+    addresses in the indirect storage bank.
+
+    :param storage: memory and register file
+    :return: None
+    """
     storage.e_to_s()
     storage.mode_indirect()
 
-# Memory Address Mode (M): G contains the operand address in the indirect
-# storage bank
 def memory(storage: Storage) -> None:
+    """
+    Memory Address Mode (M): G contains the operand address in the indirect
+    storage bank
+
+    :param storage: memory and register file
+    :return: None
+    """
     storage.g_to_s()
     storage.mode_relative()
 
-# No Address Mode (N): E contains the operand. Since
-# instructions always run from the relative bank, access becomes relative.
 def no_address(storage: Storage) -> None:
+    """
+    No Address Mode (N): E contains the operand. Since
+    instructions always run from the relative bank, access becomes relative.
+
+    :param storage: memory and register file
+    :return: None
+    """
     storage.p_to_s()
     storage.mode_relative()
 
-# Relative Backward Address: E is subtracted to the contents of P
-# to determine the address in the relative storage bank.
 def relative_backward(storage: Storage) -> None:
+    """
+    Relative Backward Address: E is subtracted to the contents of P
+    to determine the address in the relative storage bank.
+
+    :param storage: memory and register file
+    :return: None
+    """
     storage.relative_backward_to_s()
     storage.mode_relative()
 
-# Relative Forward Address: E is added to the contents of P to determine
-# the address in the relative storage bank.
 def relative_forward(storage: Storage) -> None:
+    """
+    Relative Forward Address: E is added to the contents of P to determine
+    the address in the relative storage bank.
+
+    :param storage: memory and register file
+    :return: None
+    """
     storage.relative_forward_to_s()
     storage.mode_relative()
 
-# Specific Address Mode: the operation resides in bank 0 at
-# address 0o7777
 def specific(storage: Storage) -> None:
+    """
+    Specific Address Mode: the operation resides in bank 0 at
+    address 0o7777
+
+    :param storage: memory and register file
+    :return: None
+    """
     storage.specific_to_s()
     storage.mode_specific()
+
+def via_direct_at_e(storage: Storage) -> None:
+    """
+    Take the effective address from [S](d)
+
+    :param storage: memory and register file
+    :return: None
+    """
+    storage.e_direct_to_s()
