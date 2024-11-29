@@ -499,6 +499,78 @@ class TestRunLoop(TestCase):
         assert self.__storage.get_program_counter() == 0o103
         assert not self.__storage.err_status
 
+    def test_sic(self) -> None:
+        self.load_test_program(Programs.SET_INDIRECT_BANK_CONTROL)
+        self.__run_loop.run()
+        assert self.__storage.indirect_storage_bank == 0o06
+        assert self.__storage.get_program_counter() == 0o101
+
+    def test_sjs_stop_and_branch(self) -> None:
+        self.__storage.set_jump_switch_mask(0o6)
+        self.__storage.set_stop_switch_mask(0o6)
+        self.load_test_program(Programs.SELECTIVE_STOP_AND_JUMP)
+        self.__run_loop.run()
+        assert self.__storage.get_program_counter() == 0o100
+        # Note: cannot restart loop after a halt instruction
+        # because, when running a test, it run loop would restart
+        # from the SLS address and simply rerun the instruction.
+        # The best we can do is  check the next address.
+        assert self.__storage.get_next_execution_address() == 0o200
+
+    def test_sjs_stop_and_no_branch(self) -> None:
+        self.__storage.set_jump_switch_mask(0o2)
+        self.__storage.set_stop_switch_mask(0o6)
+        self.load_test_program(Programs.SELECTIVE_STOP_AND_JUMP)
+        self.__run_loop.run()
+        assert self.__storage.get_program_counter() == 0o100
+        # Note: cannot restart loop after a halt instruction
+        # because, when running a test, it run loop would restart
+        # from the SLS address and simply rerun the instruction.
+        # The best we can do is  check the next address.
+        assert self.__storage.get_next_execution_address() == 0o102
+
+    def test_sjs_no_stop_and_branch(self) -> None:
+        self.__storage.set_jump_switch_mask(0o6)
+        self.__storage.set_stop_switch_mask(0o5)
+        self.load_test_program(Programs.SELECTIVE_STOP_AND_JUMP)
+        self.__run_loop.run()
+        assert self.__storage.get_program_counter() == 0o200
+
+    def test_sjs_no_stop_and_no_branch(self) -> None:
+        self.__storage.set_jump_switch_mask(0o2)
+        self.__storage.set_stop_switch_mask(0o5)
+        self.load_test_program(Programs.SELECTIVE_STOP_AND_JUMP)
+        self.__run_loop.run()
+        assert self.__storage.get_program_counter() == 0o102
+
+    def test_slj_branch(self) -> None:
+        self.__storage.set_jump_switch_mask(0o6)
+        self.load_test_program(Programs.SELECTIVE_JUMP)
+        self.__run_loop.run()
+        assert self.__storage.get_program_counter() == 0o200
+        assert not self.__storage.err_status
+
+    def test_slj_no_branch(self) -> None:
+        self.__storage.set_jump_switch_mask(0o5)
+        self.load_test_program(Programs.SELECTIVE_JUMP)
+        self.__run_loop.run()
+        assert self.__storage.get_program_counter() == 0o102
+        assert not self.__storage.err_status
+
+    def test_sls_no_stop(self) -> None:
+        self.__storage.set_stop_switch_mask(0o05)
+        self.load_test_program(Programs.SELECTIVE_STOP)
+        self.__run_loop.run()
+        assert self.__storage.get_program_counter() == 0o101
+        assert not self.__storage.run_stop_status
+
+    def test_sls_stop(self) -> None:
+        self.__storage.set_stop_switch_mask(0o06)
+        self.load_test_program(Programs.SELECTIVE_STOP)
+        self.__run_loop.run()
+        assert self.__storage.get_program_counter() == 0o100
+        assert not self.__storage.run_stop_status
+
     def test_srb(self) -> None:
         self.load_test_program(Programs.SHIFT_REPLACE_BACKWARD)
         self.__run_loop.run()
@@ -506,12 +578,6 @@ class TestRunLoop(TestCase):
         assert self.__storage.read_relative_bank(0o76) == 0o0003
         assert self.__storage.get_program_counter() == 0o101
         assert not self.__storage.err_status
-
-    def test_sic(self) -> None:
-        self.load_test_program(Programs.SET_INDIRECT_BANK_CONTROL)
-        self.__run_loop.run()
-        assert self.__storage.indirect_storage_bank == 0o06
-        assert self.__storage.get_program_counter() == 0o101
 
     def test_src(self) -> None:
         self.load_test_program(Programs.SHIFT_REPLACE_CONSTANT)

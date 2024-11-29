@@ -110,6 +110,12 @@ class Storage:
         # to the next instruction until we determine that the machine
         # has not halted itself.
         self.__next_address = 0
+        # Jump switch settings. The console is responsible for
+        # keeping its value current.
+        self.__jump_switch_mask = 0
+        # Stop switch mask. The console is responsible for
+        # keeping its value current.
+        self.__stop_switch_mask = 0
 
     def a_negative(self) -> bool:
         return self.a_register & 0o4000 != 0
@@ -193,6 +199,24 @@ class Storage:
     def and_specific_with_a(self) -> None:
         self.z_register = self.memory[0, 0o7777]
         self.a_register &= self.z_register
+
+    def and_with_jump_switches(self, mask: int) -> int:
+        """
+        Conjoin the provided mask with the jump switch setting
+
+        :param mask: value to be conjoined. Must be in [0o0 .. 0o7]
+        :return: the conjunction
+        """
+        return mask & self.__jump_switch_mask
+
+    def and_with_stop_switches(self, mask: int) -> int:
+        """
+        Conjoin the provided mask with the stop switch setting.
+
+        :param mask: value to conjoin
+        :return: the conjunction
+        """
+        return self.__stop_switch_mask & mask
 
     def bank_controls_to_a(self) -> None:
         self.a_register = self.buffer_storage_bank
@@ -391,6 +415,16 @@ class Storage:
         self.z_register = self.read_relative_bank(self.p_register + 1)
         self.s_register = self.z_register
 
+    def g_to_next_address(self) -> None:
+        """
+        Sets S, the effective address register, to [G(r)]
+
+        :return: None
+        """
+        self.g_address_to_s()
+        self.z_register = self.read_relative_bank(self.s_register)
+        self.__next_address = self.z_register
+
     def next_address(self) -> int:
         """
         Returns the address of the next instruction. Used for testing
@@ -469,6 +503,15 @@ class Storage:
         """
         self.indirect_storage_bank = value & 0o7
 
+    def set_jump_switch_mask(self, mask: int) -> None:
+        """
+        Sets the jump mask to the specified value.
+
+        :param mask: new jump switch settings. Must be in [0o0 .. 0o7]
+        :return: None
+        """
+        self.__jump_switch_mask = mask
+
     def set_next_instruction_address(self, next_address: int) -> None:
         """
         Set the address of the next instruction. Note that the current
@@ -499,6 +542,15 @@ class Storage:
         :return: None
         """
         self.relative_storage_bank = value & 0o7
+
+    def set_stop_switch_mask(self, mask: int) -> None:
+        """
+        Set the stop switch mask to the specified value
+
+        :param mask: value to set, must be in range [0o0, 0o7]
+        :return: None
+        """
+        self.__stop_switch_mask = mask
 
     def read_absolute(self, bank: int, address: int):
         """

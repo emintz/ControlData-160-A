@@ -342,6 +342,49 @@ def selective_complement_specific(storage: Storage) -> None:
     storage.specific_to_z()
     storage.xor_a_with_z()
 
+def selective_jump(storage: Storage) -> int:
+    """
+    Set the next address based on E and the jump switch settings.
+    E contains the required jump switches. Jump if it specifies
+    any set jump switch, otherwise continue normal execution flow.
+
+    :param storage:
+    :return: the number of cycles used: 1 if no jump, 2 if jump
+    """
+    mask = (storage.f_e >> 3) & 0o07
+    if storage.and_with_jump_switches(mask) != 0:
+        storage.g_to_next_address()
+        return 2
+    else:
+        storage.next_after_two_word_instruction()
+        return 1
+
+def selective_stop(storage: Storage) -> None:
+    """
+    Halt if the lower half of E has any bits set that are also
+    set that match the jump switch mask. Normal execution
+    flow resumes when the operator restarts the machine.
+
+    :param storage: memory and register file
+    :return: None
+    """
+    mask = storage.f_e & 0o07
+    if storage.and_with_stop_switches(mask) != 0:
+        storage.stop()
+
+def selective_stop_and_jump(storage: Storage) -> int:
+    """
+    Determine the next address based on the jump switches per
+    selective_jump() above. Then stop as determine by selective_stop()
+    above. Execution resumes at the address determined in the first
+    step.
+
+    :param storage: memory and register file
+    :return: the number of cycles used.
+    """
+    selective_stop(storage)
+    return selective_jump(storage)
+
 def set_buf_bank_from_e(storage: Storage) -> None:
     """
     [E] & 0o07 -> Buffer Bank Control

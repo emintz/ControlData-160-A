@@ -455,5 +455,18 @@ class Test(TestCase):
         for e in range(0o01, 0o77):
             assert decoder.decode(e).name() == "HWI"
 
+    def test_decode_77(self) -> None:
+        decoder = InstructionDecoder.decoder_at(0o77)
+        assert decoder.opcode == 0o77
+        assert decoder.decode(0o00).name() == "HLT"
+        assert decoder.decode(0o77).name() == "HLT"
+        for e in range(0o01, 0o77):
+            expected_name = "SJS"
+            if e & 0o07 == 0:
+                expected_name = "SLJ"
+            elif e & 0o70 == 0:
+                expected_name = "SLS"
+            assert decoder.decode(e).name() == expected_name
+
     if __name__ == "__main__":
         unittest.main()

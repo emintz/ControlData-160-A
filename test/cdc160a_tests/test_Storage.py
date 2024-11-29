@@ -224,6 +224,14 @@ class TestStorage(TestCase):
         assert self.storage.z_register == 0o17
         assert self.storage.storage_cycle == MCS_MODE_REL
 
+    def test_g_to_next_address(self) -> None:
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7710)
+        self.storage.write_relative_bank(G_ADDRESS, 0o1000)
+        self.storage.unpack_instruction()
+        self.storage.g_to_next_address()
+        assert self.storage.get_next_execution_address() == 0o1000
+        assert self.storage.z_register == 0o1000
+
     def test_g_to_s(self) -> None:
         self.storage.relative_storage_bank = 4
         self.storage.unpack_instruction()
@@ -239,6 +247,22 @@ class TestStorage(TestCase):
         self.storage.write_indirect_bank(self.storage.s_register, 0o4367)
         self.storage.half_write_to_s_indirect()
         assert self.storage.read_indirect_bank(0o200) == 0o4321
+
+    def test_jump_switches(self) -> None:
+        self.storage.set_jump_switch_mask(0)
+        assert self.storage.and_with_jump_switches(0o7) == 0o0
+        self.storage.set_jump_switch_mask(0o1)
+        assert self.storage.and_with_jump_switches(0o7) == 0o1
+        self.storage.set_jump_switch_mask(0o6)
+        assert self.storage.and_with_jump_switches(0o4) == 0o04
+
+    def test_stop_switches(self) -> None:
+        self.storage.set_stop_switch_mask(0)
+        assert self.storage.and_with_stop_switches(0o7) == 0o0
+        self.storage.set_stop_switch_mask(0o1)
+        assert self.storage.and_with_stop_switches(0o7) == 0o1
+        self.storage.set_stop_switch_mask(0o6)
+        assert self.storage.and_with_stop_switches(0o4) == 0o04
 
     def test_load_a(self) -> None:
         self.storage.write_absolute(1, 0o100, 0o1234)

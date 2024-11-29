@@ -39,12 +39,17 @@ has its own format.
    The assembler issues an error if the G value is missing,
    malformed, or out of range.
 
-   Note that well-formed E and G values will not exceed
-   the maximum allowed value. Minimums are checked where
-   required.
-   """
+4. Two word instructions having a variable and possibly restricted
+   E value. The first token is the instruction, the second is the E
+   value, and the third is the G value.
+
+Note that well-formed E and G values will not exceed
+the maximum allowed value. Minimums are checked where
+required.
+"""
 from __future__ import annotations
 
+from typing import Callable
 from cdc160a import Storage
 import re
 import sys
@@ -320,7 +325,7 @@ class OneWordRangeE:
             else:
                 e_value = maybe_e_value
 
-            self.__assembler.emit_word(self.__instruction | e_value)
+        self.__assembler.emit_word(self.__instruction | e_value)
 
 
     def name(self):
@@ -348,8 +353,57 @@ class TwoWordFixedE:
             g_value = int(tokens[1], 8)
         self.__assembler.emit_two_words(self.__output, g_value)
 
+
     def name(self) -> str:
         return self.__name
+
+class TwoWordVariableE:
+    def __init__(
+            self,
+            assembler: Assembler,
+            name: str,
+            instruction: int,
+            e_validator: Callable[[int], bool],
+            e_transform: Callable[[int], int]):
+        self.__assembler = assembler
+        self.__name = name
+        self.__instruction = (instruction << 6) & 0o7700
+        self.__e_validator = e_validator
+        self.__e_transform = e_transform
+
+    def emit(self, tokens: [str]) -> None:
+        raw_e = 7
+        g = 0o7777
+
+        match len(tokens):
+            case 0:
+                raise "Internal error: no instruction name."
+            case 1:
+                    self.__assembler.error(
+                        "E and G are required, using 7 and 7777 respectively")
+            case 2:
+                self.__assembler.error(
+                    "E is required, using 7777")
+                raw_e = self.__extract_e(tokens[1])
+            case _:
+                raw_e = self.__extract_e(tokens[1])
+                g = self.__assembler.token_to_g(tokens[2], 0o7777)
+
+        instruction = self.__e_transform(raw_e) | self.__instruction
+        self.__assembler.emit_two_words(instruction, g)
+
+    def name(self) -> str:
+        return self.__name
+
+    def __extract_e(self, token: str):
+        e = 7
+        maybe_raw_e = self.__assembler.token_to_e(token, e)
+        if self.__e_validator(maybe_raw_e):
+            e = maybe_raw_e
+        else:
+            self.__assembler.error("Invalid E value, using 7.Please find "
+                                   "valid values in the  reference manual.")
+        return e
 
 class Assembler:
     def __init__(self, source: str, storage: Storage):
@@ -463,6 +517,9 @@ class Assembler:
             "SCN": OneWordAnyE(self, "SCN", 0o03),
             "SCS": FixedEValue(self, "SCS", 0o1700),
             "SDC": OneWordLowE(self, "SDC", 0o00, 0o04),
+            "SJS": TwoWordVariableE(self, "SJS", 0o77, lambda e: 0 < e < 0o77, lambda e: e),
+            "SLJ": TwoWordVariableE(self,"SLJ", 0o77, lambda e: 0 < e <= 7, lambda e: (e << 3) & 0o70),
+            "SLS": OneWordRangeE(self, "SLS", 0o77, 0o1,0o7),
             "SRB": OneWordNonZeroE(self, "SRB", 0o47),
             "SRC": TwoWordFixedE(self, "SRC", 0o46),
             "SRD": OneWordAnyE(self, "SRD", 0o44),

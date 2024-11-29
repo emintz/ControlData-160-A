@@ -644,6 +644,36 @@ SELECTIVE_COMPLEMENT_SPECIFIC = """
           HLT
           END
 """
+SELECTIVE_JUMP = """
+          REM Selective Jump: branch if any bit in E matches a set jump switch
+          BNK 3
+          ORG 100
+          SLJ 2 200
+          HLT
+          ORG 200
+          HLT
+          END
+"""
+SELECTIVE_STOP = """
+          REM Selective stop, stop if any bits in E specify a set Stop Switch
+          BNK 3
+          ORG 100
+          SLS 2
+          HLT
+          END
+"""
+SELECTIVE_STOP_AND_JUMP = """
+          REM Selective Stop and Jump, stop if any bits in E specifies a
+          REM set Stop Switch, then jump if any bits in E match a set
+          REM jump switch.
+          BNK 3
+          ORG 100
+          SJS 52 200
+          HLT
+          ORG 200
+          HLT
+          END
+"""
 SET_BUFFER_STORAGE_BANK = """
           REM Set Buffer Bank Control: low E -> Buffer Bank Control
           BNK 3

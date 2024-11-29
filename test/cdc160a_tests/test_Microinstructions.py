@@ -6,11 +6,13 @@ from cdc160a import Microinstructions
 from cdc160a.Storage import Storage
 from typing import Final
 
-from cdc160a_tests.test_Instructions import AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+from cdc160a_tests.test_Instructions import (
+    AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS,
+    AFTER_DOUBLE_WORD_INSTRUCTION_ADDRESS,
+    G_ADDRESS,
+    INSTRUCTION_ADDRESS,
+    READ_AND_WRITE_ADDRESS)
 
-READ_AND_WRITE_ADDRESS: Final[int] = 0o1234
-INSTRUCTION_ADDRESS: Final[int] = 0o1232
-G_ADDRESS: Final[int] = INSTRUCTION_ADDRESS + 1
 JUMP_ADDRESS: Final[int] = 0o2000
 
 class Test(TestCase):
@@ -183,6 +185,14 @@ class Test(TestCase):
         assert self.storage.read_indirect_bank(0o2300) == 0o1234
         assert self.storage.storage_cycle == MCS_MODE_IND
 
+    def test_indirect_complement_to_a(self) -> None:
+        self.storage.write_indirect_bank(READ_AND_WRITE_ADDRESS, 0o7654)
+        self.storage.s_register = READ_AND_WRITE_ADDRESS
+        Microinstructions.s_indirect_complement_to_a(self.storage)
+        assert self.storage.run_stop_status
+        assert self.storage.z_register == 0o7654
+        assert self.storage.a_register == 0o7654 ^ 0o7777
+
     def test_multiply_a_by_10(self) -> None:
         # MUT
         self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0112)
@@ -232,13 +242,79 @@ class Test(TestCase):
         assert self.storage.z_register == 0o7654
         assert self.storage.a_register == 0o7654
 
-    def test_indirect_complement_to_a(self) -> None:
-        self.storage.write_indirect_bank(READ_AND_WRITE_ADDRESS, 0o7654)
-        self.storage.s_register = READ_AND_WRITE_ADDRESS
-        Microinstructions.s_indirect_complement_to_a(self.storage)
+    def test_selective_jump_branch(self) -> None:
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7720)
+        self.storage.unpack_instruction()
+        self.storage.write_relative_bank(G_ADDRESS, 0o200)
+        self.storage.set_jump_switch_mask(0o6)
+        assert Microinstructions.selective_jump(self.storage) == 2
+        assert self.storage.get_next_execution_address() == 0o200
+
+
+    def test_selective_jump_no_branch(self) -> None:
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7720)
+        self.storage.unpack_instruction()
+        self.storage.write_relative_bank(G_ADDRESS, 0o200)
+        self.storage.set_jump_switch_mask(0o5)
+        assert Microinstructions.selective_jump(self.storage) == 1
+        assert (self.storage.get_next_execution_address() ==
+                AFTER_DOUBLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_selective_stop_halt(self) -> None:
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7706)
+        self.storage.unpack_instruction()
+        self.storage.set_stop_switch_mask(0o2)
+        Microinstructions.selective_stop(self.storage)
+        assert not self.storage.run_stop_status
+
+    def test_selective_stop_no_halt(self) -> None:
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7706)
+        self.storage.unpack_instruction()
+        self.storage.set_stop_switch_mask(0o1)
+        Microinstructions.selective_stop(self.storage)
         assert self.storage.run_stop_status
-        assert self.storage.z_register == 0o7654
-        assert self.storage.a_register == 0o7654 ^ 0o7777
+
+    def test_selective_stop_and_jump_halt_and_branch(self) -> None:
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7741)
+        self.storage.unpack_instruction()
+        self.storage.write_relative_bank(G_ADDRESS, 0o200)
+        self.storage.set_jump_switch_mask(0o4)
+        self.storage.set_stop_switch_mask(0o1)
+        assert Microinstructions.selective_stop_and_jump(self.storage) == 2
+        assert not self.storage.run_stop_status
+        assert self.storage.get_next_execution_address() == 0o200
+
+    def test_selective_stop_and_jump_halt_and_no_branch(self) -> None:
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7741)
+        self.storage.unpack_instruction()
+        self.storage.write_relative_bank(G_ADDRESS, 0o200)
+        self.storage.set_jump_switch_mask(0o2)
+        self.storage.set_stop_switch_mask(0o1)
+        assert Microinstructions.selective_stop_and_jump(self.storage) == 1
+        assert not self.storage.run_stop_status
+        assert (self.storage.get_next_execution_address() ==
+                AFTER_DOUBLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_selective_stop_and_jump_no_halt_and_branch(self) -> None:
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7741)
+        self.storage.unpack_instruction()
+        self.storage.write_relative_bank(G_ADDRESS, 0o200)
+        self.storage.set_jump_switch_mask(0o4)
+        self.storage.set_stop_switch_mask(0o2)
+        assert Microinstructions.selective_stop_and_jump(self.storage) == 2
+        assert self.storage.run_stop_status
+        assert self.storage.get_next_execution_address() == 0o200
+
+    def test_selective_stop_and_jump_no_halt_no_branch(self) -> None:
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7741)
+        self.storage.unpack_instruction()
+        self.storage.write_relative_bank(G_ADDRESS, 0o200)
+        self.storage.set_jump_switch_mask(0o1)
+        self.storage.set_stop_switch_mask(0o2)
+        assert Microinstructions.selective_stop_and_jump(self.storage) == 1
+        assert self.storage.run_stop_status
+        assert (self.storage.get_next_execution_address() ==
+                AFTER_DOUBLE_WORD_INSTRUCTION_ADDRESS)
 
     def test_shift_replace_direct(self) -> None:
         self.storage.s_register = 0o40
@@ -248,6 +324,7 @@ class Test(TestCase):
         assert not self.storage.err_status
         assert self.storage.a_register == 0o0003
         assert self.storage.read_direct_bank(self.storage.s_register) == 0o0003
+
 
     def test_shift_replace_indirect(self) -> None:
         self.storage.s_register = 0o40

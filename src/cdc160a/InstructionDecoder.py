@@ -169,8 +169,12 @@ class OpCode77:
     def decode(self, e: int) -> Instruction:
         if e == 0o00 or e == 0o77:
             return Instructions.HLT
-        # TODO(emintz): missing values of E
-        return Instructions.ERR
+
+        if e & 0o07 == 0:
+            return Instructions.SLJ
+        elif e & 0o70 == 0:
+            return Instructions.SLS
+        return Instructions.SJS
 
 __UNIMPLEMENTED = Unimplemented()
 

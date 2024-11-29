@@ -44,6 +44,7 @@ class TestAssembler(TestCase):
         assert assembler.error_count() == 0
 
     def test_one_word_range_e_too_small(self) -> None:
+        # Deliberately generates an assembler error. Please ignore.
         assembler = self.empty_assembler()
         self.__storage.set_relative_storage_bank(0o03)
         emitter = OneWordRangeE(
@@ -58,6 +59,7 @@ class TestAssembler(TestCase):
         assert assembler.error_count() == 1
 
     def test_one_word_range_e_too_big(self) -> None:
+        # Deliberately generates an assembler error. Please ignore.
         assembler = self.empty_assembler()
         self.__storage.set_relative_storage_bank(0o03)
         emitter = OneWordRangeE(
@@ -286,11 +288,13 @@ class TestAssembler(TestCase):
         self.__single_instruction_test("HWI 64", [0o7664])
 
     def test_hwI_e_too_small(self) -> None:
+        # Deliberately generates an assembler error. Please ignore.
         assembler = self.assembler(SINGLE_INSTRUCTION_TEMPLATE.format("HWI 0"))
         assert not assembler.run()
         assert assembler.error_count() == 1
 
     def test_hwi_e_too_large(self) -> None:
+        # Deliberately generates an assembler error. Please ignore.
         assembler = self.assembler(SINGLE_INSTRUCTION_TEMPLATE.format("HWI 77"))
         assert not assembler.run()
         assert assembler.error_count() == 1
@@ -572,6 +576,15 @@ class TestAssembler(TestCase):
 
     def test_sdc(self) -> None:
         self.__single_instruction_test("SDC 6", [0o0046])
+
+    def test_sjs(self) -> None:
+        self.__single_instruction_test("SJS 52 1234", [0o7752, 0o1234])
+
+    def test_slj(self) -> None:
+        self.__single_instruction_test("SLJ 2 4321", [0o7720, 0o4321])
+
+    def test_sls(self) -> None:
+        self.__single_instruction_test("SLS 2", [0o7702])
 
     def test_sic(self) -> None:
         self.__single_instruction_test("SIC 6", [0o0026])

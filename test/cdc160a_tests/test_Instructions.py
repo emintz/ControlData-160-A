@@ -1,7 +1,6 @@
 import unittest
 from unittest import TestCase
 
-from Microinstructions import s_relative_to_a
 from cdc160a import Instructions
 from cdc160a.Storage import MCS_MODE_DIR
 from cdc160a.Storage import MCS_MODE_IND
@@ -362,6 +361,19 @@ class Test(TestCase):
         self.storage.advance_to_next_instruction()
         assert (self.storage.get_program_counter() ==
                 AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_irj(self) -> None:
+        assert Instructions.IRJ.name() == "IRJ"
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0036)
+        self.storage.unpack_instruction()
+        self.storage.a_register = 0o200
+        Instructions.IRJ.determine_effective_address(self.storage)
+        assert self.storage.s_register == INSTRUCTION_ADDRESS
+        assert Instructions.IRJ.perform_logic(self.storage) == 1
+        assert self.storage.indirect_storage_bank == 0o06
+        assert self.storage.relative_storage_bank == 0o06
+        self.storage.advance_to_next_instruction()
+        assert self.storage.get_program_counter() == 0o200
 
     def test_jfi(self) -> None:
         assert Instructions.JFI.name() == "JFI"
@@ -1356,31 +1368,6 @@ class Test(TestCase):
         assert (self.storage.get_program_counter() ==
                 AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
 
-    def test_sic(self) -> None:
-        assert Instructions.SIC.name() == "SIC"
-        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o26)
-        self.storage.unpack_instruction()
-        Instructions.SIC.determine_effective_address(self.storage)
-        assert self.storage.s_register == INSTRUCTION_ADDRESS
-        assert Instructions.SIC.perform_logic(self.storage) == 1
-        assert self.storage.indirect_storage_bank == 0o06
-        self.storage.advance_to_next_instruction()
-        assert (self.storage.get_program_counter() ==
-                AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
-
-    def test_sid(self) -> None:
-        assert Instructions.SID.name() == "SID"
-        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o66)
-        self.storage.unpack_instruction()
-        Instructions.SID.determine_effective_address(self.storage)
-        assert self.storage.s_register == INSTRUCTION_ADDRESS
-        assert Instructions.SID.perform_logic(self.storage) == 1
-        assert self.storage.direct_storage_bank == 0o06
-        assert self.storage.indirect_storage_bank == 0o06
-        self.storage.advance_to_next_instruction()
-        assert (self.storage.get_program_counter() ==
-                AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
-
     def test_scm(self) -> None:
         assert Instructions.SCM.name() == "SCM"
         self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o1500)
@@ -1441,19 +1428,6 @@ class Test(TestCase):
         assert (self.storage.get_program_counter() ==
                 AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
 
-    def test_irj(self) -> None:
-        assert Instructions.IRJ.name() == "IRJ"
-        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0036)
-        self.storage.unpack_instruction()
-        self.storage.a_register = 0o200
-        Instructions.IRJ.determine_effective_address(self.storage)
-        assert self.storage.s_register == INSTRUCTION_ADDRESS
-        assert Instructions.IRJ.perform_logic(self.storage) == 1
-        assert self.storage.indirect_storage_bank == 0o06
-        assert self.storage.relative_storage_bank == 0o06
-        self.storage.advance_to_next_instruction()
-        assert self.storage.get_program_counter() == 0o200
-
     def test_sdc(self) -> None:
         assert Instructions.SDC.name() == "SDC"
         self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0046)
@@ -1462,6 +1436,140 @@ class Test(TestCase):
         assert self.storage.s_register == INSTRUCTION_ADDRESS
         assert Instructions.SDC.perform_logic(self.storage) == 1
         assert self.storage.direct_storage_bank == 0o06
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_sic(self) -> None:
+        assert Instructions.SIC.name() == "SIC"
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o26)
+        self.storage.unpack_instruction()
+        Instructions.SIC.determine_effective_address(self.storage)
+        assert self.storage.s_register == INSTRUCTION_ADDRESS
+        assert Instructions.SIC.perform_logic(self.storage) == 1
+        assert self.storage.indirect_storage_bank == 0o06
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_sid(self) -> None:
+        assert Instructions.SID.name() == "SID"
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o66)
+        self.storage.unpack_instruction()
+        Instructions.SID.determine_effective_address(self.storage)
+        assert self.storage.s_register == INSTRUCTION_ADDRESS
+        assert Instructions.SID.perform_logic(self.storage) == 1
+        assert self.storage.direct_storage_bank == 0o06
+        assert self.storage.indirect_storage_bank == 0o06
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_sjs_halt_and_branch(self) -> None:
+        assert Instructions.SJS.name() == "SJS"
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7712)
+        self.storage.unpack_instruction()
+        self.storage.write_relative_bank(G_ADDRESS, 0o200)
+        self.storage.set_jump_switch_mask(0o3)
+        self.storage.set_stop_switch_mask(0o6)
+        Instructions.SJS.determine_effective_address(self.storage)
+        assert self.storage.s_register == G_ADDRESS
+        assert Instructions.SJS.perform_logic(self.storage) == 2
+        assert not self.storage.run_stop_status
+        self.storage.advance_to_next_instruction()
+        assert self.storage.get_program_counter() == 0o200
+
+    def test_sls_halt_and_no_branch(self) -> None:
+        assert Instructions.SJS.name() == "SJS"
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7712)
+        self.storage.unpack_instruction()
+        self.storage.write_relative_bank(G_ADDRESS, 0o200)
+        self.storage.set_jump_switch_mask(0o6)
+        self.storage.set_stop_switch_mask(0o6)
+        Instructions.SJS.determine_effective_address(self.storage)
+        assert self.storage.s_register == G_ADDRESS
+        assert Instructions.SJS.perform_logic(self.storage) == 1
+        assert not self.storage.run_stop_status
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_DOUBLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_sls_no_halt_and_branch(self):
+        assert Instructions.SJS.name() == "SJS"
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7712)
+        self.storage.unpack_instruction()
+        self.storage.write_relative_bank(G_ADDRESS, 0o200)
+        self.storage.set_jump_switch_mask(0o3)
+        self.storage.set_stop_switch_mask(0o5)
+        Instructions.SJS.determine_effective_address(self.storage)
+        assert self.storage.s_register == G_ADDRESS
+        assert Instructions.SJS.perform_logic(self.storage) == 2
+        assert self.storage.run_stop_status
+        self.storage.advance_to_next_instruction()
+        assert self.storage.get_program_counter() == 0o200
+
+    def test_sls_no_halt_no_branch(self) -> None:
+        assert Instructions.SJS.name() == "SJS"
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7712)
+        self.storage.unpack_instruction()
+        self.storage.write_relative_bank(G_ADDRESS, 0o200)
+        self.storage.set_jump_switch_mask(0o6)
+        self.storage.set_stop_switch_mask(0o5)
+        Instructions.SJS.determine_effective_address(self.storage)
+        assert self.storage.s_register == G_ADDRESS
+        assert Instructions.SJS.perform_logic(self.storage) == 1
+        assert self.storage.run_stop_status
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_DOUBLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_slj_branch(self) -> None:
+        assert Instructions.SLJ.name() == "SLJ"
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7760)
+        self.storage.unpack_instruction()
+        self.storage.write_relative_bank(G_ADDRESS, 0o200)
+        self.storage.set_jump_switch_mask(0o5)
+        Instructions.SLJ.determine_effective_address(self.storage)
+        assert self.storage.s_register == G_ADDRESS
+        assert Instructions.SLJ.perform_logic(self.storage) == 2
+        self.storage.advance_to_next_instruction()
+        assert self.storage.get_program_counter() == 0o200
+
+    def test_slj_no_branch(self) -> None:
+        assert Instructions.SLJ.name() == "SLJ"
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7760)
+        self.storage.unpack_instruction()
+        self.storage.write_relative_bank(G_ADDRESS, 0o200)
+        self.storage.set_jump_switch_mask(0o1)
+        Instructions.SLJ.determine_effective_address(self.storage)
+        assert self.storage.s_register == G_ADDRESS
+        assert Instructions.SLJ.perform_logic(self.storage) == 1
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_DOUBLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_sls_halt(self) -> None:
+        assert Instructions.SLS.name() == "SLS"
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7702)
+        self.storage.unpack_instruction()
+        self.storage.set_stop_switch_mask(0o6)
+        Instructions.SLJ.determine_effective_address(self.storage)
+        assert self.storage.s_register == G_ADDRESS
+        assert Instructions.SLS.perform_logic(self.storage) == 1
+        assert not self.storage.run_stop_status
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_sls_no_halt(self) -> None:
+        assert Instructions.SLS.name() == "SLS"
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7702)
+        self.storage.unpack_instruction()
+        self.storage.set_stop_switch_mask(0o5)
+        Instructions.SLJ.determine_effective_address(self.storage)
+        assert self.storage.s_register == G_ADDRESS
+        assert Instructions.SLS.perform_logic(self.storage) == 1
+        assert self.storage.run_stop_status
         self.storage.advance_to_next_instruction()
         assert (self.storage.get_program_counter() ==
                 AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)

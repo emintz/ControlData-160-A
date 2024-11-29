@@ -20,6 +20,7 @@ The design supports the following run loop:
 from cdc160a import EffectiveAddress
 from cdc160a import Microinstructions
 from cdc160a.Storage import Storage
+from typing import Callable
 
 def __no_advance(_) -> None:
     """
@@ -53,7 +54,7 @@ def __double_advance(storage: Storage) -> None:
 
 class Instruction:
     """
-    Emulates a 160A Instruction
+    Emulates a 160A Instruction with a fixed run time
 
     Provides effective address and logic for an emulated instruction.
     The effective address calculation determines the operand address
@@ -62,7 +63,12 @@ class Instruction:
     or moving values.
 
     """
-    def __init__(self, name, effective_address, logic, advance, cycles: int):
+    def __init__(self,
+                 name: str,
+                 effective_address: Callable[[Storage], None],
+                 logic : Callable[[Storage], None],
+                 advance : Callable[[Storage], None],
+                 cycles: int):
         """
         Constructor
 
@@ -113,6 +119,59 @@ class Instruction:
         self.__advance(storage)
         return self.__cycles
 
+class VariableTimingInstruction:
+
+    def __init__(self,
+                 name: str,
+                 effective_address: Callable[[Storage], None],
+                 logic: Callable[[Storage], int],
+                 advance: Callable[[Storage], None]):
+        """
+        Constructor
+
+        :param name: instruction name as used in the assembler. Note that
+               an instruction's name identifies it, so it must be unique.
+        :param effective_address: a function that calculates the
+               instruction's operand address, as described above.
+        :param logic: the instruction's logic, what it does, as
+               described above. Must return the execution time in
+               cycles.
+        :param advance: advances the P register upon completion
+        """
+        self.__effective_address = effective_address
+        self.__advance = advance
+        self.__logic = logic
+        self.__name = name
+
+    def determine_effective_address(self, storage: Storage) -> None:
+        """
+        Determine the instruction's effective address. The constructor
+        sets the method.
+
+        :param storage: the emulated 160A's memory and register file
+        :return: Nothing
+        """
+        self.__effective_address(storage)
+
+    def name(self):
+        """
+        Instruction name accessor
+
+        :return: the instruction name, the assembler's mnemonic for the instruction
+        """
+        return self.__name
+
+    def perform_logic(self, storage: Storage) -> int:
+        """
+        Performs the Instruction's logic
+
+        :param storage: emulated 1650A memory and register file.
+        :return: instruction execution type in cycles
+        """
+        cycles = self.__logic(storage)
+        self.__advance(storage)
+        return cycles
+
 def __no_advance_instruction(name, effective_address, logic, cycles: int) -> Instruction:
     """
     Convenience factory method that creates "no advance" instructions
@@ -126,7 +185,11 @@ def __no_advance_instruction(name, effective_address, logic, cycles: int) -> Ins
     """
     return Instruction(name, effective_address, logic, __no_advance, cycles)
 
-def __single_advance_instruction(name, effective_address, logic, cycles: int) -> Instruction:
+def __single_advance_instruction(
+        name: str,
+        effective_address: Callable[[Storage], None],
+        logic: Callable[[Storage], None],
+        cycles: int) -> Instruction:
     """
     Convenience factory method that creates one-word instructions that
     do not change the flow of control
@@ -140,7 +203,11 @@ def __single_advance_instruction(name, effective_address, logic, cycles: int) ->
     """
     return Instruction(name, effective_address, logic, __single_advance, cycles)
 
-def __double_advance_instruction(name, effective_address: object, logic: object, cycles: int) -> Instruction:
+def __double_advance_instruction(
+        name: str,
+        effective_address: Callable[[Storage], None],
+        logic: Callable[[Storage], None],
+        cycles: int) -> Instruction:
     """
     Convenience factory method that creates two-word instructions that
     do not change the flow of control
@@ -243,9 +310,12 @@ SCM = __double_advance_instruction("SCM", EffectiveAddress.memory, Microinstruct
 SDC = __single_advance_instruction("SDC", EffectiveAddress.no_address, Microinstructions.set_dir_bank_from_e, 1)
 SCN = __single_advance_instruction("SCN", EffectiveAddress.no_address, Microinstructions.selective_complement_no_address, 1)
 SCS = __single_advance_instruction("SCS", EffectiveAddress.specific, Microinstructions.selective_complement_specific, 2)
-SRB = __single_advance_instruction("SRB", EffectiveAddress.relative_backward, Microinstructions.shift_replace_relative, 3)
 SIC = __single_advance_instruction("SIC", EffectiveAddress.no_address, Microinstructions.set_ind_bank_from_e, 1)
 SID = __single_advance_instruction("SID", EffectiveAddress.no_address, Microinstructions.set_ind_dir_bank_from_e, 1)
+SJS = VariableTimingInstruction("SJS", EffectiveAddress.constant, Microinstructions.selective_stop_and_jump, __no_advance)
+SLJ = VariableTimingInstruction("SLJ", EffectiveAddress.constant, Microinstructions.selective_jump, __no_advance)
+SLS = __single_advance_instruction("SLS", EffectiveAddress.no_address, Microinstructions.selective_stop, 1)
+SRB = __single_advance_instruction("SRB", EffectiveAddress.relative_backward, Microinstructions.shift_replace_relative, 3)
 SRC = __double_advance_instruction("SRC", EffectiveAddress.constant, Microinstructions.shift_replace_relative, 3)
 SRD = __single_advance_instruction("SRD", EffectiveAddress.direct, Microinstructions.shift_replace_direct, 3)
 SRF = __single_advance_instruction("SRF", EffectiveAddress.relative_forward, Microinstructions.shift_replace_relative, 3)
