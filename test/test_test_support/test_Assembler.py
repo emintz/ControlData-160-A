@@ -299,6 +299,9 @@ class TestAssembler(TestCase):
         assert not assembler.run()
         assert assembler.error_count() == 1
 
+    def test_jpi(self) -> None:
+        self.__single_instruction_test("JPI 24", [0o7024])
+
     def test_nop_then_halt(self) -> None:
         assembler = self.assembler(Programs.NOOP_THEN_HALT)
         assert assembler.run()

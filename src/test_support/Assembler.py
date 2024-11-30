@@ -446,6 +446,7 @@ class Assembler:
             "HWI": OneWordRangeE(self, "HWI", 0o76, 0o01, 0o76),
             "IRJ": OneWordLowE(self, "IRJ", 0o00, 0o03),
             "JFI": OneWordNonZeroE(self, "JFI", 0o71),
+            "JPI": OneWordAnyE(self, "JPI", 0o70),
             "JPR": TwoWordFixedE(self, "JPR", 0o71),
             "LCB": OneWordNonZeroE(self, "LCB", 0o27),
             "LCC": TwoWordFixedE(self, "LCC", 0o26),

@@ -389,6 +389,14 @@ class Test(TestCase):
         self.storage.advance_to_next_instruction()
         assert self.storage.get_program_counter() == 0o1400
 
+    def test_jpi(self) -> None:
+        assert Instructions.JPI.name() == "JPI"
+        self.storage.write_direct_bank(0o20, 0o200)
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7020)
+        self.storage.unpack_instruction()
+        assert Instructions.JPI.perform_logic(self.storage) == 2
+        assert self.storage.get_next_execution_address() == 0o200
+
     def test_jpr(self) -> None:
         assert Instructions.JPR.name() == "JPR"
         self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7100)

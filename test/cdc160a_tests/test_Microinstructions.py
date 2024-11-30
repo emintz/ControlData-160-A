@@ -361,6 +361,15 @@ class Test(TestCase):
         Microinstructions.jump_forward_indirect(self.storage)
         assert self.storage.get_next_execution_address() == 0o2000
 
+    def test_jump_indirect(self) -> None:
+        self.storage.write_direct_bank(0o10, 0o2000)
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7010)
+        self.storage.unpack_instruction()
+        Microinstructions.jump_indirect(self.storage)
+        assert not self.storage.err_status
+        self.storage.advance_to_next_instruction()
+        assert self.storage.get_program_counter() == 0o2000
+
     def test_jump_if_a_negative(self) -> None:
         self.__prepare_for_jump()
         self.storage.a_register = 0

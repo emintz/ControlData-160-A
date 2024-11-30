@@ -62,22 +62,38 @@ def and_specific_with_a(storage: Storage) -> None:
 def bank_controls_to_a(storage: Storage) -> None:
     storage.bank_controls_to_a()
 
-# A -> ~A
 def complement_a(storage: Storage) -> None:
+    """
+    ~A -> A
+
+    :param storage: memory and register file
+    :return: None
+    """
     storage.complement_a()
 
-# No operation
 def do_nothing(_: Storage) -> None:
+    """
+    No-Op: Does absolutely nothing
+
+    :param _: memory and register file (ignored)
+    :return: None
+    """
     pass
 
 def e_complement_to_a(storage: Storage) -> None:
     e_to_a(storage)
     storage.complement_a()
 
-# E -> A
 def e_to_a(storage: Storage) -> None:
+    """
+    E -> A
+
+    :param storage: memory and register file
+    :return: None
+    """
     storage.e_to_z()
     storage.z_to_a()
+
 # Halt the machine and set the error status
 def error(storage: Storage) -> None:
     """
@@ -108,6 +124,16 @@ def halt(storage: Storage) -> None:
 
 def jump_forward_indirect(storage: Storage) -> None:
     storage.s_relative_indirect_to_next_address()
+
+def jump_indirect(storage: Storage) -> None:
+    """
+    JPI (Jump Indirect) logic. [E(d)] -> P
+
+    :param storage: memory and register file
+    :return: None
+    """
+    storage.direct_to_z(storage.f_e)
+    storage.z_to_next_address()
 
 def multiply_a_by_10(storage: Storage) -> None:
     storage.a_times_10()
@@ -515,40 +541,80 @@ def shift_replace_specific(storage: Storage) -> None:
     rotate_a_left_one(storage)
     a_to_specific(storage)
 
-# ~[0o7777](0) -> A
 def specific_complement_to_a(storage: Storage) -> None:
+    """
+    ~[0o7777](0) -> A
+
+    :param storage: memory and register file
+    :return: None
+    """
     specific_to_a(storage)
     storage.complement_a()
 
-# [0o7777](0) -> A
 def specific_to_a(storage: Storage) -> None:
+    """
+    [0o7777](0) -> A
+
+    :param storage: memory and register file
+    :return: None
+    """
     storage.specific_to_a()
 
-# ~[S](d) -> A
 def s_direct_complement_to_a(storage: Storage) -> None:
+    """
+    ~[S](d) -> A
+
+    :param storage: memory and register file
+    :return: None
+    """
     s_direct_to_a(storage)
     storage.complement_a()
 
-# [S](d) -> A
 def s_direct_to_a(storage: Storage) -> None:
+    """
+    [S](d) -> A
+
+    :param storage: memory and register file
+    :return: None
+    """
     storage.s_direct_to_a()
 
-# ~[S](d) -> A
 def s_indirect_complement_to_a(storage: Storage) -> None:
+    """
+    ~[S](d) -> A
+
+    :param storage: memory and register file
+    :return: None
+    """
     s_indirect_to_a(storage)
     storage.complement_a()
 
-# [S](i) -> A
 def s_indirect_to_a(storage: Storage) -> None:
+    """
+    [S](i) -> A
+
+    :param storage: memory and register file
+    :return: None
+    """
     storage.s_indirect_to_a()
 
-# ~[S](r) -> A
 def s_relative_complement_to_a(storage: Storage) -> None:
+    """
+    ~[S](r) -> A
+
+    :param storage: memory and register file
+    :return: None
+    """
     s_relative_to_a(storage)
     storage.complement_a()
 
-# [S](r) -> A
 def s_relative_to_a(storage: Storage) -> None:
+    """
+    [S](r) -> A
+
+    :param storage: memory and register file
+    :return: None
+    """
     storage.s_relative_to_a()
 
 def subtract_e_from_a(storage: Storage) -> None:
@@ -566,23 +632,43 @@ def subtract_relative_from_a(storage: Storage) -> None:
 def subtract_specific_from_a(storage: Storage) -> None:
     storage.subtract_specific_from_a()
 
-# A -> [S](b)
 def a_to_buffer(storage: Storage) -> None:
+    """
+    A -> [S](b)
+
+    :param storage: memory and register file
+    :return: None
+    """
     storage.a_to_s_buffer()
 
-# A -> [S](d)
 def a_to_s_direct(storage: Storage) -> None:
+    """
+    A -> [S](d)
+
+    :param storage: memory and register file
+    :return: None
+    """
     storage.a_to_s_direct()
 
-# A -> [S](i)
 def a_to_s_indirect(storage: Storage) -> None:
+    """
+    A -> [S](i)
+
+    :param storage: memory and register file
+    :return: None
+    """
     storage.a_to_s_indirect()
 
 def a_to_s_relative(storage: Storage) -> None:
     storage.a_to_s_relative()
 
-# A -> [0o7777](0)
 def a_to_specific(storage: Storage) -> None:
+    """
+    A -> [0o7777](0)
+
+    :param storage: memory and register file
+    :return: None
+    """
     storage.a_to_specific()
 
 def jump_if_a_negative(storage: Storage) -> None:

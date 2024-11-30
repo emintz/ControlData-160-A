@@ -227,6 +227,16 @@ class Storage:
         self.a_register <<= 3
         self.a_register |= self.relative_storage_bank
 
+    def direct_to_z(self, address: int) -> None:
+        """
+        [address(d)] -> Z, set memory access mode to direct
+
+        :param address: location in the direct memory bank
+        :return: None
+        """
+        self.z_register = self.memory[self.direct_storage_bank, address]
+        self.mode_direct()
+
     def e_direct_to_s(self) -> None:
         self.s_register = self.read_direct_bank(self.f_e)
 
@@ -817,6 +827,9 @@ class Storage:
 
     def z_to_a(self) -> None:
         self.a_register = self.z_register
+
+    def z_to_next_address(self) -> None:
+        self.__next_address = self.z_register
 
     def z_to_p(self) -> None:
         self.p_register = self.z_register

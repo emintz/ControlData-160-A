@@ -2,8 +2,6 @@ import unittest
 from typing import Final
 from unittest import TestCase
 
-from numpy.compat import open_latin1
-
 from Storage import MCS_MODE_BFR
 from Storage import MCS_MODE_DIR
 from Storage import MCS_MODE_IND
@@ -201,12 +199,11 @@ class TestStorage(TestCase):
         self.storage.complement_a()
         assert self.storage.a_register == 0o0707
 
-    def test_unpack_instruction(self) -> None:
-        self.storage.relative_storage_bank = 3
-        self.storage.unpack_instruction()
-        assert self.storage.s_register == INSTRUCTION_ADDRESS
-        assert self.storage.f_instruction == 0o04
-        assert self.storage.f_e == 0o17
+    def test_direct_to_z(self) -> None:
+        self.storage.set_direct_storage_bank(1)
+        self.storage.write_direct_bank(0o10, 0o2000)
+        self.storage.direct_to_z(0o10)
+        assert self.storage.z_register == 0o2000
 
     def test_e_direct_to_s(self) -> None:
         self.storage.set_direct_storage_bank(1)
@@ -380,7 +377,7 @@ class TestStorage(TestCase):
         assert self.storage.a_register == 0
         assert self.storage.z_register == 0o1234
 
-    def test_direct_to_a(self) -> None:
+    def test_s_direct_to_a(self) -> None:
         self.storage.direct_storage_bank = 1
         self.storage.s_register = 0o40
         self.storage.write_direct_bank(0o40, 0o1234)
@@ -389,7 +386,7 @@ class TestStorage(TestCase):
         assert self.storage.z_register == 0o1234
         assert self.storage.storage_cycle == MCS_MODE_DIR
 
-    def test_direct_to_z(self) -> None:
+    def test_a_direct_to_z(self) -> None:
         self.storage.direct_storage_bank = 1
         self.storage.s_register = 0o40
         self.storage.write_direct_bank(0o40, 0o1234)
@@ -398,7 +395,7 @@ class TestStorage(TestCase):
         assert self.storage.z_register == 0o1234
         assert self.storage.storage_cycle == MCS_MODE_DIR
 
-    def test_indirect_to_a(self) -> None:
+    def test_s_indirect_to_a(self) -> None:
         self.storage.indirect_storage_bank = 1
         self.storage.s_register = 0o40
         self.storage.write_indirect_bank(0o40, 0o1234)
@@ -407,7 +404,7 @@ class TestStorage(TestCase):
         assert self.storage.z_register == 0o1234
         assert self.storage.storage_cycle == MCS_MODE_IND
 
-    def test_indirect_to_z(self) -> None:
+    def test_s_indirect_to_z(self) -> None:
         self.storage.indirect_storage_bank = 1
         self.storage.s_register = 0o40
         self.storage.write_indirect_bank(0o40, 0o1234)
@@ -416,14 +413,14 @@ class TestStorage(TestCase):
         assert self.storage.z_register == 0o1234
         assert self.storage.storage_cycle == MCS_MODE_IND
 
-    def test_relative_indirect_to_next_address(self) -> None:
+    def test_s_relative_indirect_to_next_address(self) -> None:
         self.storage.s_register = 0o200
         self.storage.write_relative_bank(0o200, 0o300)
         self.storage.write_relative_bank(0o300, 0o4132)
         self.storage.s_relative_indirect_to_next_address()
         assert self.storage.get_next_execution_address() == 0o4132
 
-    def test_relative_to_a(self) -> None:
+    def test_s_relative_to_a(self) -> None:
         self.storage.relative_storage_bank = 1
         self.storage.s_register = 0o40
         self.storage.write_relative_bank(0o40, 0o1234)
@@ -432,7 +429,7 @@ class TestStorage(TestCase):
         assert self.storage.z_register == 0o1234
         assert self.storage.storage_cycle == MCS_MODE_REL
 
-    def test_relative_to_z(self) -> None:
+    def test_s_relative_to_z(self) -> None:
         self.storage.relative_storage_bank = 1
         self.storage.s_register = 0o40
         self.storage.write_relative_bank(0o40, 0o1234)
@@ -649,6 +646,13 @@ class TestStorage(TestCase):
         assert self.storage.z_register == 0o1000
         assert self.storage.a_register == 0o1234
 
+    def test_unpack_instruction(self) -> None:
+        self.storage.relative_storage_bank = 3
+        self.storage.unpack_instruction()
+        assert self.storage.s_register == INSTRUCTION_ADDRESS
+        assert self.storage.f_instruction == 0o04
+        assert self.storage.f_e == 0o17
+
     def test_read_absolute(self) -> None:
         assert self.storage.read_absolute(0, 0o1000) == 0
         self.storage.memory[0, 0o1000] = 0o3777
@@ -675,6 +679,11 @@ class TestStorage(TestCase):
         self.storage.z_register = 0o4321
         self.storage.z_to_a()
         assert self.storage.a_register == 0o4321
+
+    def test_z_to_next_instruction(self) -> None:
+        self.storage.z_register = 0o4321
+        self.storage.z_to_next_address()
+        assert self.storage.get_next_execution_address() == 0o4321
 
     def test_z_to_p(self) -> None:
         self.storage.z_register = 0o4321

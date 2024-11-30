@@ -175,6 +175,19 @@ JUMP_FORWARD_INDIRECT = """
           HLT
           END
 """
+JUMP_INDIRECT = """
+          REM Jump Indirect: [E(d)] -> P
+          BNK 2    Direct Storage Bank
+          ORG 30   Contains the address
+          OCT 200  Jump to 200
+          BNK 3
+          ORG 100
+          JPI 30
+          HLT
+          ORG 200  JPI branches here
+          HLT
+          END
+"""
 LDC_THEN_HALT = """
           REM  move 0o4321 to the accumulator and halt
           BNK 3

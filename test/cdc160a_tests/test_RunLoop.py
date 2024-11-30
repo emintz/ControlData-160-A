@@ -1,3 +1,4 @@
+import unittest
 from unittest import TestCase
 
 from cdc160a.RunLoop import RunLoop
@@ -196,6 +197,12 @@ class TestRunLoop(TestCase):
         self.load_test_program(Programs.JUMP_FORWARD_INDIRECT)
         self.__run_loop.run()
         assert self.__storage.get_program_counter() == 0o300
+
+    def test_jpi(self) -> None:
+        self.load_test_program(Programs.JUMP_INDIRECT)
+        self.__run_loop.run()
+        assert not self.__storage.err_status
+        assert self.__storage.get_program_counter() == 0o200
 
     def test_jpr(self) -> None:
         self.load_test_program(Programs.RETURN_JUMP)
@@ -713,3 +720,6 @@ class TestRunLoop(TestCase):
         self.__run_loop.run()
         assert self.__storage.read_relative_bank(0o200) == 0o102
         assert self.__storage.get_program_counter() == 0o102
+
+if __name__ == "__main__":
+    unittest.main()

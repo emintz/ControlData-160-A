@@ -244,6 +244,7 @@ HLT = __single_advance_instruction("HLT", EffectiveAddress.no_address, Microinst
 HWI = __single_advance_instruction("HWI", EffectiveAddress.via_direct_at_e, Microinstructions.half_write_indirect, 4)
 IRJ = __no_advance_instruction("IRJ", EffectiveAddress.no_address, Microinstructions.set_ind_rel_bank_from_e_and_jump, 1)
 JFI = __no_advance_instruction("JFI", EffectiveAddress.relative_forward, Microinstructions.jump_forward_indirect, 2)
+JPI = __no_advance_instruction("JPI", EffectiveAddress.no_address, Microinstructions.jump_indirect, 2)
 JPR = __no_advance_instruction("JPR", EffectiveAddress.memory, Microinstructions.return_jump, 3)
 LCB = __single_advance_instruction("LCB", EffectiveAddress.relative_backward, Microinstructions.s_relative_complement_to_a, 2)
 LCC = __double_advance_instruction("LCC", EffectiveAddress.constant, Microinstructions.s_relative_complement_to_a, 2)
