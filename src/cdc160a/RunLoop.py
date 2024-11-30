@@ -12,39 +12,38 @@ import InstructionDecoder
 from Storage import Storage
 
 class RunLoop:
-    pass
+    """
+    Run loop for the CDC 160-A emulator.
+    """
 
-    def __init__(self, storage: Storage):
+    def __init__(self, console, storage: Storage):
         """
         Constructor. Note that the computer configuration is injected.
 
+        :param console: the CDC 160A console. May be a dummy for
+               testing under PyUnit, a character-mode console for
+               development, or a full-blown GUI.
         :param storage: CDC 160-A memory and register file
 
         TODO(emintz): add console.
         """
+        self.__console = console
         self.__storage = storage
 
     def run(self) -> None:
         self.__storage.run()
         # TODO(emintz): the following must become an endless loop when we have a
         #               working console.
-        while self.__storage.run_stop_status:
-            # TODO(emintz): query the console jump and stop switches
+        while True:
+            self.__console.before_instruction_fetch(self.__console)
             # TODO(emintz): respond to pending interrupts
             # TODO(emintz): service pending buffer requests
-            # TODO(emintz): refactor instruction decoding into the Storage class
             self.__storage.unpack_instruction()
             decoder = InstructionDecoder.decoder_at(self.__storage.f_instruction)
             current_instruction = decoder.decode(self.__storage.f_e)
             current_instruction.determine_effective_address(self.__storage)
-            # TODO(emintz): invoke the console's run/stop handler. The handler should
-            #               return immediately any of the following holds:
-            #               1.  The computer is running
-            #               2.  The user starts the computer (moves run/stop to run)
-            #               3.  The user requests a single-instruction step.
+            self.__console.before_instruction_logic(self.__storage)
             current_instruction.perform_logic(self.__storage)
-            # TODO(emintz): invoke the console if the computer has halted
-            # instead of exiting.
-            if not self.__storage.run_stop_status:
+            if not self.__console.before_advance(self.__storage):
                 break
             self.__storage.advance_to_next_instruction()
