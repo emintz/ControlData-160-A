@@ -43,9 +43,19 @@ has its own format.
    E value. The first token is the instruction, the second is the E
    value, and the third is the G value.
 
+5. Pseudo-instructions, instructions that affect assembly and
+   generate no code.
+
 Note that well-formed E and G values will not exceed
-the maximum allowed value. Minimums are checked where
+the maximum allowed value. Bounds are checked where
 required.
+
+The assembler supports the following pseudo-instructions:
+
+    A blank line, which produces a blank like in the listing and is
+    otherwise ignored.
+
+    REM, which is copied to the listing and otherwise ignored.
 """
 from __future__ import annotations
 
@@ -690,3 +700,12 @@ class Assembler:
         return self.__words_written
 
 
+def assembler_from_string(source: str, storage: Storage) -> Assembler:
+    """
+    Creates an assembler that takes a string as input.
+
+    :param source: contains the program to assemble
+    :param storage: emulator memory and register file
+    :return: the newly minted Assembler
+    """
+    return Assembler(source, storage)

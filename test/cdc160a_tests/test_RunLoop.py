@@ -3,7 +3,7 @@ from unittest import TestCase
 
 from cdc160a.RunLoop import RunLoop
 from cdc160a.Storage import  Storage
-from test_support.Assembler import Assembler
+from test_support.Assembler import assembler_from_string
 from test_support.PyunitConsole import PyConsole
 from test_support import Programs
 
@@ -21,8 +21,9 @@ class TestRunLoop(TestCase):
     def tearDown(self) -> None:
         self.__storage = None
 
+
     def load_test_program(self, source: str) -> None:
-        Assembler(source, self.__storage).run()
+        assembler_from_string(source, self.__storage).run()
 
     def test_run_hlt(self) -> None:
         self.load_test_program(Programs.HALT)

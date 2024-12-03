@@ -435,6 +435,12 @@ class Storage:
         self.z_register = self.read_relative_bank(self.s_register)
         self.__next_address = self.z_register
 
+    def get_jump_switch_mask(self) -> int:
+        return self.__jump_switch_mask
+
+    def get_stop_switch_mask(self) -> int:
+        return self.__stop_switch_mask
+
     def next_address(self) -> int:
         """
         Returns the address of the next instruction. Used for testing

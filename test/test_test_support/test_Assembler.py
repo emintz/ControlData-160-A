@@ -2,7 +2,7 @@ from unittest import TestCase
 
 from test_support import Programs
 from cdc160a.Storage import Storage
-from test_support.Assembler import Assembler, two_digit_octal, four_digit_octal, OneWordRangeE
+from test_support.Assembler import Assembler, two_digit_octal, four_digit_octal, OneWordRangeE, assembler_from_string
 from test_support.Assembler import one_digit_octal
 
 SINGLE_INSTRUCTION_TEMPLATE = """
@@ -21,7 +21,7 @@ class TestAssembler(TestCase):
         self.__storage = None
 
     def assembler(self, source: str = '') -> Assembler:
-        return Assembler(source, self.__storage)
+        return assembler_from_string(source, self.__storage)
 
     def empty_assembler(self) -> Assembler:
         assembler = self.assembler("          END\n")

@@ -24,7 +24,7 @@ SET_ADDRESS = """
 
 # Individual instructions
 ADD_BACKWARD = """
-          REM Test add backward: A -> A + [P - E]
+          REM TestCommandInterpeters add backward: A -> A + [P - E]
           BNK 3
           ORG 77
           OCT 34
@@ -34,7 +34,7 @@ ADD_BACKWARD = """
           END
 """
 ADD_CONSTANT = """
-          REM Test add constant: A -> A + G
+          REM TestCommandInterpeters add constant: A -> A + G
           BNK 3
           ORG 100
           LDC 1200
@@ -43,7 +43,7 @@ ADD_CONSTANT = """
           END
 """
 ADD_DIRECT = """
-          REM Test add direct A -> A + 40(d)
+          REM TestCommandInterpeters add direct A -> A + 40(d)
           BNK 2
           ORG 40
           OCT 34
@@ -55,7 +55,7 @@ ADD_DIRECT = """
           END
 """
 ADD_FORWARD = """
-          REM Test add forward A -> A + [P + E]
+          REM TestCommandInterpeters add forward A -> A + [P + E]
           BNK 3
           ORG 100
           LDC 1200
@@ -65,7 +65,7 @@ ADD_FORWARD = """
           END
 """
 ADD_INDIRECT = """
-          REM Test add indirect, A -> A + [40(i)
+          REM TestCommandInterpeters add indirect, A -> A + [40(i)
           BNK 1
           ORG 40
           OCT 34
@@ -77,7 +77,7 @@ ADD_INDIRECT = """
           END
 """
 ADD_NO_ADDRESS = """
-          REM Test add no address A -> A + 34
+          REM TestCommandInterpeters add no address A -> A + 34
           BNK 3
           ORG 100
           LDC 1200
@@ -86,7 +86,7 @@ ADD_NO_ADDRESS = """
           END
 """
 ADD_MEMORY = """
-          REM Test add memory A -> A + [120]
+          REM TestCommandInterpeters add memory A -> A + [120]
           BNK 3
           ORG 100
           LDC 1200
@@ -97,7 +97,7 @@ ADD_MEMORY = """
           END
 """
 ADD_SPECIFIC = """
-          REM Test add specific, A -> A + [7777(0)]
+          REM TestCommandInterpeters add specific, A -> A + [7777(0)]
           BNK 0
           ORG 7777
           OCT 34
@@ -131,7 +131,7 @@ BANK_CONTROLS_TO_A = """
           END
 """
 ERROR_HALT = """
-          REM Test Error halt execution and set the error flag.
+          REM TestCommandInterpeters Error halt execution and set the error flag.
           ERR
           END
 """
@@ -317,7 +317,7 @@ NOOP_THEN_HALT = """
           END
 """
 NEGATIVE_JUMP_BACKWARD_MINUS_ZERO_A = """
-          REM Test negative jump backward with a set to 0
+          REM TestCommandInterpeters negative jump backward with a set to 0
           BNK 3
           ORG 77
           HLT
@@ -327,7 +327,7 @@ NEGATIVE_JUMP_BACKWARD_MINUS_ZERO_A = """
           END
 """
 NEGATIVE_JUMP_BACKWARD_ZERO_A = """
-          REM Test negative jump backward with a set to 0
+          REM TestCommandInterpeters negative jump backward with a set to 0
           BNK 3
           ORG 77
           HLT
@@ -337,7 +337,7 @@ NEGATIVE_JUMP_BACKWARD_ZERO_A = """
           END
 """
 NEGATIVE_JUMP_FORWARD_ZERO_A = """
-          REM Test negative jump forward with A set to 0
+          REM TestCommandInterpeters negative jump forward with A set to 0
           BNK 3
           ORG 100
           LDN 0
@@ -347,7 +347,7 @@ NEGATIVE_JUMP_FORWARD_ZERO_A = """
           END
 """
 NEGATIVE_JUMP_FORWARD_MINUS_ZERO_A = """
-          REM Test negative jump forward with A set to minus zero
+          REM TestCommandInterpeters negative jump forward with A set to minus zero
           BNK 3
           ORG 100
           LDC 7777
@@ -357,7 +357,7 @@ NEGATIVE_JUMP_FORWARD_MINUS_ZERO_A = """
           END
 """
 NONZERO_JUMP_FORWARD_MINUS_ZERO_A = """
-          REM Test nonzero jump backward with a set to minus zero
+          REM TestCommandInterpeters nonzero jump backward with a set to minus zero
           BNK 3
           ORG 77
           HLT
@@ -368,7 +368,7 @@ NONZERO_JUMP_FORWARD_MINUS_ZERO_A = """
           END
 """
 NONZERO_JUMP_FORWARD_ZERO_A = """
-          REM Test nonzero jump backward with a set to zero
+          REM TestCommandInterpeters nonzero jump backward with a set to zero
           BNK 3
           ORG 77
           HLT
@@ -386,7 +386,7 @@ P_TO_A = """
           HLT
 """
 POSITIVE_JUMP_BACKWARD_MINUS_ZERO_A = """
-          REM Test positive jump backward with a set to minus zero
+          REM TestCommandInterpeters positive jump backward with a set to minus zero
           BNK 3
           ORG 77
           HLT
@@ -396,7 +396,7 @@ POSITIVE_JUMP_BACKWARD_MINUS_ZERO_A = """
           END
 """
 POSITIVE_JUMP_BACKWARD_ZERO_A = """
-          REM Test positive jump backward with a set to minus zero
+          REM TestCommandInterpeters positive jump backward with a set to minus zero
           BNK 3
           ORG 77
           HLT
@@ -406,7 +406,7 @@ POSITIVE_JUMP_BACKWARD_ZERO_A = """
           END
 """
 POSITIVE_JUMP_FORWARD_MINUS_ZERO_A = """
-          REM Test positive jump forward with A set to minus zero
+          REM TestCommandInterpeters positive jump forward with A set to minus zero
           BNK 3
           ORG 100
           LDC 7777
@@ -416,7 +416,7 @@ POSITIVE_JUMP_FORWARD_MINUS_ZERO_A = """
           END
 """
 POSITIVE_JUMP_FORWARD_ZERO_A = """
-          REM Test positive jump forward with A set to minus zero
+          REM TestCommandInterpeters positive jump forward with A set to minus zero
           BNK 3
           ORG 100
           LDC 0
@@ -426,7 +426,7 @@ POSITIVE_JUMP_FORWARD_ZERO_A = """
           END
 """
 REPLACE_ADD_BACKWARD = """
-          REM Test Replace Add Backward, [(P - YY)(r)] + A -> A, [(P - YY)(r)]
+          REM TestCommandInterpeters Replace Add Backward, [(P - YY)(r)] + A -> A, [(P - YY)(r)]
           BNK 3
           ORG 77
           OCT 1200
@@ -436,7 +436,7 @@ REPLACE_ADD_BACKWARD = """
           END
 """
 REPLACE_ADD_CONSTANT = """
-          REM Test Replace Add Constant, [G(r)] + A -> A and [G(r)]
+          REM TestCommandInterpeters Replace Add Constant, [G(r)] + A -> A and [G(r)]
           BNK 3
           ORG 100
           LDC 34
@@ -445,7 +445,7 @@ REPLACE_ADD_CONSTANT = """
           END
 """
 REPLACE_ADD_DIRECT = """
-          REM Test Replace Add Direct, [YY(d)] + A -> A and [YY(d)]
+          REM TestCommandInterpeters Replace Add Direct, [YY(d)] + A -> A and [YY(d)]
           REM Direct 2, Indirect 1, Relative 3
           BNK 2
           ORG 20
@@ -458,7 +458,7 @@ REPLACE_ADD_DIRECT = """
           END
 """
 REPLACE_ADD_FORWARD = """
-          REM Test Replace Add Forward, [(P + YY)(r)] + A -> A and
+          REM TestCommandInterpeters Replace Add Forward, [(P + YY)(r)] + A -> A and
           REM [(P + YY)(r)]
           BNK 3
           ORG 100
@@ -469,7 +469,7 @@ REPLACE_ADD_FORWARD = """
           END
 """
 REPLACE_ADD_INDIRECT = """
-          REM Test Replace Add Indirect, A + [YY(d)] -> A and [YY(i)]
+          REM TestCommandInterpeters Replace Add Indirect, A + [YY(d)] -> A and [YY(i)]
           BNK 1
           ORG 14
           OCT 1200
@@ -481,7 +481,7 @@ REPLACE_ADD_INDIRECT = """
           END
 """
 REPLACE_ADD_MEMORY = """
-          REM Test Replace Add Memory,  A + [G(r)] -> A and [G(r)]
+          REM TestCommandInterpeters Replace Add Memory,  A + [G(r)] -> A and [G(r)]
           BNK 3
           ORG 100
           LDC 34
@@ -560,7 +560,7 @@ REPLACE_ADD_ONE_SPECIFIC = """
           HLT
 """
 REPLACE_ADD_SPECIFIC = """
-          REM Test Replace Add Storage, A + [7777(0)] -> A and [7777(0)]
+          REM TestCommandInterpeters Replace Add Storage, A + [7777(0)] -> A and [7777(0)]
           BNK 0
           ORG 7777
           OCT 1200
@@ -777,7 +777,7 @@ SET_RELATIVE_BANK_CONTROL_AND_JUMP = """
           END
 """
 SHIFT_REPLACE_BACKWARD = """
-          REM Test Shift Replace Backward [(P - YY)(r)] << 1 -> A and (P - YY)(r)
+          REM TestCommandInterpeters Shift Replace Backward [(P - YY)(r)] << 1 -> A and (P - YY)(r)
           BNK 3
           ORG 76
           OCT 4001
@@ -787,7 +787,7 @@ SHIFT_REPLACE_BACKWARD = """
           END
 """
 SHIFT_REPLACE_CONSTANT = """
-          REM Test Shift Replace Direct [G} << 1 -> A and G
+          REM TestCommandInterpeters Shift Replace Direct [G} << 1 -> A and G
           BNK 3
           ORG 100
           SRC 4001
@@ -795,7 +795,7 @@ SHIFT_REPLACE_CONSTANT = """
           END
 """
 SHIFT_REPLACE_DIRECT = """
-          REM Test Shift Replace Direct YY(d) << 1 -> A and YY(d)
+          REM TestCommandInterpeters Shift Replace Direct YY(d) << 1 -> A and YY(d)
           BNK 2
           ORG 14
           OCT 4001
@@ -815,7 +815,7 @@ SHIFT_REPLACE_FORWARD = """
           END
 """
 SHIFT_REPLACE_INDIRECT = """
-          REM Test Shift Replace Indirect  YY(i) << 1 -> A and YY(i)
+          REM TestCommandInterpeters Shift Replace Indirect  YY(i) << 1 -> A and YY(i)
           BNK 1
           ORG 24
           OCT 4001
@@ -826,7 +826,7 @@ SHIFT_REPLACE_INDIRECT = """
           END
 """
 SHIFT_REPLACE_MEMORY = """
-          REM Test Shift Replace Memory YYYY(r) << 1 -> A and YYYY(r)
+          REM TestCommandInterpeters Shift Replace Memory YYYY(r) << 1 -> A and YYYY(r)
           BNK 3
           ORG 100
           SRM 200
@@ -836,7 +836,7 @@ SHIFT_REPLACE_MEMORY = """
           END
 """
 SHIFT_REPLACE_SPECIFIC = """
-          REM Test Shift Replace Specific [7777(0)] << 1 -> A and 7777(0)
+          REM TestCommandInterpeters Shift Replace Specific [7777(0)] << 1 -> A and 7777(0)
           BNK 0
           ORG 7777
           OCT 4001
@@ -847,7 +847,7 @@ SHIFT_REPLACE_SPECIFIC = """
           END 
 """
 STORE_BACKWARD = """
-          REM Test store backward, which stores the A register
+          REM TestCommandInterpeters store backward, which stores the A register
           REM contents to the current location minus the E
           REM value (which specifies a nonzero backwards offset).
           BNK 3
@@ -859,7 +859,7 @@ STORE_BACKWARD = """
           END
 """
 STORE_CONSTANT = """
-          REM Test store constant, store into instruction's G
+          REM TestCommandInterpeters store constant, store into instruction's G
           REM which seems odd, but that's what the manual says
           REM it does.
           BNK 3  Relative bank
@@ -869,7 +869,7 @@ STORE_CONSTANT = """
           END
 """
 STORE_DIRECT = """
-          REM Test store direct, store A to the direct storage bank
+          REM TestCommandInterpeters store direct, store A to the direct storage bank
           BNK 2   Direct bank
           ORG 40
           OCT 7777
@@ -881,7 +881,7 @@ STORE_DIRECT = """
           END
 """
 STORE_FORWARD = """
-          REM Test store forward, store A to the current address plus
+          REM TestCommandInterpeters store forward, store A to the current address plus
           REM the offset in E
           BNK 3
           ORG 100
@@ -892,7 +892,7 @@ STORE_FORWARD = """
           END
 """
 STORE_INDIRECT = """
-          REM Test store direct, store A to the direct storage bank
+          REM TestCommandInterpeters store direct, store A to the direct storage bank
           BNK 1   Indirect bank
           ORG 40
           OCT 7777
@@ -904,7 +904,7 @@ STORE_INDIRECT = """
           END
 """
 STORE_MEMORY = """
-          REM Test store memory, store A to [G](r)
+          REM TestCommandInterpeters store memory, store A to [G](r)
           BNK 3
           ORG 100
           LDC 1234
@@ -923,7 +923,7 @@ STORE_P_REGISTER = """
           END
 """
 STORE_SPECIFIC = """
-          REM Test store specific, store A 7777(0)
+          REM TestCommandInterpeters store specific, store A 7777(0)
           BNK 0
           ORG 7777
           OCT 7777
@@ -935,7 +935,7 @@ STORE_SPECIFIC = """
           END
 """
 SUBTRACT_BACKWARD = """
-          REM Test subtract backward
+          REM TestCommandInterpeters subtract backward
           BNK 3
           ORG 77
           OCT 31
@@ -945,7 +945,7 @@ SUBTRACT_BACKWARD = """
           END
 """
 SUBTRACT_CONSTANT = """
-          REM Test subtract constant
+          REM TestCommandInterpeters subtract constant
           BNK 3
           ORG 100
           LDC 1265
@@ -954,7 +954,7 @@ SUBTRACT_CONSTANT = """
           END
 """
 SUBTRACT_DIRECT = """
-          REM Test subtract direct
+          REM TestCommandInterpeters subtract direct
           BNK 2 Direct storage bank
           ORG 40
           OCT 31
@@ -966,7 +966,7 @@ SUBTRACT_DIRECT = """
           END
 """
 SUBTRACT_FORWARD = """
-          REM Test subtract forward
+          REM TestCommandInterpeters subtract forward
           BNK 3
           ORG 100
           LDC 1265
@@ -976,7 +976,7 @@ SUBTRACT_FORWARD = """
           END
 """
 SUBTRACT_INDIRECT = """
-          REM Test subtract indirect
+          REM TestCommandInterpeters subtract indirect
           BNK 1 indirect storage bank
           ORG 40
           OCT 31
@@ -988,7 +988,7 @@ SUBTRACT_INDIRECT = """
           END
 """
 SUBTRACT_MEMORY = """
-          REM Test subtract memory
+          REM TestCommandInterpeters subtract memory
           BNK 3
           ORG 100
           LDC 1265
@@ -999,7 +999,7 @@ SUBTRACT_MEMORY = """
           END
 """
 SUBTRACT_NO_ADDRESS = """
-          REM Test subtract no address 
+          REM TestCommandInterpeters subtract no address 
           BNK 3
           ORG 100
           LDC 1265
@@ -1008,7 +1008,7 @@ SUBTRACT_NO_ADDRESS = """
           END
 """
 SUBTRACT_SPECIFIC = """
-          REM Test subtract specific
+          REM TestCommandInterpeters subtract specific
           BNK 0
           ORG 7777
           OCT 31
@@ -1020,7 +1020,7 @@ SUBTRACT_SPECIFIC = """
           END
 """
 ZERO_JUMP_BACKWARD_MINUS_ZERO_A = """
-          REM Test zero jump backward with a set to minus zero
+          REM TestCommandInterpeters zero jump backward with a set to minus zero
           BNK 3
           ORG 77
           HLT
@@ -1030,7 +1030,7 @@ ZERO_JUMP_BACKWARD_MINUS_ZERO_A = """
           END
 """
 ZERO_JUMP_BACKWARD_ZERO_A = """
-          REM Test zero jump backward with a set to minus zero
+          REM TestCommandInterpeters zero jump backward with a set to minus zero
           BNK 3
           ORG 77
           HLT
@@ -1040,7 +1040,7 @@ ZERO_JUMP_BACKWARD_ZERO_A = """
           END
 """
 ZERO_JUMP_FORWARD_MINUS_ZERO_A = """
-          REM Test zero jump forward with A set to minus zero
+          REM TestCommandInterpeters zero jump forward with A set to minus zero
           BNK 3
           ORG 100
           LDC 0
@@ -1050,7 +1050,7 @@ ZERO_JUMP_FORWARD_MINUS_ZERO_A = """
           END
 """
 ZERO_JUMP_FORWARD_ZERO_A = """
-          REM Test zero jump forward with A set to minus zero
+          REM TestCommandInterpeters zero jump forward with A set to minus zero
           BNK 3
           ORG 100
           LDC 0

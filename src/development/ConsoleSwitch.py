@@ -12,6 +12,12 @@ class SwitchState(Enum):
     CENTER = 2
     DOWN = 3
 
+STATE_NAMES = {
+    SwitchState.CENTER: "center",
+    SwitchState.DOWN: "down",
+    SwitchState.UP: "up",
+}
+
 class ConsoleSwitch:
     """
     Emulates a console switch. Switches can be up, centered (off), or down.
@@ -68,3 +74,9 @@ class ConsoleSwitch:
         :return: None
         """
         self.__state = SwitchState.UP
+
+    def switch_state(self) -> SwitchState:
+        return self.__state
+
+    def state_name(self) -> str:
+        return STATE_NAMES[self.__state]
