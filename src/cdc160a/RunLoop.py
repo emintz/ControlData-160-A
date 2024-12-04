@@ -25,17 +25,13 @@ class RunLoop:
                development, or a full-blown GUI.
         :param storage: CDC 160-A memory and register file
 
-        TODO(emintz): add console.
         """
         self.__console = console
         self.__storage = storage
 
     def run(self) -> None:
-        self.__storage.run()
-        # TODO(emintz): the following must become an endless loop when we have a
-        #               working console.
         while True:
-            self.__console.before_instruction_fetch(self.__console)
+            self.__console.before_instruction_fetch(self.__storage)
             # TODO(emintz): respond to pending interrupts
             # TODO(emintz): service pending buffer requests
             self.__storage.unpack_instruction()

@@ -29,6 +29,17 @@ class AssembleAndRunIfErrorFree(Runner):
             print("Error: file {0} not found.".format(setting))
         return True
 
+class Exit(Runner):
+
+    def apply(self, interpreter: Interpreter, storage: Storage, setting: str) -> bool:
+        really_exit = input("Do you really want to quit the interpreter (y/N)?")
+        if really_exit.strip() == "y":
+            print("Goodbye.")
+            exit(0)
+        else:
+            print("Excellent!")
+        return True
+
 class JumpSwitch(Runner):
     """
     Interprets commands that set jump switches.  Switches can be set up, down,
@@ -154,6 +165,7 @@ class StopSwitch(Runner):
 # Available commands
 COMMANDS: {str: Runner} = {
     "assemble": AssembleAndRunIfErrorFree(),
+    "exit": Exit(),
     "halt": Step(),
     "jump1": JumpSwitch(0),
     "jump2": JumpSwitch(1),

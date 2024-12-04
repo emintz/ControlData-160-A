@@ -17,6 +17,7 @@ class TestRunLoop(TestCase):
         self.__storage.set_indirect_storage_bank(0o1)
         self.__storage.set_relative_storage_bank(0o3)
         self.__storage.set_program_counter(0o0100)
+        self.__storage.run()
 
     def tearDown(self) -> None:
         self.__storage = None
