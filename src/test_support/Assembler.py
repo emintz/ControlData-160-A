@@ -18,6 +18,20 @@ form.
 Numbers are unsigned octal and only contain digits in ['0' .. '7'].
 Numbers MUST NOT have a prefix (e.g. no "0o" prefix).
 
+Output format:
+
+The assembler writes a listing to the termai. Each line contains:
+
+  A line number, starting from 0
+
+  The target address and bank in the form AAAA(b) where AAAA is a
+  four digit octal memory address and b is a one octal digit
+  bank number. This is printed even if the assembler emits no
+  code.
+
+  The emitted code, one or two four-digit octal numbers depending
+  on the instruction.
+
 Instructions have three possible semantics, each of which
 has its own format.
 
@@ -50,19 +64,52 @@ Note that well-formed E and G values will not exceed
 the maximum allowed value. Bounds are checked where
 required.
 
-The assembler supports the following pseudo-instructions:
+The assembler supports the following pseudo instruction types:
+
+Formatting, pseudo instructions that are written to the listing and
+do nothing else:
 
     A blank line, which produces a blank like in the listing and is
     otherwise ignored.
 
-    REM, which is copied to the listing and otherwise ignored.
+    REM, remarks to appear in the listing and otherwise ignored.
+
+Code generation control:
+
+    BNK sets the memory bank to receive emitted code. Note that BNK
+    does not alter the target memory address, nor does it set bank
+    registers to be used when the emitted program runs.
+
+    ORG sets the target memory address for the next emitted
+    instruction. Note that ORG does not change any memory bank
+    settings.
+
+Runtime configuration, instructions that configure the emulator's
+runtime settings.
+
+    SETB: sets the buffer bank register to its starting value,
+    the value it will have when the assembled program starts.
+
+    SETD: sets the direct bank register to its starting value
+
+    SETI: sets the indirect bank register to its starting value
+
+    SETP: sets the program address, a.k.a. P Register, to its
+    starting value
+
+    SETR: sets the relative storage bank register to its starting value
+
+Note that s runtime configuration pseudo instruction overwrites
+any previous settings. If two SETB instructions occur in a program,
+the second one prevails.
 """
 from __future__ import annotations
 
-from typing import Callable
 from cdc160a import Storage
+from os import path
 import re
 import sys
+from typing import Callable
 
 BANK_PATTERN = re.compile("[0-7]")
 E_PATTERN = re.compile("[0-7]{1,2}")
@@ -116,9 +163,10 @@ class AddressSetter:
     def name(self) -> str:
         return self.__name
 
-class BankSetter:
+class AssemblerBankSetter:
     """
-    Implements BNK, which sets the bank to receive assembler output
+    Implements BNK, which sets the bank to receive assembler output. Leaves
+    the Storage bank registers unchanged.
     """
     def __init__(self, assembler: Assembler, name: str):
         self.__assembler = assembler
@@ -144,6 +192,167 @@ class MemorySetter:
         if len(tokens) < 2:
             self.__assembler.warning("Literal value missing, using 0o0000")
         self.__assembler.emit_word(int(tokens[1], 8))
+
+class AbstractStorageRegisterSetter:
+    """
+    Base class for commands that set storage registers in the
+    emulator register bank.
+    """
+    def __init__(self, assembler: Assembler, name: str, max: int):
+        """
+        Constructor
+
+        :param max:
+        :param assembler: Assembler containing the storage whose bank
+               registers will be set.
+        :param max maximum allowed value
+        :param name: instruction name, e.g. SETB to set the buffer
+               bank register
+        """
+        self._assembler = assembler
+        self.__name = name
+        self.__max = max
+
+    def string_to_setting(self, tokens : [str]) ->(bool, int):
+        """
+        Check that the token list contains a valid register setting and, if
+        valid, convert it to an integer
+
+        :param tokens: parsed instructions token
+        :return: (status, value), where status is True if an only if the
+                 token list contains a valid value, and value contains
+                 the bank value if status is True.
+        """
+        status = False
+        value = -1
+        if len(tokens) >= 2:
+            try:
+                maybe_bank_no = int(tokens[1], 8)
+                if 0 <= maybe_bank_no <= self.__max:
+                    value = maybe_bank_no
+                    status = True
+                else:
+                    self._assembler.error(
+                        "Bank number must be between 0 and 7, found {0}."
+                        .format(maybe_bank_no))
+            except ValueError:
+                self._assembler.error("Invalid value: {0}".format(tokens[1]))
+        else:
+            self._assembler.error( "Bank number required.")
+        return status, value
+
+    def name(self) -> str:
+        return self.__name
+
+class BufferRegisterSetter(AbstractStorageRegisterSetter):
+    """
+    Sets the buffer bank register in the interpreter's register file
+    """
+
+    def __init__(self, assembler: Assembler,  name: str):
+        """
+        Constructor
+
+        :param assembler: Assembler containing the storage whose bank
+               registers will be set.
+        :param name: instruction name
+        """
+        super(BufferRegisterSetter, self).__init__(assembler, name, 7)
+
+    def emit(self, tokens: [str]) -> None:
+        status, bank_no = self.string_to_setting(tokens)
+        if status:
+            self._assembler.set_buffer_bank(bank_no)
+        self._assembler.print_current_line_without_instruction()
+
+
+class DirectRegisterSetter(AbstractStorageRegisterSetter):
+    """
+    Sets the direct bank register in the interpreter's register file
+    """
+
+    def __init__(self, assembler: Assembler, name: str):
+        """
+        Constructor
+
+        :param assembler: Assembler containing the storage whose bank
+               registers will be set.
+        :param name: instruction name
+        """
+        super(DirectRegisterSetter, self).__init__(assembler, name, 7)
+
+    def emit(self, tokens: [str]) -> None:
+        status, bank_no = self.string_to_setting(tokens)
+        if status:
+            self._assembler.set_direct_bank(bank_no)
+        self._assembler.print_current_line_without_instruction()
+
+
+class IndirectRegisterSetter(AbstractStorageRegisterSetter):
+    """
+    Sets the indirect bank register in the interpreter's register file
+    """
+
+    def __init__(self, assembler: Assembler, name: str):
+        """
+        Constructor
+
+        :param assembler: Assembler containing the storage whose bank
+               registers will be set.
+        :param name: instruction name
+        """
+        super(IndirectRegisterSetter, self).__init__(assembler, name, 7)
+
+    def emit(self, tokens: [str]) -> None:
+        status, bank_no = self.string_to_setting(tokens)
+        if status:
+            self._assembler.set_indirect_bank(bank_no)
+        self._assembler.print_current_line_without_instruction()
+
+
+class ProgramAddressSetter(AbstractStorageRegisterSetter):
+    """
+    Sets the relative bank register in the interpreter's register file
+    """
+
+    def __init__(self, assembler: Assembler, name: str):
+        """
+        Constructor
+
+        :param assembler: Assembler containing the storage whose bank
+               registers will be set.
+        :param name: instruction name
+        """
+        super(ProgramAddressSetter, self).__init__(assembler, name, 0o7777)
+
+    def emit(self, tokens: [str]) -> None:
+        status, address = self.string_to_setting(tokens)
+        if status:
+            self._assembler.set_program_counter(address)
+        self._assembler.print_current_line_without_instruction()
+
+
+class RelativeRegisterSetter(AbstractStorageRegisterSetter):
+    """
+    Sets the relative bank register in the interpreter's register file
+    """
+
+    def __init__(self, assembler: Assembler, name: str):
+        """
+        Constructor
+
+        :param assembler: Assembler containing the storage whose bank
+               registers will be set.
+        :param name: instruction name
+        """
+        super(RelativeRegisterSetter, self).__init__(assembler, name, 7)
+
+    def emit(self, tokens: [str]) -> None:
+        status, bank_no = self.string_to_setting(tokens)
+        if status:
+            self._assembler.set_relative_bank(bank_no)
+        self._assembler.print_current_line_without_instruction()
+
 
 class VacuousEmitter:
     def __init__(self, assembler: Assembler, name: str):
@@ -416,7 +625,13 @@ class TwoWordVariableE:
         return e
 
 class Assembler:
-    def __init__(self, source: str, storage: Storage):
+    def __init__(self, source, storage: Storage):
+        """
+        Constructor
+
+        :param source: iterator that provides source, one line at a time.
+        :param storage: emulator's memory and register file.
+        """
         self.__address = 0
         self.__bank = 0
         self.__current_source_line = ""
@@ -425,7 +640,7 @@ class Assembler:
         self.__errors = 0
         self.__error_or_warning = None
         self.__formatted_instruction = None
-        self.__source_lines = source.splitlines()
+        self.__source_lines = source
         self.__storage = storage
         self.__warnings = 0
         self.__words_written = 0
@@ -447,7 +662,7 @@ class Assembler:
             "AOI": OneWordNonZeroE(self, "AOI", 0o55),
             "AOM": TwoWordFixedE(self, "AOM", 0o55),
             "AOS": FixedEValue(self, "AOS", 0o5700),
-            "BNK": BankSetter(self, "BNK"),
+            "BNK": AssemblerBankSetter(self, "BNK"),
             "CTA": FixedEValue(self, "CTA", 0o0130),
             "DRJ": OneWordLowE(self, "DRJ", 0o00, 0o05),
             "END": StopAssembly(self, "ERR"),
@@ -522,6 +737,11 @@ class Assembler:
             "SCD": OneWordAnyE(self, "SCD", 0o14),
             "SCF": OneWordNonZeroE(self, "SCF", 0o16),
             "SCI": OneWordNonZeroE(self, "SCI", 0o15),
+            "SETB": BufferRegisterSetter(self, "SETB"),
+            "SETD": DirectRegisterSetter(self, "SETD"),
+            "SETI": IndirectRegisterSetter(self, "SETI"),
+            "SETP": ProgramAddressSetter(self, "SETP"),
+            "SETR": RelativeRegisterSetter(self, "SETR"),
             "SIC": OneWordLowE(self, "SIC", 0o00, 0o02),
             "SID": OneWordLowE(self, "SID", 0o00, 0o06),
             "SCM": TwoWordFixedE(self, "SCM", 0o15),
@@ -632,12 +852,13 @@ class Assembler:
         self.print_current_line("         ")
 
     def run(self) -> bool:
-        for self.__current_source_line in self.__source_lines:
-            self.__error_or_warning = None
-            self.__formatted_instruction = "                  "
-            self.__crack_and_emit()
-            if not self.__running:
-                break
+        with self.__source_lines as source:
+            for self.__current_source_line in source:
+                self.__error_or_warning = None
+                self.__formatted_instruction = "                  "
+                self.__crack_and_emit()
+                if not self.__running:
+                    break
 
         print(
             "End of program, {0} errors, {1} warnings".format(
@@ -654,6 +875,61 @@ class Assembler:
     def set_bank(self, value: int) -> None:
         self.__bank = value
         self.print_current_line_without_instruction()
+
+    def set_buffer_bank(self, value: int) -> None:
+        """
+        Sets the buffer bank register in the Storage bound
+        to self. This value will apply if the3 assembled program
+        runs. Does not alter the Assembler bank.
+
+        :param value: bank number in [0 .. 0o7] Range not checked.
+        :return: None
+        """
+        self.__storage.buffer_storage_bank = value
+
+    def set_direct_bank(self, value: int) -> None:
+        """
+        Sets the direct bank register in the Storage bound
+        to self. This value will apply if the3 assembled program
+        runs. Does not alter the Assembler bank.
+
+        :param value: bank number in [0 .. 0o7] Range not checked.
+        :return: None
+        """
+        self.__storage.direct_storage_bank = value
+
+    def set_indirect_bank(self, value: int) -> None:
+        """
+        Sets the indirect bank register in the Storage bound
+        to self. This value will apply if the3 assembled program
+        runs. Does not alter the Assembler bank.
+
+        :param value: bank number in [0 .. 0o7] Range not checked.
+        :return: None
+        """
+        self.__storage.indirect_storage_bank = value
+
+    def set_relative_bank(self, value: int) -> None:
+        """
+        Sets the direct bank register in the Storage bound
+        to self. This value will apply if the3 assembled program
+        runs. Does not alter the Assembler bank.
+
+        :param value: bank number in [0 .. 0o7] Range not checked.
+        :return: None
+        """
+        self.__storage.relative_storage_bank = value
+
+    def set_program_counter(self, value: int) -> None:
+        """
+        Sets the P register in the Storage bound
+        to self. This value will apply if the3 assembled program
+        runs. Does not alter the Assembler address.
+
+        :param value: bank number in [0 .. 0o7777] Range not checked.
+        :return: None
+        """
+        self.__storage.p_register = value
 
     def stop(self) -> None:
         self.__running = False
@@ -700,7 +976,37 @@ class Assembler:
         return self.__words_written
 
 
-def assembler_from_string(source: str, storage: Storage) -> Assembler:
+def assembler_from_file(pathname: str, storage: Storage) -> Assembler | None:
+    """
+    Create an Assembler that takes its input from the provided path name
+
+    :param pathname of the file containing the assembler source. Supports
+          full paths.
+    :param storage interpreter's memory and register file
+    :return: an Assembler if creation is successful, None otherwise.
+    """
+    result = None
+    if path.exists(pathname):
+        input_file = open(pathname)
+        result = Assembler(input_file, storage)
+    return result
+
+
+class ClosableString:
+    """
+    Wrapper class that makes a string iterable by breaking it into
+    lines and usable with 'with'.
+    """
+    def __init__(self, source: str):
+        self.__source = source
+
+    def __enter__(self):
+        return self.__source.splitlines()
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
+
+def assembler_from_string(source: str, storage: Storage) -> Assembler | None:
     """
     Creates an assembler that takes a string as input.
 
@@ -708,4 +1014,4 @@ def assembler_from_string(source: str, storage: Storage) -> Assembler:
     :param storage: emulator memory and register file
     :return: the newly minted Assembler
     """
-    return Assembler(source, storage)
+    return Assembler(ClosableString(source), storage)

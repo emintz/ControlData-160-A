@@ -11,6 +11,7 @@ SINGLE_INSTRUCTION_TEMPLATE = """
           {0}
           END
 """
+VACUOUS_PROGRAM = "          END\n"
 
 class TestAssembler(TestCase):
 
@@ -24,10 +25,40 @@ class TestAssembler(TestCase):
         return assembler_from_string(source, self.__storage)
 
     def empty_assembler(self) -> Assembler:
-        assembler = self.assembler("          END\n")
+        assembler = self.assembler(VACUOUS_PROGRAM)
         assembler.set_bank(3)
         assembler.set_address(0o100)
         return assembler
+
+    def test_set_buffer_bank(self) -> None:
+        assembler = self.empty_assembler()
+        assert not self.__storage.buffer_storage_bank == 6
+        assembler.set_buffer_bank(6)
+        assert self.__storage.buffer_storage_bank == 6
+
+    def test_set_direct_bank(self) -> None:
+        assembler = self.empty_assembler()
+        assert not self.__storage.direct_storage_bank == 6
+        assembler.set_direct_bank(6)
+        assert self.__storage.direct_storage_bank == 6
+
+    def test_set_indirect_bank(self) -> None:
+        assembler = self.empty_assembler()
+        assert not self.__storage.indirect_storage_bank == 6
+        assembler.set_indirect_bank(6)
+        assert self.__storage.indirect_storage_bank == 6
+
+    def test_set_relative_bank(self) -> None:
+        assembler = self.empty_assembler()
+        assert not self.__storage.relative_storage_bank == 6
+        assembler.set_relative_bank(6)
+        assert self.__storage.relative_storage_bank == 6
+
+    def test_set_program_counter(self) -> None:
+        assembler = self.empty_assembler()
+        assert not self.__storage.p_register == 0o2000
+        assembler.set_program_counter(0o2000)
+        assert self.__storage.p_register == 0o2000
 
     def test_one_word_range_e_valid(self) -> None:
         assembler = self.empty_assembler()
@@ -123,39 +154,39 @@ class TestAssembler(TestCase):
             pass
 
     def test_token_to_bank_valid_input(self) -> None:
-        assembler = self.assembler("          END\n")
+        assembler = self.empty_assembler()
         assert assembler.token_to_bank("3") == 3
         assert assembler.error_count() == 0
 
     def test_token_to_bank_input_too_long(self) -> None:
-        assembler = self.assembler("          END\n")
+        assembler = self.empty_assembler()
         assert assembler.token_to_bank("10") == 0
         assert assembler.error_count() == 1
 
     def test_token_to_bank_not_octal(self) -> None:
-        assembler = self.assembler("          END\n")
+        assembler = self.empty_assembler()
         assert assembler.token_to_bank("9") == 0
         assert assembler.error_count() == 1
 
     def test_token_to_e_valid_input(self) -> None:
-        assembler = self.assembler("          END\n")
+        assembler = self.empty_assembler()
         assert assembler.token_to_e("1", 0) == 0o1
         assert assembler.error_count() == 0
         assert assembler.token_to_e("12", 0) == 0o12
         assert assembler.error_count() == 0
 
     def test_token_to_e_input_too_long(self) -> None:
-        assembler = self.assembler("          END\n")
+        assembler = self.empty_assembler()
         assert assembler.token_to_e("123", 0) == 0
         assert assembler.error_count() == 1
 
     def test_token_to_e_not_octal(self) -> None:
-        assembler = self.assembler("          END\n")
+        assembler = self.empty_assembler()
         assert assembler.token_to_e("##", 0) == 0
         assert assembler.error_count() == 1
 
     def test_token_to_g_valid_input(self) -> None:
-        assembler = self.assembler("          END\n")
+        assembler = self.empty_assembler()
         assert assembler.token_to_g("1", 0) == 0o1
         assert assembler.error_count() == 0
         assert assembler.token_to_g("12", 0) == 0o12
@@ -166,18 +197,18 @@ class TestAssembler(TestCase):
         assert assembler.error_count() == 0
 
     def test_token_to_g_input_too_long(self) -> None:
-        assembler = self.assembler("          END\n")
+        assembler = self.empty_assembler()
         assert assembler.token_to_g("12345", 0) == 0
         assert assembler.error_count() == 1
 
     def test_token_to_g_not_octal(self) -> None:
-        assembler = self.assembler("          END\n")
+        assembler = self.empty_assembler()
         assert assembler.token_to_g("*", 0) == 0
         assert assembler.error_count() == 1
 
     def test_empty_one_statement_program(self) -> None:
-        source = "          END\n"
-        assembler = self.assembler(source)
+        # Note: cannot invoke empty_assembler because it sets P to 100.
+        assembler = self.assembler(VACUOUS_PROGRAM)
         assert assembler.run()
         assert assembler.address() == 0
         assert assembler.bank() == 0
@@ -580,6 +611,38 @@ class TestAssembler(TestCase):
     def test_sdc(self) -> None:
         self.__single_instruction_test("SDC 6", [0o0046])
 
+    def test_setb(self) -> None:
+        self.__assemble_and_run("SETB 6")
+        assert self.__storage.buffer_storage_bank == 6
+
+    def test_setb_no_value_provided(self) -> None:
+        assembler = self.__assemble_and_run("SETB")
+        assert assembler.error_count() > 0
+
+    def test_setb_value_too_large(self) -> None:
+        assembler = self.__assemble_and_run("SETB 10")
+        assert assembler.error_count() > 0
+
+    def test_setb_invalid_value(self) -> None:
+        assembler = self.__assemble_and_run("SETB 10K-Foobies")
+        assert assembler.error_count() > 0
+
+    def test_setd(self) -> None:
+        self.__assemble_and_run("SETD 6")
+        assert self.__storage.direct_storage_bank == 6
+
+    def test_seti(self) -> None:
+        self.__assemble_and_run("SETI 6")
+        assert self.__storage.indirect_storage_bank == 6
+
+    def test_setp(self) -> None:
+        self.__assemble_and_run("SETP 7654")
+        assert self.__storage.p_register == 0o7654
+
+    def test_setr(self) -> None:
+        self.__assemble_and_run("SETR 6")
+        assert self.__storage.relative_storage_bank == 6
+
     def test_sjs(self) -> None:
         self.__single_instruction_test("SJS 52 1234", [0o7752, 0o1234])
 
@@ -659,11 +722,15 @@ class TestAssembler(TestCase):
             "ZJF 40", [0o6040])
         self.__single_instruction_test("ZJF 0", [0o6000])
 
-    def __single_instruction_test(
-            self, instruction: str, expected_output: [int]) -> None:
+    def __assemble_and_run(self, instruction: str) -> Assembler:
         assembler = self.assembler(
             SINGLE_INSTRUCTION_TEMPLATE.format(instruction))
         assembler.run()
+        return assembler
+
+    def __single_instruction_test(
+            self, instruction: str, expected_output: [int]) -> None:
+        self.__assemble_and_run(instruction)
         address = 0o77
         for expected in expected_output:
             address += 1

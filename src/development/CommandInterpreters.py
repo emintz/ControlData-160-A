@@ -3,6 +3,7 @@
 Command interpreter for the character mode console.
 """
 from cdc160a.Storage import Storage
+from test_support.Assembler import Assembler, assembler_from_file
 from development.Interpreter import Interpreter
 from development.Interpreter import Runner
 
@@ -14,6 +15,19 @@ def is_octal(string: str) -> bool:
         if not result:
             break
     return result
+
+class AssembleAndRunIfErrorFree(Runner):
+    """
+    Assemble source from a specified text file. If the assembly produces no
+    errors, run the assembled program.
+    """
+    def apply(self, interpreter: Interpreter, storage: Storage, setting: str) -> bool:
+        assembler = assembler_from_file(setting, storage)
+        if assembler is not None:
+            assembler.run()
+        else:
+            print("Error: file {0} not found.".format(setting))
+        return True
 
 class JumpSwitch(Runner):
     """
@@ -139,6 +153,7 @@ class StopSwitch(Runner):
 
 # Available commands
 COMMANDS: {str: Runner} = {
+    "assemble": AssembleAndRunIfErrorFree(),
     "halt": Step(),
     "jump1": JumpSwitch(0),
     "jump2": JumpSwitch(1),
