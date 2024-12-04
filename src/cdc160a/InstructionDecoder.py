@@ -77,7 +77,8 @@ class Opcode00:
 
     def decode(self, e: int) -> Instruction:
         decoded_instruction = Instructions.ERR
-        match e >> 3:
+        e_high = e >> 3
+        match e_high:
             case 0:
                 if e in range(0o01, 0o010) :
                     decoded_instruction = Instructions.NOP
