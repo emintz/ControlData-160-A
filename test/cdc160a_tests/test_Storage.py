@@ -6,7 +6,7 @@ from Storage import MCS_MODE_BFR
 from Storage import MCS_MODE_DIR
 from Storage import MCS_MODE_IND
 from Storage import MCS_MODE_REL
-from cdc160a.Storage import Storage
+from cdc160a.Storage import Storage, InterruptLock
 
 READ_AND_WRITE_ADDRESS: Final[int] = 0o1234
 INSTRUCTION_ADDRESS: Final[int] = 0o1232
@@ -191,6 +191,11 @@ class TestStorage(TestCase):
         self.storage.bank_controls_to_a()
         assert self.storage.a_register == 0o1234
 
+    def test_buffer_data_to_memory(self) -> None:
+        self.storage.buffer_entrance_register = 0o200
+        self.storage.buffer_exit_register = 0o202
+        self.storage.buffer_data_register = 0o4321
+
     def test_complement_a(self) -> None:
         self.storage.a_register = 0o7777
         self.storage.complement_a()
@@ -273,6 +278,19 @@ class TestStorage(TestCase):
         self.storage.load_a_from_s(1)
         assert self.storage.a_register == 0o1234
         assert self.storage.z_register == 0o1234
+
+    def test_memory_to_buffer_data(self) -> None:
+        self.storage.set_buffer_storage_bank(0o1)
+        self.storage.write_buffer_bank(0o200, 0o1234)
+        self.storage.write_buffer_bank(0o201, 0o4321)
+        self.storage.buffer_entrance_register = 0o200
+        self.storage.buffer_exit_register = 0o202
+        assert self.storage.memory_to_buffer_data()
+        assert self.storage.buffer_data_register == 0o1234
+        assert self.storage.buffer_entrance_register == 0o201
+        assert not self.storage.memory_to_buffer_data()
+        assert self.storage.buffer_data_register == 0o4321
+        assert self.storage.buffer_entrance_register == 0o202
 
     def test_next_after_one_instruction_normal(self) -> None:
         self.storage.set_program_counter(0o1234)
@@ -357,6 +375,15 @@ class TestStorage(TestCase):
         self.storage.unpack_instruction()
         self.storage.relative_forward_to_s()
         assert self.storage.s_register == INSTRUCTION_ADDRESS + 0o51
+
+    def test_request_interrupt(self) -> None:
+        assert self.storage.interrupt_requests == [False, False, False, False]
+        self.storage.request_interrupt(0o20)
+        assert self.storage.interrupt_requests == [False, True, False, False]
+        self.storage.request_interrupt(0o20)
+        assert self.storage.interrupt_requests == [False, True, False, False]
+        self.storage.request_interrupt(0o40)
+        assert self.storage.interrupt_requests == [False, True, False, True]
 
     def test_run(self) -> None:
         self.storage.run_stop_status = False
@@ -448,6 +475,62 @@ class TestStorage(TestCase):
         self.storage.s_register = 0o321
         self.storage.s_to_next_address()
         assert self.storage.next_address() == 0o321
+
+    def test_service_interrupts_when_locked(self) -> None:
+        self.storage.direct_storage_bank = 1
+        self.storage.relative_storage_bank = 3
+        self.storage.interrupt_lock = InterruptLock.LOCKED
+        self.storage.p_register = 0o200
+        self.storage.request_interrupt(0o20)
+        self.storage.service_pending_interrupts()
+        assert self.storage.read_direct_bank(0o20) == 0
+        assert self.storage.get_program_counter() == 0o200
+        assert self.storage.interrupt_lock == InterruptLock.LOCKED
+
+    def test_service_pending_interrupt_requests_pending_unlocked(self) -> None:
+        self.storage.direct_storage_bank = 1
+        self.storage.relative_storage_bank = 3
+        self.storage.interrupt_lock = InterruptLock.FREE
+        self.storage.p_register = 0o200
+        self.storage.request_interrupt(0o20)
+        self.storage.request_interrupt(0o40)
+        self.storage.service_pending_interrupts()
+        assert self.storage.read_direct_bank(0o20) == 0o200
+        assert self.storage.read_direct_bank(0o40) == 0
+        assert self.storage.get_program_counter() == 0o21
+        assert self.storage.interrupt_requests == [False, False, False, True]
+        assert self.storage.interrupt_lock == InterruptLock.LOCKED
+
+    def test_service_pending_interrupts_requests_made_unlock_pending(self) -> None:
+        self.storage.direct_storage_bank = 1
+        self.storage.relative_storage_bank = 3
+        self.storage.interrupt_lock = InterruptLock.UNLOCK_PENDING
+        self.storage.p_register = 0o200
+        self.storage.request_interrupt(0o20)
+        assert self.storage.interrupt_requests == [False, True, False, False]
+        self.storage.request_interrupt(0o40)
+        assert self.storage.interrupt_requests == [False, True, False, True]
+        self.storage.service_pending_interrupts()
+        assert self.storage.read_direct_bank(0o20) == 0
+        assert self.storage.read_direct_bank(0o40) == 0
+        assert self.storage.get_program_counter() == 0o200
+        assert self.storage.interrupt_lock == InterruptLock.FREE
+        assert self.storage.interrupt_requests == [False, True, False, True]
+        self.storage.service_pending_interrupts()
+        assert self.storage.read_direct_bank(0o20) == 0o200
+        assert self.storage.read_direct_bank(0o40) == 0
+        assert self.storage.get_program_counter() == 0o21
+        assert self.storage.interrupt_lock == InterruptLock.LOCKED
+        assert self.storage.interrupt_requests == [False, False, False, True]
+
+    def test_service_pending_interrupts_none_requested(self) -> None:
+        self.storage.direct_storage_bank = 1
+        self.storage.relative_storage_bank = 3
+        self.storage.p_register = 0o200
+        self.storage.service_pending_interrupts()
+        assert self.storage.read_direct_bank(0o20) == 0
+        assert self.storage.get_program_counter() == 0o200
+        assert self.storage.interrupt_lock == InterruptLock.FREE
 
     def test_set_buffer_bank_from_e(self) -> None:
         self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0146)

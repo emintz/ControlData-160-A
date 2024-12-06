@@ -14,16 +14,23 @@
 
     TODO(emintz): move method descriptions to doc strings.
 """
+from enum import Enum
 import numpy as np
 from typing import Final
 from cdc160a import Arithmetic
 
 # MCS modes and corresponding codes
 MCS_MODE: Final[list[str]] = ["BFR", "DIR", "IND", "REL"]
+# TODO(emintz): use an Enum class.
 MCS_MODE_BFR: Final[int] = 0
 MCS_MODE_DIR: Final[int] = 1
 MCS_MODE_IND: Final[int] = 2
 MCS_MODE_REL: Final[int] = 3
+
+class InterruptLock(Enum):
+    FREE = 0
+    LOCKED = 1
+    UNLOCK_PENDING = 2
 
 class Storage:
     def __init__(self):
@@ -49,7 +56,7 @@ class Storage:
         self.buffer_entrance_register = 0
         # Buffer exit register, which holds the last word address + 1 to or
         # from which information should flow during buffered operation.
-        self.buffered_exit_register = 0
+        self.buffer_exit_register = 0
         # The following two members comprise the F register, which holds
         # the decoded instruction being executed. In the hardware, it
         # contains 12 bits; the most significant 6 bits contain the
@@ -57,6 +64,20 @@ class Storage:
         # contain the instruction's effective E component.
         self.f_instruction = 1
         self.f_e = 0
+        # Interrupt lock. The machine can service an interrupt if and only if
+        # the interrupt lock value is InterruptLock.FREE. Otherwise,
+        # the machine cannot honor an interrupt request.
+        #
+        # The CLI instruction sets the interrupt lock to
+        # InterruptLock.UNLOCK_PENDING. The interrupt handler will set
+        # the lock to InterruptLock.FREE after the next instruction
+        # runs.
+        self.interrupt_lock = InterruptLock.FREE
+        """
+        Pending interrupt requests. Interrupt numbers 10, 20, 30, and 40
+        are mapped to array index 0, 1, 2, and 3 respectively.
+        """
+        self.interrupt_requests = [False, False, False, False]
         # An 8-bit register that holds data being written to the paper
         # tape punch, thereby releasing the Z register for use by
         # high speed I/O.
@@ -185,6 +206,27 @@ class Storage:
     def add_to_a(self, increment: int) -> None:
         self.__sum_to_a(self.a_register, increment)
 
+    def buffer_data_to_memory(self) -> bool:
+        """
+        Move the contents of the buffer data register to the memory
+        location in the buffer entrance register in the buffer memory
+        bank, then increment the buffer entrance register. Successive
+        calls move store data in adjacent memory locations in the buffer
+        storage bank.
+
+        Note that the buffer entrance register contents must be strictly
+        less than the buffer exit contents when this method is invoked.
+
+        :return: True if the buffer is not full (i.e. more data can be
+                 transferred into the buffer); False if  the invocation
+                 filled the buffer.
+        """
+        assert self.buffer_entrance_register < self.buffer_exit_register
+        self.memory[self.buffer_storage_bank, self.buffer_entrance_register] \
+            = self.buffer_data_register
+        self.buffer_entrance_register += 1
+        return self.buffer_entrance_register < self.buffer_exit_register
+
     def complement_a(self) -> None:
         self.a_register = self.a_register ^ 0o7777
 
@@ -266,6 +308,27 @@ class Storage:
         """
         self.load_a(bank, self.s_register)
 
+    def memory_to_buffer_data(self) -> bool:
+        """
+        Move one word of data from the memory address in the buffer entrance
+        register to the buffer data register and increment the buffer
+        entrance register. Return True if the buffer contains more data
+        to be transferred and False if the last word has been transferred.
+
+        Note: Successive calls read data from successive memory locations
+        in the buffer storage bank. Data must be available to be transferred
+        (i.e., the buffer entrance register contents must be strictly less
+        than the buffer exit register contents on entry. This is checked.
+
+        :return: True if the buffer contains more data to be read; False
+                 if the call read the last word in the buffer.
+        """
+        assert self.buffer_entrance_register < self.buffer_exit_register
+        self.buffer_data_register =self.memory[
+            self.buffer_storage_bank, self.buffer_entrance_register]
+        self.buffer_entrance_register += 1
+        return  self.buffer_entrance_register < self.buffer_exit_register
+
     def mode_buffer(self) -> None:
         """
         Declares that data was retrieved from the buffer bank.
@@ -328,6 +391,40 @@ class Storage:
         """
         self.write_direct_bank(self.f_e, self.p_register)
 
+    def request_interrupt(self, interrupt_no: int) -> None:
+        """
+        Request the machine to perform the specified interrupt.
+        :param interrupt_no:
+        :return:
+        """
+        assert interrupt_no & 0o07 == 0
+        assert 0o10 <= interrupt_no <= 0o40
+        self.interrupt_requests[(interrupt_no >> 3) - 1] = True
+
+    def service_pending_interrupts(self) -> None:
+        match self.interrupt_lock:
+            case InterruptLock.FREE:
+                # Can do. Has anyone asked?
+                interrupt_no = 0
+                index = 0
+                for request in self.interrupt_requests:
+                    interrupt_no += 0o10
+                    if request:
+                        self.interrupt_requests[index] = False
+                        self.memory[self.direct_storage_bank, interrupt_no] = (
+                            self.p_register)
+                        self.p_register = interrupt_no + 1
+                        self.interrupt_lock = InterruptLock.LOCKED
+                        break
+                    index += 1
+
+            case InterruptLock.LOCKED:
+                # No can do.
+                pass
+            case InterruptLock.UNLOCK_PENDING:
+                # Ask me next time
+                self.interrupt_lock = InterruptLock.FREE
+
     def store_a(self, bank: int) -> None:
         """
         Store the contents of the A register in address S(bank) via
@@ -361,18 +458,28 @@ class Storage:
         :return: None
         """
         self.__difference_to_a(self.a_register, int(self.memory[bank, self.s_register]))
-        # minuend = self.a_register
-        # subtrahend = int(self.memory[bank, self.s_register])
-        # self.z_register = subtrahend
-        # self.a_register = Arithmetic.subtract(minuend, subtrahend)
 
     def subtract_specific_from_a(self) -> None:
+        """
+        Subtract the contents of the specific memory address, 7777(0) from
+        the accumulator (i.e., the A register)
+
+        :return: None
+        """
         minuend = self.a_register
         subtrahend = int(self.memory[0, 0o7777])
         self.z_register = subtrahend
         self.a_register = Arithmetic.subtract(minuend, subtrahend)
 
     def unpack_instruction(self) -> None:
+        """
+        Split a 12-bit machine instruction into F, the most significant 6 bits
+        a.k.a, the opcode into the F register and the least significant 6
+        bits, the effective address, into the E register. Note that the
+        E register has no counterpart in the real computer.
+
+        :return: None
+        """
         self.p_to_s()
         self.z_register = self.memory[
             self.relative_storage_bank, self.s_register]
