@@ -57,6 +57,11 @@ class Storage:
         # Buffer exit register, which holds the last word address + 1 to or
         # from which information should flow during buffered operation.
         self.buffer_exit_register = 0
+        # The following field must be True when the computer is buffering
+        # and False when it is not. The buffering device is responsible
+        # for maintaining its state. A master clear will set it to
+        # false.
+        self.buffering = False
         # The following two members comprise the F register, which holds
         # the decoded instruction being executed. In the hardware, it
         # contains 12 bits; the most significant 6 bits contain the
@@ -177,6 +182,15 @@ class Storage:
         self.a_to_s_absolute(self.buffer_storage_bank)
         self.mode_buffer()
 
+    def a_to_buffer_data_register(self) -> None:
+        self.buffer_data_register = self.a_register
+
+    def a_to_buffer_entrance_register(self) -> None:
+        self.buffer_entrance_register = self.a_register
+
+    def a_to_buffer_exit_register(self) -> None:
+        self.buffer_exit_register = self.a_register
+
     def a_to_s_direct(self) -> None:
         self.a_to_s_absolute(self.direct_storage_bank)
         self.mode_direct()
@@ -216,14 +230,16 @@ class Storage:
 
         Note that the buffer entrance register contents must be strictly
         less than the buffer exit contents when this method is invoked.
+        The computer must be buffering when this method is entered.
 
         :return: True if the buffer is not full (i.e. more data can be
                  transferred into the buffer); False if  the invocation
                  filled the buffer.
         """
+        assert self.buffering
         assert self.buffer_entrance_register < self.buffer_exit_register
-        self.memory[self.buffer_storage_bank, self.buffer_entrance_register] \
-            = self.buffer_data_register
+        self.memory[self.buffer_storage_bank, self.buffer_entrance_register] =\
+            self.buffer_data_register
         self.buffer_entrance_register += 1
         return self.buffer_entrance_register < self.buffer_exit_register
 
@@ -268,6 +284,21 @@ class Storage:
         self.a_register |= self.indirect_storage_bank
         self.a_register <<= 3
         self.a_register |= self.relative_storage_bank
+
+    def buffer_entrance_to_a(self) -> None:
+        self.a_register = self.buffer_entrance_register
+
+    def buffer_entrance_register_to_direct_storage(self) -> None:
+        """
+        Move the contents of the buffer entrance register to E(d)
+
+        :return: None
+        """
+        self.z_register = self.buffer_entrance_register
+        self.memory[self.direct_storage_bank, self.f_e] = self.z_register
+
+    def buffer_exit_to_a(self) -> None:
+        self.a_register = self.buffer_exit_register
 
     def direct_to_z(self, address: int) -> None:
         """
@@ -319,10 +350,13 @@ class Storage:
         in the buffer storage bank. Data must be available to be transferred
         (i.e., the buffer entrance register contents must be strictly less
         than the buffer exit register contents on entry. This is checked.
+        The computer must be buffering when this method is called. This is
+        also checked.
 
         :return: True if the buffer contains more data to be read; False
                  if the call read the last word in the buffer.
         """
+        assert self.buffering
         assert self.buffer_entrance_register < self.buffer_exit_register
         self.buffer_data_register =self.memory[
             self.buffer_storage_bank, self.buffer_entrance_register]
@@ -389,7 +423,8 @@ class Storage:
 
         :return: None
         """
-        self.write_direct_bank(self.f_e, self.p_register)
+        self.z_register = self.p_register
+        self.write_direct_bank(self.f_e, self.z_register)
 
     def request_interrupt(self, interrupt_no: int) -> None:
         """
@@ -424,6 +459,15 @@ class Storage:
             case InterruptLock.UNLOCK_PENDING:
                 # Ask me next time
                 self.interrupt_lock = InterruptLock.FREE
+
+    def start_buffering(self) -> None:
+        assert not self.buffering
+        assert self.buffer_entrance_register < self.buffer_exit_register
+        self.buffering = True
+
+    def stop_buffering(self) -> None:
+        assert self.buffering
+        self.buffering = False
 
     def store_a(self, bank: int) -> None:
         """

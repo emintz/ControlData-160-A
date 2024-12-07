@@ -367,7 +367,7 @@ class VacuousEmitter:
 
 class FixedEValue:
     """
-    An instruction having a fixed E value
+    A one word instruction having a fixed E value
     """
     def __init__(self, assembler: Assembler, name: str, output: int):
         """
@@ -501,7 +501,6 @@ class OneWordRangeE:
     """
     Emitter for an instruction whose E value must be in a fixed range.
     The range is set at construction.
-
     """
     def __init__(
             self,
@@ -509,7 +508,7 @@ class OneWordRangeE:
             name: str,
             instruction: int,
             e_lower_bound: int,
-            e_upper_bound):
+            e_upper_bound: int):
         """
         Constructor
 
@@ -550,7 +549,10 @@ class OneWordRangeE:
     def name(self):
         return self.__name
 
-class TwoWordFixedE:
+class TwoWordZeroE:
+    """
+    A two word instruction whose E is fixed at 00
+    """
     def __init__(self, assembler: Assembler, name: str, instruction: int):
         """
           Constructor
@@ -576,7 +578,41 @@ class TwoWordFixedE:
     def name(self) -> str:
         return self.__name
 
+class TwoWordFixedE:
+    """
+    A two word instruction having a fixed E value.
+    """
+    def __init__(
+            self,
+            assembler: Assembler,
+            name: str,
+            instruction: int,
+            e_value: int):
+        self.__assembler = assembler
+        self.__name = name
+        self.__output = instruction << 6 | e_value
+
+    def emit(self, tokens: [str]) -> None:
+        g_value = 0
+        match len(tokens):
+            case 0:
+                raise "Internal error, instruction name missing"
+            case 1:
+                self.__assembler.error("G value missing, using 7777")
+            case _:
+                g_value =self.__assembler.token_to_g(tokens[1], 0o7777)
+        self.__assembler.emit_two_words(self.__output, g_value)
+
+    def name(self) -> str:
+        return self.__name
+
+
 class TwoWordVariableE:
+    """
+    A two word instruction whose E value varies. A transform is made between
+    the provided E and the generated E. The transform is provided at
+    construction, and can be trivial if desired.
+    """
     def __init__(
             self,
             assembler: Assembler,
@@ -584,6 +620,15 @@ class TwoWordVariableE:
             instruction: int,
             e_validator: Callable[[int], bool],
             e_transform: Callable[[int], int]):
+        """
+        Constructor
+
+        :param assembler: emits assembled instructions
+        :param name: instruction mnemonic
+        :param instruction: op-code in [0o00 .. 0o77
+        :param e_validator: predicate that validates the provided E value
+        :param e_transform: applied to the provided E before emission.
+        """
         self.__assembler = assembler
         self.__name = name
         self.__instruction = (instruction << 6) & 0o7700
@@ -602,7 +647,7 @@ class TwoWordVariableE:
                         "E and G are required, using 7 and 7777 respectively")
             case 2:
                 self.__assembler.error(
-                    "E is required, using 7777")
+                    "G is required, using 7777")
                 raw_e = self.__extract_e(tokens[1])
             case _:
                 raw_e = self.__extract_e(tokens[1])
@@ -648,53 +693,57 @@ class Assembler:
         self.__emitters = {
             "ACJ": OneWordLowE(self, "ACJ", 0o00, 0o07),
             "ADB": OneWordNonZeroE(self, "ADB", 0o33),
-            "ADC": TwoWordFixedE(self, "ADC", 0o32),
+            "ADC": TwoWordZeroE(self, "ADC", 0o32),
             "ADD": OneWordAnyE(self, "ADD", 0o30),
             "ADF": OneWordNonZeroE(self, "ADC", 0o32),
             "ADI": OneWordNonZeroE(self, "ADI", 0o31),
-            "ADM": TwoWordFixedE(self, "ADM", 0o31),
+            "ADM": TwoWordZeroE(self, "ADM", 0o31),
             "ADN": OneWordAnyE(self, "ADN", 0o06),
             "ADS": FixedEValue(self, "ADS", 0o3300),
             "AOB": OneWordNonZeroE(self, "AOB", 0o57),
-            "AOC": TwoWordFixedE(self, "AOC", 0o56),
+            "AOC": TwoWordZeroE(self, "AOC", 0o56),
             "AOD": OneWordAnyE(self, "AOD", 0o54),
             "AOF": OneWordNonZeroE(self, "AOF", 0o56),
             "AOI": OneWordNonZeroE(self, "AOI", 0o55),
-            "AOM": TwoWordFixedE(self, "AOM", 0o55),
+            "AOM": TwoWordZeroE(self, "AOM", 0o55),
             "AOS": FixedEValue(self, "AOS", 0o5700),
+            "ATE": TwoWordFixedE(self, "ATE", 0o01, 0o05),
+            "ATX": TwoWordFixedE(self, "ATX", 0o01, 0x06),
+            "BLS": TwoWordZeroE(self, "BLS", 0o01),
             "BNK": AssemblerBankSetter(self, "BNK"),
             "CTA": FixedEValue(self, "CTA", 0o0130),
             "DRJ": OneWordLowE(self, "DRJ", 0o00, 0o05),
             "END": StopAssembly(self, "ERR"),
             "ERR": FixedEValue(self, "ERR", 0o0000),
+            "ETA": FixedEValue(self, "ETA", 0o0107),
             "HLT": FixedEValue(self, "HLT", 0o7700),
             "HWI": OneWordRangeE(self, "HWI", 0o76, 0o01, 0o76),
             "IRJ": OneWordLowE(self, "IRJ", 0o00, 0o03),
             "JFI": OneWordNonZeroE(self, "JFI", 0o71),
             "JPI": OneWordAnyE(self, "JPI", 0o70),
-            "JPR": TwoWordFixedE(self, "JPR", 0o71),
+            "JPR": TwoWordZeroE(self, "JPR", 0o71),
             "LCB": OneWordNonZeroE(self, "LCB", 0o27),
-            "LCC": TwoWordFixedE(self, "LCC", 0o26),
+            "LCC": TwoWordZeroE(self, "LCC", 0o26),
             "LCD": OneWordAnyE(self, "LCD", 0o24),
             "LCF": OneWordNonZeroE(self, "LCF", 0o26),
             "LCI": OneWordNonZeroE(self, "LCI", 0o25),
-            "LCM": TwoWordFixedE(self, "LCM", 0o25),
+            "LCM": TwoWordZeroE(self, "LCM", 0o25),
             "LCN": OneWordAnyE(self, "LCN", 0o05),
             "LCS": FixedEValue(self, "LCS", 0o2700),
-            "LDC": TwoWordFixedE(self, "LDC", 0o22),
+            "LDC": TwoWordZeroE(self, "LDC", 0o22),
             "LDB": OneWordNonZeroE(self,"LDB", 0o23),
             "LDD": OneWordAnyE(self, "LDD", 0o20),
             "LDF": OneWordNonZeroE(self, "LDF", 0o22),
             "LDI": OneWordNonZeroE(self, "LDI", 0o21),
-            "LDM": TwoWordFixedE(self, "LDM", 0o21),
+            "LDM": TwoWordZeroE(self, "LDM", 0o21),
             "LDN": OneWordAnyE(self, "LDN", 0o04),
             "LDS": FixedEValue(self, "LDS", 0o2300),
             "LPB": OneWordNonZeroE(self, "LPM", 0o13),
-            "LPC": TwoWordFixedE(self, "LPC", 0o12),
+            "LPC": TwoWordZeroE(self, "LPC", 0o12),
             "LPD": OneWordAnyE(self, "LPD", 0o10),
             "LPF": OneWordNonZeroE(self, "LPF", 0o12),
             "LPI": OneWordNonZeroE(self, "LPI",0o11),
-            "LPM": TwoWordFixedE(self, "LPM", 0o11),
+            "LPM": TwoWordZeroE(self, "LPM", 0o11),
             "LPN": OneWordAnyE(self, "LPN", 0o02),
             "LPS": FixedEValue(self, "LPS", 0o1300),
             "LS1": FixedEValue(self, "LSI", 0o0102),
@@ -714,26 +763,26 @@ class Assembler:
             "PJF": OneWordAnyE(self, "PJF", 0o62),
             "PTA": FixedEValue(self, "PTA", 0o0101),
             "RAB": OneWordNonZeroE(self, "RAB", 0o53),
-            "RAC": TwoWordFixedE(self, "RAC", 0o52),
+            "RAC": TwoWordZeroE(self, "RAC", 0o52),
             "RAD": OneWordAnyE(self, "RAD", 0o50),
             "RAF": OneWordNonZeroE(self, "RAF", 0o52),
             "RAI": OneWordNonZeroE(self, "RAI", 0o51),
             "RAS": FixedEValue(self, "RAS", 0o5300),
-            "RAM": TwoWordFixedE(self, "RAM", 0o51),
+            "RAM": TwoWordZeroE(self, "RAM", 0o51),
             "REM": VacuousEmitter(self, "REM"),
             "RS1": FixedEValue(self, "RS1", 0o0114),
             "RS2": FixedEValue(self, "RS2", 0o0115),
             "SBB": OneWordNonZeroE(self, "SBB", 0o37),
-            "SBC": TwoWordFixedE(self, "SBC", 0o36),
+            "SBC": TwoWordZeroE(self, "SBC", 0o36),
             "SBD": OneWordAnyE(self, "SBD", 0o34),
             "SBF": OneWordNonZeroE(self, "SBF", 0o36),
             "SBI": OneWordNonZeroE(self, "SBD", 0o35),
-            "SBM": TwoWordFixedE(self, "SBM", 0o35),
+            "SBM": TwoWordZeroE(self, "SBM", 0o35),
             "SBN": OneWordAnyE(self, "SBN", 0o07),
             "SBS": FixedEValue(self, "SBS", 0o3700),
             "SBU": OneWordLowE(self, "SBU", 0o01, 0o04),
             "SCB": OneWordNonZeroE(self, "SCB", 0o17),
-            "SCC": TwoWordFixedE(self, "SCC", 0o16),
+            "SCC": TwoWordZeroE(self, "SCC", 0o16),
             "SCD": OneWordAnyE(self, "SCD", 0o14),
             "SCF": OneWordNonZeroE(self, "SCF", 0o16),
             "SCI": OneWordNonZeroE(self, "SCI", 0o15),
@@ -744,7 +793,7 @@ class Assembler:
             "SETR": RelativeRegisterSetter(self, "SETR"),
             "SIC": OneWordLowE(self, "SIC", 0o00, 0o02),
             "SID": OneWordLowE(self, "SID", 0o00, 0o06),
-            "SCM": TwoWordFixedE(self, "SCM", 0o15),
+            "SCM": TwoWordZeroE(self, "SCM", 0o15),
             "SCN": OneWordAnyE(self, "SCN", 0o03),
             "SCS": FixedEValue(self, "SCS", 0o1700),
             "SDC": OneWordLowE(self, "SDC", 0o00, 0o04),
@@ -752,19 +801,20 @@ class Assembler:
             "SLJ": TwoWordVariableE(self,"SLJ", 0o77, lambda e: 0 < e <= 7, lambda e: (e << 3) & 0o70),
             "SLS": OneWordRangeE(self, "SLS", 0o77, 0o1,0o7),
             "SRB": OneWordNonZeroE(self, "SRB", 0o47),
-            "SRC": TwoWordFixedE(self, "SRC", 0o46),
+            "SRC": TwoWordZeroE(self, "SRC", 0o46),
             "SRD": OneWordAnyE(self, "SRD", 0o44),
             "SRF": OneWordNonZeroE(self, "SRF", 0o46),
             "SRI": OneWordNonZeroE(self, "SRI", 0o45),
             "SRJ": OneWordLowE(self, "SRJ", 0o00, 0o01),
             "SRS": FixedEValue(self, "SRS", 0o4700),
-            "SRM": TwoWordFixedE(self, "SRM", 0o45),
+            "SRM": TwoWordZeroE(self, "SRM", 0o45),
             "STB": OneWordNonZeroE(self, "STB", 0o43),
-            "STC": TwoWordFixedE(self, "STC", 0o42),
+            "STC": TwoWordZeroE(self, "STC", 0o42),
             "STD": OneWordAnyE(self, "STD", 0o40),
+            "STE": OneWordRangeE(self, "STE", 0o01, 0o60, 0o67),
             "STF": OneWordNonZeroE(self, "STF", 0o42),
             "STI": OneWordAnyE(self, "STI", 0o41),
-            "STM": TwoWordFixedE(self, "STM", 0o41),
+            "STM": TwoWordZeroE(self, "STM", 0o41),
             "STP": OneWordRangeE(self, "STP", 0o01, 0o50, 0o57),
             "STS": FixedEValue(self, "STS", 0o4300),
             "ZJB": OneWordAnyE(self, "ZJB", 0o64),

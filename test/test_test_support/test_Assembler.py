@@ -309,11 +309,23 @@ class TestAssembler(TestCase):
     def test_aos(self) -> None:
         self.__single_instruction_test("AOS", [0o5700])
 
+    def test_ate(self) -> None:
+        self.__single_instruction_test("ATE 2000", [0o0105, 0o2000])
+
+    def test_atx(self) -> None:
+        self.__single_instruction_test("ATX 5000", [0o0106, 0o5000])
+
+    def test_bls(self) -> None:
+        self.__single_instruction_test("BLS 4000", [0o0100, 0o4000])
+
     def test_cta(self) -> None:
         self.__single_instruction_test("CTA", [0o0130])
 
     def test_drj(self) -> None:
         self.__single_instruction_test("DRJ 6", [0o0056])
+
+    def test_eta(self) -> None:
+        self.__single_instruction_test("ETA", [0o0107])
 
     def test_hwi(self) -> None:
         self.__single_instruction_test("HWI 64", [0o7664])
@@ -694,6 +706,9 @@ class TestAssembler(TestCase):
         self.__single_instruction_test(
             "STD 10", [0o4010])
         self.__single_instruction_test("STD 0", [0o4000])
+
+    def test_ste(self) -> None:
+        self.__single_instruction_test("STE 61", [0o0161])
 
     def test_stf(self) -> None:
         self.__single_instruction_test("STF 5", [0o4205])

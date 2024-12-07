@@ -196,6 +196,15 @@ class TestStorage(TestCase):
         self.storage.buffer_exit_register = 0o202
         self.storage.buffer_data_register = 0o4321
 
+    def test_buffer_entrance_register_to_direct_storage(self) -> None:
+        self.storage.buffer_storage_bank = 0o01
+        self.storage.buffer_entrance_register = 0o3000
+        self.storage.f_e = 0o53
+        assert self.storage.read_direct_bank(0o53) == 0o0000
+        self.storage.buffer_entrance_register_to_direct_storage()
+        assert self.storage.read_direct_bank(0o53) == 0o3000
+        assert self.storage.buffer_entrance_register == 0o3000
+
     def test_complement_a(self) -> None:
         self.storage.a_register = 0o7777
         self.storage.complement_a()
@@ -285,6 +294,7 @@ class TestStorage(TestCase):
         self.storage.write_buffer_bank(0o201, 0o4321)
         self.storage.buffer_entrance_register = 0o200
         self.storage.buffer_exit_register = 0o202
+        self.storage.buffering = True
         assert self.storage.memory_to_buffer_data()
         assert self.storage.buffer_data_register == 0o1234
         assert self.storage.buffer_entrance_register == 0o201

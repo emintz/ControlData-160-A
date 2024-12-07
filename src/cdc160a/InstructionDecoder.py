@@ -103,10 +103,13 @@ class Opcode00:
 class OpCode01:
     # TODO(emintz): the remaining instructions
     __e_to_instruction_00 = {
-        0o00: Instructions.ERR,
+        0o00: Instructions.BLS,
         0o01: Instructions.PTA,
         0o02: Instructions.LS1,
         0o03: Instructions.LS2,
+        0o05: Instructions.ATE,
+        0o06: Instructions.ATX,
+        0o07: Instructions.ETA,
     }
 
     __e_to_instruction_01 = {
@@ -145,7 +148,7 @@ class OpCode01:
             case 5:
                 decoded_instruction = Instructions.STP
             case 6:
-                pass
+                decoded_instruction = Instructions.STE
             case 7:
                 pass
 

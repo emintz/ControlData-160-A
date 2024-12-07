@@ -21,6 +21,40 @@
 """
 from cdc160a.Storage import Storage
 
+def a_to_buffer_entrance(storage: Storage) -> int:
+    """
+    Logic for ATE, A to BER (Buffer Entrance Register) instruction, 0105 YYYY
+
+    :param storage: emulator memory and register file
+    :return: the number of cycles the instruction used.
+    """
+    cycles_used = 0
+    if storage.buffering:
+        storage.g_to_next_address()
+        cycles_used = 2
+    else:
+        storage.a_to_buffer_entrance_register()
+        storage.next_after_two_word_instruction()
+        cycles_used = 1
+    return cycles_used
+
+def a_to_buffer_exit(storage: Storage) -> int:
+    """
+    Logic for ATX, A to BXR (buffer exit register) instruction, 0106 YYYY
+
+    :param storage: emulator memory and register file
+    :return: the number of cycles that the instruction used
+    """
+    cycles_used = 0
+    if storage.buffering:
+        storage.g_to_next_address()
+        cycles_used = 2
+    else:
+        storage.a_to_buffer_exit_register()
+        cycles_used = 1
+        storage.next_after_two_word_instruction()
+    return cycles_used
+
 def add_e_to_a(storage: Storage) -> None:
     storage.add_e_to_a()
 
@@ -61,6 +95,56 @@ def and_specific_with_a(storage: Storage) -> None:
 
 def bank_controls_to_a(storage: Storage) -> None:
     storage.bank_controls_to_a()
+
+def block_store(storage: Storage) -> int:
+    """
+    Block Store instruction.
+
+    If the machine is already buffering data, jump to the address in G.
+    Otherwise, move the contents of the A register to the BFR (buffer
+    data register) and buffer it into the buffer storage bank, starting
+    at the FWA and ending at the LWA.
+
+    The user must set the BER (buffer entrance register) to the
+    FWA (first word address, the first storage location to set) and
+    the BXR (buffer exit register) to the LWA + 1 (the last storage
+    address to be set plus 1) before running the instruction.
+
+    :param storage: emulator memory and register file
+    :return: the number of cycles that the instruction used
+    """
+    cycles_used = 0
+    if storage.buffering:
+        cycles_used = 2
+        storage.g_to_next_address()
+    else:
+        cycles_used = 1
+        storage.a_to_buffer_data_register()
+        storage.start_buffering()
+        while storage.buffer_data_to_memory():
+            cycles_used += 1
+        storage.stop_buffering()
+        storage.next_after_two_word_instruction()
+    return cycles_used
+
+def buffer_entrance_to_a(storage: Storage) -> None:
+    storage.buffer_entrance_to_a()
+
+def buffer_entrance_to_direct_and_set_from_a(
+        storage: Storage) -> None:
+    """
+    Store BER (buffer entrance register) contents at [E] in the
+    direct storage bank, then load the contents of A into the BER.
+    Do not check for ongoing buffering, just make the change regardless.
+
+    :param storage: interpreter's memory and register file
+    :return: None
+    """
+    storage.buffer_entrance_register_to_direct_storage()
+    storage.a_to_buffer_entrance_register()
+
+def buffer_exit_to_a(storage: Storage) -> None:
+    storage.buffer_exit_to_a()
 
 def complement_a(storage: Storage) -> None:
     """

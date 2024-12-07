@@ -164,6 +164,41 @@ class TestRunLoop(TestCase):
         assert self.__storage.read_specific() == 0o1234
         assert not self.__storage.err_status
 
+    def test_ats(self) -> None:
+        self.load_test_program(Programs.A_TO_BUFFER_ENTRANCE)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o3000
+        assert self.__storage.buffer_entrance_register == 0o3000
+        assert not self.__storage.buffering
+        assert self.__storage.get_program_counter() == 0o104
+
+    def test_atx(self) -> None:
+        self.load_test_program(Programs.A_TO_BUFFER_EXIT)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o3000
+        assert self.__storage.buffer_exit_register == 0o3000
+        assert not self.__storage.buffering
+        assert self.__storage.get_program_counter() == 0o104
+
+    def test_bls(self) -> None:
+        self.load_test_program(Programs.BLOCK_STORE)
+        self.__run_loop.run()
+        assert self.__storage.buffer_entrance_register == 0o4001
+        assert self.__storage.buffer_exit_register == 0o4001
+        assert self.__storage.a_register == 0o6000
+        for loc in range(0o0000, 0o1000):
+            assert self.__storage.read_buffer_bank(loc) == 0o0000
+        for loc in range(0o1000, 0o4001):
+            value = self.__storage.read_buffer_bank(loc)
+            if value != 0o6000:
+                print("At {0} ({1:o} octal), value is {2} ({3:o} octal).".format(
+                    loc, loc, value, value))
+            assert self.__storage.read_buffer_bank(loc) == 0o6000
+        for loc in range(0o4001, 0o10000):
+            assert self.__storage.read_buffer_bank(loc) == 0o0000
+        assert self.__storage.get_program_counter() == 0o114
+        assert not self.__storage.buffering
+
     def test_cta(self) -> None:
         self.load_test_program(Programs.BANK_CONTROLS_TO_A)
         self.__run_loop.run()
@@ -184,6 +219,15 @@ class TestRunLoop(TestCase):
         self.load_test_program(Programs.ERROR_HALT)
         self.__run_loop.run()
         assert self.__storage.err_status
+
+    def test_eta(self) -> None:
+        self.load_test_program(
+            Programs.BUFFER_ENTRANCE_TO_A)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o3000
+        assert self.__storage.buffer_entrance_register == 0o3000
+        assert self.__storage.get_program_counter() == 0o106
+        assert not self.__storage.buffering
 
     def test_hwi(self) -> None:
         self.load_test_program(Programs.HALF_WRITE_INDIRECT)
@@ -662,6 +706,14 @@ class TestRunLoop(TestCase):
         self.__run_loop.run()
         assert not self.__storage.err_status
         assert self.__storage.read_absolute(2, 0o0040) == 0o1234
+
+    def test_ste(self) -> None:
+        self.load_test_program(
+            Programs.STORE_BUFFER_ENTRANCE_DIRECT_AND_A_TO_BUFFER_ENTRANCE)
+        self.__run_loop.run()
+        assert self.__storage.read_direct_bank(0o67) == 0o5000
+        assert self.__storage.buffer_entrance_register == 0o3000
+        assert self.__storage.get_program_counter() == 0o107
 
     def test_stf(self) -> None:
         self.load_test_program(Programs.STORE_FORWARD)

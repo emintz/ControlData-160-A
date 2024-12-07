@@ -287,7 +287,124 @@ class Test(TestCase):
         assert not self.storage.err_status
         assert self.storage.run_stop_status
         self.storage.advance_to_next_instruction()
-        assert (self.storage.get_program_counter() == AFTER_DOUBLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_ate_buffering(self) -> None:
+        assert Instructions.ATE.name() == "ATE"
+        self.storage.buffer_entrance_register = 0
+        self.storage.buffer_exit_register = 0o7777
+        self.storage.a_register = 0o200
+        self.storage.p_register = 0o100
+        self.storage.write_relative_bank(0o100, 0o0105)
+        self.storage.write_relative_bank(0o101, 0o1000)
+        self.storage.unpack_instruction()
+        self.storage.start_buffering()
+        Instructions.ATE.determine_effective_address(self.storage)
+        assert self.storage.s_register == 0o100
+        assert Instructions.ATE.perform_logic(self.storage) == 2
+        assert self.storage.buffer_entrance_register == 0
+        assert self.storage.buffer_exit_register == 0o7777
+        assert self.storage.buffering
+        self.storage.advance_to_next_instruction()
+        assert self.storage.get_program_counter() == 0o1000
+
+    def test_ate_not_buffering(self) -> None:
+        self.storage.buffer_entrance_register = 0
+        self.storage.buffer_exit_register = 0
+        self.storage.a_register = 0o200
+        self.storage.p_register = 0o100
+        self.storage.write_relative_bank(0o100, 0o0105)
+        self.storage.write_relative_bank(0o101, 0o1000)
+        self.storage.unpack_instruction()
+        Instructions.ATE.determine_effective_address(self.storage)
+        assert self.storage.s_register == 0o100
+        assert Instructions.ATE.perform_logic(self.storage) == 1
+        assert self.storage.buffer_entrance_register == 0o200
+        assert self.storage.buffer_exit_register == 0
+        assert not self.storage.buffering
+        self.storage.advance_to_next_instruction()
+        assert self.storage.get_program_counter() == 0o102
+
+    def test_atx_buffering(self) -> None:
+        assert Instructions.ATX.name() == "ATX"
+        self.storage.set_buffer_storage_bank(0o1)
+        self.storage.set_direct_storage_bank(0o2)
+        self.storage.set_indirect_storage_bank(0o3)
+        self.storage.set_relative_storage_bank(0o4)
+        self.storage.buffer_entrance_register = 0
+        self.storage.buffer_exit_register = 0o7777
+        self.storage.a_register = 0o200
+        self.storage.p_register = 0o100
+        self.storage.write_relative_bank(0o100, 0o0105)
+        self.storage.write_relative_bank(0o101, 0o1000)
+        self.storage.unpack_instruction()
+        self.storage.start_buffering()
+        Instructions.ATX.determine_effective_address(self.storage)
+        assert self.storage.s_register == 0o100
+        assert Instructions.ATX.perform_logic(self.storage) == 2
+        assert self.storage.buffer_entrance_register == 0
+        assert self.storage.buffer_exit_register == 0o7777
+        assert self.storage.buffering
+        self.storage.advance_to_next_instruction()
+        assert self.storage.get_program_counter() == 0o1000
+
+    def test_atx_not_buffering(self) -> None:
+        assert Instructions.ATX.name() == "ATX"
+        self.storage.buffer_entrance_register = 0
+        self.storage.buffer_exit_register = 0
+        self.storage.a_register = 0o200
+        self.storage.p_register = 0o100
+        self.storage.write_relative_bank(0o100, 0o0106)
+        self.storage.write_relative_bank(0o101, 0o1000)
+        self.storage.unpack_instruction()
+        Instructions.ATX.determine_effective_address(self.storage)
+        assert self.storage.get_program_counter() == 0o100
+        assert Instructions.ATX.perform_logic(self.storage) == 1
+        assert self.storage.buffer_exit_register == 0o200
+        assert self.storage.buffer_entrance_register == 0
+        assert not self.storage.buffering
+        self.storage.advance_to_next_instruction()
+        assert self.storage.get_program_counter() == 0o102
+
+    def test_bls_buffering(self) -> None:
+        assert Instructions.BLS.name() == "BLS"
+        self.storage.buffer_entrance_register = 0o200
+        self.storage.buffer_exit_register = 0o401
+        self.storage.a_register = 0o7654
+        self.storage.p_register = 0o100
+        self.storage.write_relative_bank(0o100, 0o0100)
+        self.storage.write_relative_bank(0o101, 0o1000)
+        self.storage.unpack_instruction()
+        self.storage.start_buffering()
+        Instructions.BLS.determine_effective_address(self.storage)
+        assert self.storage.get_program_counter() == 0o100
+        assert Instructions.BLS.perform_logic(self.storage) == 2
+        assert self.storage.buffer_entrance_register == 0o200
+        assert self.storage.buffer_exit_register == 0o401
+        assert self.storage.buffering
+        self.storage.advance_to_next_instruction()
+        assert self.storage.buffer_entrance_register == 0o200
+
+    def test_bls_not_buffering(self) -> None:
+        assert Instructions.BLS.name() == "BLS"
+        self.storage.buffer_entrance_register = 0o200
+        self.storage.buffer_exit_register = 0o401
+        self.storage.a_register = 0o7654
+        self.storage.p_register = 0o100
+        self.storage.write_relative_bank(0o100, 0o0100)
+        self.storage.write_relative_bank(0o101, 0o1000)
+        self.storage.unpack_instruction()
+        Instructions.BLS.determine_effective_address(self.storage)
+        assert self.storage.get_program_counter() == 0o100
+        assert not self.storage.buffering
+        assert Instructions.BLS.perform_logic(self.storage) == 0o201
+        assert self.storage.buffer_entrance_register == 0o401
+        assert self.storage.buffer_exit_register == 0o401
+        assert self.storage.read_buffer_bank(0o177) == 0
+        assert self.storage.read_buffer_bank(0o401) == 0
+        for address in range(0o200, 0o401):
+            assert self.storage.read_buffer_bank(address) == 0o7654
+        self.storage.advance_to_next_instruction()
+        assert self.storage.get_program_counter() == 0o102
 
     def test_cta(self) -> None:
         assert Instructions.CTA.name() == "CTA"
@@ -1594,22 +1711,6 @@ class Test(TestCase):
         self.storage.advance_to_next_instruction()
         assert self.storage.get_program_counter() == 0o200
 
-    # TODO(emintz): verify STC behavior, which makes no sense to me.
-    def test_stc(self) -> None:
-        # STC 1234
-        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o4200)
-        self.storage.write_relative_bank(G_ADDRESS, 0o1234)
-        self.storage.a_register = 0o4321
-        self.storage.unpack_instruction()
-        Instructions.STC.determine_effective_address(self.storage)
-        assert self.storage.s_register == G_ADDRESS
-        assert Instructions.STC.perform_logic(self.storage) == 3
-        self.storage.advance_to_next_instruction()
-        assert self.storage.z_register == 0o4321
-        assert self.storage.read_relative_bank(G_ADDRESS) == 0o4321
-        assert (self.storage.get_program_counter() ==
-                AFTER_DOUBLE_WORD_INSTRUCTION_ADDRESS)
-
     def test_sdd(self) -> None:
         # STD 15
         self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o4015)
@@ -1851,6 +1952,35 @@ class Test(TestCase):
         assert Instructions.SBS.perform_logic(self.storage) == 2
         assert self.storage.z_register == 0o77
         assert self.storage.a_register == 0o4321
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_stc(self) -> None:
+        # STC 1234
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o4200)
+        self.storage.write_relative_bank(G_ADDRESS, 0o1234)
+        self.storage.a_register = 0o4321
+        self.storage.unpack_instruction()
+        Instructions.STC.determine_effective_address(self.storage)
+        assert self.storage.s_register == G_ADDRESS
+        assert Instructions.STC.perform_logic(self.storage) == 3
+        self.storage.advance_to_next_instruction()
+        assert self.storage.z_register == 0o4321
+        assert self.storage.read_relative_bank(G_ADDRESS) == 0o4321
+        assert (self.storage.get_program_counter() ==
+                AFTER_DOUBLE_WORD_INSTRUCTION_ADDRESS)
+
+    def test_ste(self) -> None:
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0163)
+        self.storage.a_register = 0o5000
+        self.storage.buffer_entrance_register = 0o300
+        self.storage.unpack_instruction()
+        Instructions.STE.determine_effective_address(self.storage)
+        assert self.storage.s_register == INSTRUCTION_ADDRESS
+        assert Instructions.STE.perform_logic(self.storage) == 3
+        assert self.storage.read_direct_bank(0o63) == 0o300
+        assert self.storage.buffer_entrance_register == 0o5000
         self.storage.advance_to_next_instruction()
         assert (self.storage.get_program_counter() ==
                 AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)

@@ -44,6 +44,76 @@ class Test(TestCase):
         assert self.storage.z_register == 0o0330
         assert self.storage.read_buffer_bank(READ_AND_WRITE_ADDRESS) == 0o0330
 
+    def test_a_to_buffer_entrance_while_buffering(self) -> None:
+        self.storage.set_buffer_storage_bank(0o1)
+        self.storage.set_direct_storage_bank(0o2)
+        self.storage.set_indirect_storage_bank(0o3)
+        self.storage.set_relative_storage_bank(0o4)
+        self.storage.buffer_entrance_register = 0
+        self.storage.buffer_exit_register = 0o7777
+        self.storage.a_register = 0o200
+        self.storage.p_register = 0o100
+        self.storage.write_relative_bank(0o100, 0o0105)
+        self.storage.write_relative_bank(0o101, 0o1000)
+        self.storage.unpack_instruction()
+        self.storage.start_buffering()
+        assert Microinstructions.a_to_buffer_entrance(self.storage) == 2
+        self.storage.advance_to_next_instruction()
+        assert self.storage.get_program_counter() == 0o1000
+        assert self.storage.buffer_entrance_register == 0
+        assert self.storage.buffer_exit_register == 0o7777
+        assert self.storage.buffering
+
+    def test_a_to_buffer_entrance_register_not_buffering(self) -> None:
+        self.storage.set_buffer_storage_bank(0o1)
+        self.storage.set_direct_storage_bank(0o2)
+        self.storage.set_indirect_storage_bank(0o3)
+        self.storage.set_relative_storage_bank(0o4)
+        self.storage.buffer_entrance_register = 0
+        self.storage.buffer_exit_register = 0
+        self.storage.a_register = 0o200
+        self.storage.p_register = 0o100
+        self.storage.write_relative_bank(0o100, 0o0105)
+        self.storage.write_relative_bank(0o101, 0o1000)
+        self.storage.unpack_instruction()
+        assert Microinstructions.a_to_buffer_entrance(self.storage) == 1
+        self.storage.advance_to_next_instruction()
+        assert self.storage.get_program_counter() == 0o102
+        assert self.storage.buffer_entrance_register == 0o200
+        assert self.storage.buffer_exit_register == 0
+        assert not self.storage.buffering
+
+    def test_a_to_buffer_exit_buffering(self) -> None:
+        self.storage.buffer_entrance_register = 0
+        self.storage.buffer_exit_register = 0o7777
+        self.storage.a_register = 0o200
+        self.storage.p_register = 0o100
+        self.storage.write_relative_bank(0o100, 0o0105)
+        self.storage.write_relative_bank(0o101, 0o1000)
+        self.storage.unpack_instruction()
+        self.storage.start_buffering()
+        assert Microinstructions.a_to_buffer_exit(self.storage) == 2
+        assert self.storage.buffer_entrance_register == 0
+        assert self.storage.buffer_exit_register == 0o7777
+        assert self.storage.buffering
+        self.storage.advance_to_next_instruction()
+        assert self.storage.get_program_counter() == 0o1000
+
+    def test_a_to_buffer_exit_not_buffering(self) -> None:
+        self.storage.buffer_entrance_register = 0
+        self.storage.buffer_exit_register = 0o7777
+        self.storage.a_register = 0o200
+        self.storage.p_register = 0o100
+        self.storage.write_relative_bank(0o100, 0o0105)
+        self.storage.write_relative_bank(0o101, 0o1000)
+        self.storage.unpack_instruction()
+        assert Microinstructions.a_to_buffer_exit(self.storage) == 1
+        assert self.storage.buffer_entrance_register == 0
+        assert self.storage.buffer_exit_register == 0o200
+        assert not self.storage.buffering
+        self.storage.advance_to_next_instruction()
+        assert self.storage.get_program_counter() == 0o102
+
     def test_a_to_direct_buffer(self) -> None:
         self.storage.set_direct_storage_bank(1)
         self.storage.a_register = 0o0330
@@ -154,6 +224,73 @@ class Test(TestCase):
         Microinstructions.bank_controls_to_a(self.storage)
         assert self.storage.a_register == 0o1234
 
+    def test_block_store_buffer_active(self) -> None:
+        self.storage.set_buffer_storage_bank(0o1)
+        self.storage.set_direct_storage_bank(0o2)
+        self.storage.set_indirect_storage_bank(0o3)
+        self.storage.set_relative_storage_bank(0o4)
+        self.storage.buffer_entrance_register = 0o200
+        self.storage.buffer_exit_register = 0o401
+        self.storage.a_register = 0o7654
+        self.storage.p_register = 0o100
+        self.storage.write_relative_bank(0o100, 0o0100)
+        self.storage.write_relative_bank(0o101, 0o1000)
+        self.storage.unpack_instruction()
+        self.storage.start_buffering()
+        assert Microinstructions.block_store(self.storage) == 2
+        self.storage.advance_to_next_instruction()
+        assert self.storage.buffer_entrance_register == 0o200
+        assert self.storage.buffer_exit_register == 0o401
+        assert self.storage.buffering
+        assert self.storage.get_program_counter() == 0o1000
+
+    def test_block_store_not_buffering(self) -> None:
+        self.storage.set_buffer_storage_bank(0o1)
+        self.storage.set_direct_storage_bank(0o2)
+        self.storage.set_indirect_storage_bank(0o3)
+        self.storage.set_relative_storage_bank(0o4)
+        self.storage.buffer_entrance_register = 0o200
+        self.storage.buffer_exit_register = 0o401
+        self.storage.a_register = 0o7654
+        self.storage.p_register = 0o100
+        self.storage.write_relative_bank(0o100, 0o0100)
+        self.storage.write_relative_bank(0o101, 0o1000)
+        self.storage.unpack_instruction()
+        assert Microinstructions.block_store(self.storage) == 0o201
+        self.storage.advance_to_next_instruction()
+        assert not self.storage.buffering
+        assert self.storage.buffer_entrance_register == 0o401
+        assert self.storage.buffer_exit_register == 0o401
+        assert self.storage.read_buffer_bank(0o177) == 0
+        assert self.storage.read_buffer_bank(0o401) == 0
+        for address in range(0o200, 0o401):
+            assert self.storage.read_buffer_bank(address) == 0o7654
+        assert self.storage.get_program_counter() == 0o102
+
+    def test_buffer_entrance_to_a(self) -> None:
+        self.storage.buffer_entrance_register = 0o2000
+        Microinstructions.buffer_entrance_to_a(self.storage)
+        assert self.storage.a_register == 0o2000
+
+    def test_buffer_entrance_to_direct_and_set_from_a(self) -> None:
+        self.storage.set_buffer_storage_bank(0o1)
+        self.storage.set_direct_storage_bank(0o2)
+        self.storage.set_indirect_storage_bank(0o3)
+        self.storage.set_relative_storage_bank(0o4)
+        assert self.storage.read_direct_bank(0o63) == 0
+        self.storage.a_register = 0o3000
+        self.storage.f_e = 0o63
+        self.storage.buffer_entrance_register = 0o700
+        Microinstructions.buffer_entrance_to_direct_and_set_from_a(
+            self.storage)
+        assert self.storage.read_direct_bank(0o63) == 0o700
+        assert self.storage.buffer_entrance_register == 0o3000
+
+    def test_buffer_exit_to_a(self) -> None:
+        self.storage.buffer_exit_register = 0o2000
+        Microinstructions.buffer_exit_to_a(self.storage)
+        assert self.storage.a_register == 0o2000
+
     def test_complement_a(self) -> None:
         self.storage.a_register = 0o7070
         self.storage.complement_a()
@@ -249,7 +386,6 @@ class Test(TestCase):
         self.storage.set_jump_switch_mask(0o6)
         assert Microinstructions.selective_jump(self.storage) == 2
         assert self.storage.get_next_execution_address() == 0o200
-
 
     def test_selective_jump_no_branch(self) -> None:
         self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7720)

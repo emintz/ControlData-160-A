@@ -1,5 +1,4 @@
 import unittest
-from email.errors import NonPrintableDefect
 from unittest import TestCase
 
 from InstructionDecoder import decode
@@ -67,16 +66,24 @@ class Test(TestCase):
                 assert instruction_name == "SBU"
             elif 0o50 <= e < 0o60:
                 assert instruction_name == "STP"
+            elif 0o60 <= e < 0o70:
+                assert instruction_name == "STE"
             else:
                 match e:
                     case 0o00:
-                        assert instruction_name == "ERR"
+                        assert instruction_name == "BLS"
                     case 0o01:
                         assert instruction_name == "PTA"
                     case 0o02:
                         assert instruction_name == "LS1"
                     case 0o03:
                         assert instruction_name == "LS2"
+                    case 0o05:
+                        assert instruction_name == "ATE"
+                    case 0o06:
+                        assert instruction_name == "ATX"
+                    case 0o07:
+                        assert instruction_name == "ETA"
                     case 0o10:
                         assert instruction_name == "LS3"
                     case 0o11:
