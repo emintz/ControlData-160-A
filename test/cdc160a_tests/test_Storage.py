@@ -367,7 +367,7 @@ class TestStorage(TestCase):
         self.storage.p_register = 0o1324
         self.storage.f_e = 0o54
         self.storage.f_instruction = 0o01
-        self.storage.p_to_s_direct()
+        self.storage.p_to_e_direct()
         assert self.storage.read_direct_bank(0o54) == 0o1324
 
     def test_relative_backward_address_to_s(self) -> None:

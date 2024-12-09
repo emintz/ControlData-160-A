@@ -889,7 +889,7 @@ class Assembler:
 
     def print_current_line(self, instr: str) -> None:
         print(
-            "{0}> {1} {2} {3}".format(
+            "{0:5}> {1} {2} {3}".format(
                 self.__line_count,
                 self.format_address(),
                 instr,

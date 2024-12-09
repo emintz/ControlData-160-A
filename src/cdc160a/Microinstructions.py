@@ -229,7 +229,7 @@ def p_to_a(storage: Storage) -> None:
     storage.p_to_a()
 
 def p_to_e_direct(storage: Storage) -> None:
-    storage.p_to_s_direct()
+    storage.p_to_e_direct()
 
 # Replace Add Instruction Suite
 def replace_add(storage: Storage, bank: int) -> None:

@@ -417,9 +417,9 @@ class Storage:
         """
         self.s_register = self.p_register
 
-    def p_to_s_direct(self) -> None:
+    def p_to_e_direct(self) -> None:
         """
-        Write [P] to E{d). In practice, [E] will be in [50 .. 57]
+        Write [P] to E{d). The range of E contents depends on the op-code.
 
         :return: None
         """
