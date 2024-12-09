@@ -1,7 +1,8 @@
 import unittest
 from unittest import TestCase
 
-from Storage import MCS_MODE_IND
+from cdc160a.Storage import InterruptLock
+from cdc160a.Storage import MCS_MODE_IND
 from cdc160a import Microinstructions
 from cdc160a.Storage import Storage
 from typing import Final
@@ -290,6 +291,11 @@ class Test(TestCase):
         self.storage.buffer_exit_register = 0o2000
         Microinstructions.buffer_exit_to_a(self.storage)
         assert self.storage.a_register == 0o2000
+
+    def test_clear_interrupt_lock(self) -> None:
+        self.storage.interrupt_lock = InterruptLock.LOCKED
+        Microinstructions.clear_interrupt_lock(self.storage)
+        assert self.storage.interrupt_lock == InterruptLock.UNLOCK_PENDING
 
     def test_complement_a(self) -> None:
         self.storage.a_register = 0o7070

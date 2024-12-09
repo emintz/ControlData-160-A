@@ -205,6 +205,20 @@ class TestStorage(TestCase):
         assert self.storage.read_direct_bank(0o53) == 0o3000
         assert self.storage.buffer_entrance_register == 0o3000
 
+    def test_clear_interrupt_lock_when_free(self) -> None:
+        self.storage.clear_interrupt_lock()
+        assert self.storage.interrupt_lock == InterruptLock.FREE
+
+    def test_clear_interrupt_lock_when_unlock_pending(self) -> None:
+        self.storage.interrupt_lock = InterruptLock.UNLOCK_PENDING
+        self.storage.clear_interrupt_lock()
+        assert self.storage.interrupt_lock == InterruptLock.UNLOCK_PENDING
+
+    def test_clear_interrupt_lock_when_locked(self) -> None:
+        self.storage.interrupt_lock = InterruptLock.LOCKED
+        self.storage.clear_interrupt_lock()
+        assert self.storage.interrupt_lock == InterruptLock.UNLOCK_PENDING
+
     def test_complement_a(self) -> None:
         self.storage.a_register = 0o7777
         self.storage.complement_a()

@@ -176,6 +176,16 @@ BUFFER_ENTRANCE_TO_A = """
           HLT
           END    
 """
+CLEAR_INTERRUPT_LOCKOUT = """
+          REM Test interrupt lockout. The test must lock interrupts
+          REM before running this.
+          BNK 3
+          ORG 100
+          CIL   Interrupt lock -> Unlock Pending
+          NOP   Interrupt lock -> Free
+          HLT
+          END 
+"""
 ERROR_HALT = """
           REM Error halt execution and set the error flag.
           ERR

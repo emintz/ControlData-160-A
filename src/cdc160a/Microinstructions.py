@@ -146,6 +146,15 @@ def buffer_entrance_to_direct_and_set_from_a(
 def buffer_exit_to_a(storage: Storage) -> None:
     storage.buffer_exit_to_a()
 
+def clear_interrupt_lock(storage: Storage) -> None:
+    """
+    Clear the interrupt lock if locked and no unlock is pending
+
+    :param storage: emulator memory and register file
+    :return: None
+    """
+    storage.clear_interrupt_lock()
+
 def complement_a(storage: Storage) -> None:
     """
     ~A -> A

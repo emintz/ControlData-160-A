@@ -318,6 +318,9 @@ class TestAssembler(TestCase):
     def test_bls(self) -> None:
         self.__single_instruction_test("BLS 4000", [0o0100, 0o4000])
 
+    def test_cil(self) -> None:
+        self.__single_instruction_test("CIL", [0o0120])
+
     def test_cta(self) -> None:
         self.__single_instruction_test("CTA", [0o0130])
 

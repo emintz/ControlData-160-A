@@ -2,6 +2,7 @@ import unittest
 from unittest import TestCase
 
 from cdc160a import Instructions
+from cdc160a.Storage import InterruptLock
 from cdc160a.Storage import MCS_MODE_DIR
 from cdc160a.Storage import MCS_MODE_IND
 from cdc160a.Storage import MCS_MODE_REL
@@ -405,6 +406,18 @@ class Test(TestCase):
             assert self.storage.read_buffer_bank(address) == 0o7654
         self.storage.advance_to_next_instruction()
         assert self.storage.get_program_counter() == 0o102
+
+    def test_cil(self) -> None:
+        assert Instructions.CIL.name() == "CIL"
+        self.storage.interrupt_lock = InterruptLock.LOCKED
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0120)
+        self.storage.unpack_instruction()
+        Instructions.CTA.determine_effective_address(self.storage)
+        assert self.storage.s_register == INSTRUCTION_ADDRESS
+        assert Instructions.CIL.perform_logic(self.storage) == 1
+        assert self.storage.interrupt_lock == InterruptLock.UNLOCK_PENDING
+        self.storage.advance_to_next_instruction()
+        assert self.storage.get_program_counter() == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
 
     def test_cta(self) -> None:
         assert Instructions.CTA.name() == "CTA"

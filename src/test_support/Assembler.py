@@ -711,6 +711,7 @@ class Assembler:
             "ATX": TwoWordFixedE(self, "ATX", 0o01, 0x06),
             "BLS": TwoWordZeroE(self, "BLS", 0o01),
             "BNK": AssemblerBankSetter(self, "BNK"),
+            "CIL": FixedEValue(self, "CIL", 0o0120),
             "CTA": FixedEValue(self, "CTA", 0o0130),
             "DRJ": OneWordLowE(self, "DRJ", 0o00, 0o05),
             "END": StopAssembly(self, "ERR"),

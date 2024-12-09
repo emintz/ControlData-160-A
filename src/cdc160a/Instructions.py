@@ -240,6 +240,7 @@ AOS = __single_advance_instruction("AOS", EffectiveAddress.specific, Microinstru
 ATE = VariableTimingInstruction("ATE", EffectiveAddress.no_address, Microinstructions.a_to_buffer_entrance, __no_advance)
 ATX = VariableTimingInstruction("ATX", EffectiveAddress.no_address, Microinstructions.a_to_buffer_exit, __no_advance)
 BLS = VariableTimingInstruction("BLS", EffectiveAddress.no_address, Microinstructions.block_store, __no_advance)
+CIL = __single_advance_instruction("CIL", EffectiveAddress.no_address, Microinstructions.clear_interrupt_lock, 1)
 CTA = __single_advance_instruction("CTA", EffectiveAddress.no_address, Microinstructions.bank_controls_to_a, 1)
 DRJ = __no_advance_instruction("DRJ", EffectiveAddress.no_address, Microinstructions.set_dir_rel_bank_from_e_and_jump, 1)
 ERR = __single_advance_instruction("ERR", EffectiveAddress.no_address, Microinstructions.error, 1)

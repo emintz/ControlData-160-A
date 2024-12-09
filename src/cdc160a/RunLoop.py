@@ -31,7 +31,7 @@ class RunLoop:
 
     def single_step(self) -> bool:
         self.__console.before_instruction_fetch(self.__storage)
-        # TODO(emintz): respond to pending interrupts
+        self.__storage.service_pending_interrupts()
         # TODO(emintz): service pending buffer requests
         self.__storage.unpack_instruction()
         decoder = InstructionDecoder.decoder_at(self.__storage.f_instruction)

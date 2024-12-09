@@ -22,7 +22,6 @@ class TestRunLoop(TestCase):
     def tearDown(self) -> None:
         self.__storage = None
 
-
     def load_test_program(self, source: str) -> None:
         assembler_from_string(source, self.__storage).run()
 

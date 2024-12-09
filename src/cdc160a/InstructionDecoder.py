@@ -121,6 +121,10 @@ class OpCode01:
         0o15: Instructions.RS2,
     }
 
+
+    __e_to_instruction_02 = {
+        0o20: Instructions.CIL,
+    }
     __e_to_instruction_03 = {
         0o30: Instructions.CTA,
     }
@@ -139,7 +143,8 @@ class OpCode01:
                 if e in self.__e_to_instruction_01:
                     decoded_instruction = self.__e_to_instruction_01[e]
             case 2:
-                pass
+                if e in self.__e_to_instruction_02:
+                    decoded_instruction = self.__e_to_instruction_02[e]
             case 3:
                 if e in self.__e_to_instruction_03:
                     decoded_instruction = self.__e_to_instruction_03[e]

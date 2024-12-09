@@ -300,6 +300,25 @@ class Storage:
     def buffer_exit_to_a(self) -> None:
         self.a_register = self.buffer_exit_register
 
+    def clear_interrupt_lock(self) -> None:
+        """
+        Clear the interrupt lock if it is currently locked and unlock
+        is not pending.
+
+        :return: None
+        """
+        lock_setting = self.interrupt_lock
+        # TODO(emintz): Find out why a simple if statement doesn't work here.
+        match lock_setting:
+            case InterruptLock.FREE:
+                pass
+            case InterruptLock.LOCKED:
+                self.interrupt_lock = InterruptLock.UNLOCK_PENDING
+            case InterruptLock.UNLOCK_PENDING:
+                pass
+            case _:
+                print("Unknown lock setting {0}.".format(lock_setting))
+
     def direct_to_z(self, address: int) -> None:
         """
         [address(d)] -> Z, set memory access mode to direct
@@ -702,7 +721,7 @@ class Storage:
 
     def set_relative_storage_bank(self, value: int) -> None:
         """
-        Set the relative storage bank to the least significant bits in
+        Set the relative storage bank to the least significant bits
         the specified value.
 
         :param value: memory bank number in [0 .. 7]
