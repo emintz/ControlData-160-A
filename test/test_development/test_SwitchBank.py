@@ -54,6 +54,12 @@ class TestSwitchBank(TestCase):
         assert self.__switch_bank.down_mask() == 4
         assert self.__switch_bank.mask() == 4
 
+    def test_release_down_switches(self) -> None:
+        self.set_0_up_2_down()
+        self.__switch_bank.release_down_switches()
+        assert self.__switch_bank.down_mask() == 0
+        assert self.__switch_bank.mask() == 0o1
+
     def set_0_and_2_up(self) -> None:
         self.__switch_bank.set_up(0)
         self.__switch_bank.set_up(2)

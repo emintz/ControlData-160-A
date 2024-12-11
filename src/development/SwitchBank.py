@@ -32,6 +32,10 @@ class SwitchBank:
             result |= switch.on_off_bit()
         return result
 
+    def release_down_switches(self) -> None:
+        for switch in self.__switches:
+            switch.release_if_down()
+
     def return_to_center(self, index: int) -> None:
         assert 0 <= index <= 3
         self.__switches[index].return_to_center()

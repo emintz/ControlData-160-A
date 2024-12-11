@@ -1,0 +1,36 @@
+          REM Script for testing the console interrupt. The
+          REM script loops until the operator causes an interrupt
+          REM 10, at which point it stops.
+          REM
+          REM Memory Banks
+          REM    Buffer: 0
+          REM    Direct: 1
+          REM    Indirect: 2
+          REM    Relative: 3
+          REM
+          REM Interrupt 10 handler starts at 11(r) == 11(3)
+          BNK 3
+          ORG 11
+          JFI 1     Jump to the address in the next word
+          OCT 200   Interrupt address starts at 200
+
+          REM Main program: loop until [A] != 0
+          ORG 100
+          LDN 0
+          NOP
+          ZJB 1     A will contain 0 until the interrupt handler runs
+          HLT
+
+          REM Interrupt handler
+          ORG 200
+          LDN 1     1 -> A
+          CIL       We done. Clear interrupt lock.
+          JPI 10    Back to the main program
+
+          REM Bank and starting address settings
+          SETB 0      Buffer bank: 0
+          SETD 1      Direct bank: 1
+          SETI 2      Indirect bank: 2
+          SETR 3      Relative bank: 3
+          SETP 100    Starting address: 100(3)
+          END

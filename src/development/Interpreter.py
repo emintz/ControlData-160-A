@@ -1,5 +1,9 @@
 """
 Runs commands for the character mode console.
+
+Note: unlike the actual 160-A console, this simulation
+      can stop when interrupts are locked out or buffering
+      is active. Be warned!
 """
 from abc import ABC, abstractmethod
 from cdc160a.Storage import Storage
@@ -105,9 +109,10 @@ class Interpreter:
             self.__to_octal(storage.direct_storage_bank, 1),
             self.__to_octal(storage.indirect_storage_bank, 1),
             self.__to_octal(storage.relative_storage_bank, 1)))
-        print("A: {0}, P: {1}".format(
+        print("A: {0}, P: {1}, Interrupt Lock: {2}".format(
             self.__to_octal(storage.a_register, 4),
-            self.__to_octal(storage.p_register, 4)))
+            self.__to_octal(storage.p_register, 4),
+            storage.interrupt_lock))
 
 
     def run_command(self, storage: Storage, name: str, arg: str) -> bool:
@@ -210,6 +215,16 @@ class Interpreter:
         """
         self.__jump_switches.set_up(switch_number)
 
+    def release_down_switches(self) -> None:
+        """
+        Release (i.e. return to their centers) all jump and stop switches
+        that are set down.
+
+        :return: None
+        """
+        self.__jump_switches.release_down_switches()
+        self.__stop_switches.release_down_switches()
+
     def stop_down_mask(self) -> int:
         """
         Return the stop switch down mask which contains three bits, one for
@@ -256,4 +271,3 @@ class Interpreter:
         :return: None
         """
         self.__stop_switches.set_up(switch_number)
-

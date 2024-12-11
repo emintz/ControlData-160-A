@@ -32,7 +32,7 @@ class AssembleAndRunIfErrorFree(Runner):
 class Exit(Runner):
 
     def apply(self, interpreter: Interpreter, storage: Storage, setting: str) -> bool:
-        really_exit = input("Do you really want to quit the interpreter (y/N)?")
+        really_exit = input("Do you really want to quit the interpreter (y/N)? ")
         if really_exit.strip() == "y":
             print("Goodbye.")
             exit(0)
@@ -170,6 +170,7 @@ COMMANDS: {str: Runner} = {
     "jump1": JumpSwitch(0),
     "jump2": JumpSwitch(1),
     "jump3": JumpSwitch(2),
+    "quit": Exit(),
     "run": Resume(),
     "seta": SetA(),
     "setb": SetB(),

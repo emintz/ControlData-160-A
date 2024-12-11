@@ -51,6 +51,10 @@ class ConsoleSwitch:
         """
         return 0 if self.__state == SwitchState.CENTER else self.__bit
 
+    def release_if_down(self) -> None:
+        if self.__state == SwitchState.DOWN:
+            self.__state = SwitchState.CENTER
+
     def return_to_center(self) -> None:
         """
         Returns this switch to the center position.

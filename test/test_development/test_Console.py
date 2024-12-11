@@ -57,19 +57,35 @@ class TestConsole(TestCase):
     def test_one_jump_switch_up_and_one_stop_switch_up(self) -> None:
         self.__interpreter.jump_switch_up(1)
         self.__interpreter.stop_switch_up(2)
+        assert self.__interpreter.jump_set_mask() == 0o2
+        assert self.__interpreter.jump_down_mask() == 0
+        assert self.__interpreter.stop_set_mask() == 0o4
+        assert self.__interpreter.stop_down_mask() == 0
         self.__console.before_instruction_fetch(self.__storage)
         assert self.__storage.run_stop_status
         assert self.__storage.get_jump_switch_mask() == 0o2
         assert self.__storage.get_stop_switch_mask() == 0o4
         assert self.__storage.interrupt_requests == [False, False, False, False]
+        assert self.__interpreter.jump_set_mask() == 0o2
+        assert self.__interpreter.jump_down_mask() == 0
+        assert self.__interpreter.stop_set_mask() == 0o4
+        assert self.__interpreter.stop_down_mask() == 0
 
     def test_one_jump_switch_down_stop_switches_centered(self) -> None:
         self.__interpreter.jump_switch_down(1)
+        assert self.__interpreter.jump_set_mask() == 0o2
+        assert self.__interpreter.jump_down_mask() == 0o2
+        assert self.__interpreter.stop_set_mask() == 0
+        assert self.__interpreter.stop_down_mask() == 0
         self.__console.before_instruction_fetch(self.__storage)
         assert self.__storage.run_stop_status
         assert self.__storage.get_jump_switch_mask() == 0o2
         assert self.__storage.get_stop_switch_mask() == 0
         assert self.__storage.interrupt_requests == [False, False, False, False]
+        assert self.__interpreter.jump_set_mask() == 0o2
+        assert self.__interpreter.jump_down_mask() == 0o2
+        assert self.__interpreter.stop_set_mask() == 0
+        assert self.__interpreter.stop_down_mask() == 0
 
     def test_jump_switches_centered_one_stop_switch_down(self) -> None:
         self.__interpreter.stop_switch_down(2)
@@ -81,12 +97,20 @@ class TestConsole(TestCase):
 
     def test_one_jump_switch_down_and_one_stop_switch_up(self) -> None:
         self.__interpreter.jump_switch_down(1)
+        assert self.__interpreter.jump_set_mask() == 0o2
+        assert self.__interpreter.jump_down_mask() == 0o2
         self.__interpreter.stop_switch_up(2)
+        assert self.__interpreter.stop_set_mask() == 0o4
+        assert self.__interpreter.stop_down_mask() == 0
         self.__console.before_instruction_fetch(self.__storage)
         assert self.__storage.run_stop_status
         assert self.__storage.get_jump_switch_mask() == 0o2
         assert self.__storage.get_stop_switch_mask() == 0o4
         assert self.__storage.interrupt_requests == [False, False, False, False]
+        assert self.__interpreter.jump_set_mask() == 0o2
+        assert self.__interpreter.jump_down_mask() == 0o2
+        assert self.__interpreter.stop_set_mask() == 0o4
+        assert self.__interpreter.stop_down_mask() == 0
 
     def test_one_jump_switch_up_and_one_stop_switch_down(self) -> None:
         self.__interpreter.jump_switch_up(1)
@@ -100,11 +124,15 @@ class TestConsole(TestCase):
     def test_one_jump_switch_down_and_one_stop_switch_down(self) -> None:
         self.__interpreter.jump_switch_down(1)
         self.__interpreter.stop_switch_down(2)
+        assert self.__interpreter.jump_down_mask() == 0o2
+        assert self.__interpreter.stop_down_mask() == 0o4
         self.__console.before_instruction_fetch(self.__storage)
         assert self.__storage.run_stop_status
         assert self.__storage.get_jump_switch_mask() == 0o2
         assert self.__storage.get_stop_switch_mask() == 0o4
         assert self.__storage.interrupt_requests == [True, False, False, False]
+        assert self.__interpreter.jump_down_mask() == 0
+        assert self.__interpreter.stop_down_mask() == 0
 
 if __name__ == '__main__':
     unittest.main()

@@ -37,6 +37,7 @@ class Console:
         if (self.__interpreter.jump_down_mask() != 0 and
             self.__interpreter.stop_down_mask() != 0):
             storage.request_interrupt(0o10)
+            self.__interpreter.release_down_switches()
 
     def before_instruction_logic(self, storage: Storage) -> None:
         """

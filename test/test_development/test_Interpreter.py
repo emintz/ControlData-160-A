@@ -70,10 +70,6 @@ class TestInterpreter(TestCase):
         assert self.__interpreter.jump_down_mask() == switch_bit
         assert self.__storage.get_jump_switch_mask() == switch_bit
 
-    def test_unknown_command(self) -> None:
-        assert self.__interpreter.run_command(
-            self.__storage,"Unknown", "command")
-
     def test_jump_1_up(self) -> None:
         assert self.__storage.get_jump_switch_mask() == 0
         assert self.__interpreter.run_command(self.__storage, "jump1", "up")
@@ -106,6 +102,25 @@ class TestInterpreter(TestCase):
         assert self.__storage.get_jump_switch_mask() == 0
         assert self.__interpreter.run_command(self.__storage, "jump3", "down")
         assert self.__storage.get_jump_switch_mask() == 4
+
+    def test_release_down_switches(self) -> None:
+        assert self.__interpreter.jump_set_mask() == 0
+        assert self.__interpreter.jump_down_mask() == 0
+        assert self.__interpreter.stop_set_mask() == 0
+        assert self.__interpreter.stop_down_mask() == 0
+        assert self.__interpreter.run_command(self.__storage, "jump1", "up")
+        assert self.__interpreter.run_command(self.__storage, "jump3", "down")
+        assert self.__interpreter.run_command(self.__storage, "stop1", "down")
+        assert self.__interpreter.run_command(self.__storage, "stop3", "up")
+        assert self.__interpreter.jump_set_mask() == 0o5
+        assert self.__interpreter.jump_down_mask() == 0o4
+        assert self.__interpreter.stop_set_mask() == 0o5
+        assert self.__interpreter.stop_down_mask() == 0o1
+        self.__interpreter.release_down_switches()
+        assert self.__interpreter.jump_set_mask() == 0o1
+        assert self.__interpreter.jump_down_mask() == 0
+        assert self.__interpreter.stop_set_mask() == 0o4
+        assert self.__interpreter.stop_down_mask() == 0
 
     def test_stop_1_up(self) -> None:
         assert self.__storage.get_stop_switch_mask() == 0
@@ -212,3 +227,7 @@ class TestInterpreter(TestCase):
         self.__command_reader.command = ["step"]
         self.__interpreter.run(self.__storage)
         # Test succeeds if it doesn't hang
+
+    def test_unknown_command(self) -> None:
+        assert self.__interpreter.run_command(
+            self.__storage,"Unknown", "command")
