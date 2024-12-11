@@ -1,0 +1,9 @@
+          REM Simple Test Program
+          BNK 3
+          ORG 100
+          LDC 1234
+          HLT
+          SETR 3
+          SETP 100
+          END
+

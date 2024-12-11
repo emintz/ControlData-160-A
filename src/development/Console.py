@@ -1,5 +1,3 @@
-from venv import create
-
 from cdc160a.Storage import Storage
 from system_specific import Factory
 from typing import Callable
@@ -26,14 +24,19 @@ class Console:
 
         The run loop invokes this method just before it fetches an instruction.
         Implementations should set the jump and stop switch masks in the
-        provided Storage.
+        provided Storage and generate an interrupt 10 if one or more jump
+        switches is down and one or more stop switches is down.
 
         :param storage: memory and register file
         :return: None
         """
         if not storage.run_stop_status or self.__input_checker():
             self.__interpreter.run(storage)
-        pass
+        storage.set_jump_switch_mask(self.__interpreter.jump_set_mask())
+        storage.set_stop_switch_mask(self.__interpreter.stop_set_mask())
+        if (self.__interpreter.jump_down_mask() != 0 and
+            self.__interpreter.stop_down_mask() != 0):
+            storage.request_interrupt(0o10)
 
     def before_instruction_logic(self, storage: Storage) -> None:
         """
