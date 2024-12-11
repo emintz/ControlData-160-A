@@ -218,6 +218,32 @@ HALT = """
           HLT
           END
 """
+INTERRUPT_10_SIMPLE = """
+          REM A simple program for testing interrupt 10. The program is
+          REM completely contrived and not at all representative of
+          REM production interrupt handling.
+          REM
+          REM Bank settings:
+          REM   Buffer: 0
+          REM   Direct: 2
+          REM   Indirect: 1
+          REM   Relative: 3
+          REM
+          BNK 3     Emit to the relative bank.
+          ORG 11    Interrupt 10 handler
+          JFI 1     Jump to the address in the following location
+          OCT 200   Interrupt handler at 200(r)
+          ORG 100   Canonical start address.
+          LDN 0
+          REM       The test should generate interrupt 10 before running
+          REM       the following instruction.
+          HLT
+          ORG 200    Interrupt routine
+          ADN 1      Test succeeds if A contains 1 ...
+          CIL        ... and interrupt lockout is cleared.
+          JPI 10
+          END
+"""
 JUMP_FORWARD_INDIRECT = """
           REM Jump Forward Indirect [)[P] + XX)(r)](r) -> P
           BNK 3
