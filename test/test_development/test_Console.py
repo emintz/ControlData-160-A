@@ -1,6 +1,7 @@
 import unittest
 from unittest import TestCase
 
+from cdc160a.IOStatus import IOStatus
 from cdc160a.Storage import Storage
 from development.CommandInterpreters import COMMANDS
 from development.Console import Console
@@ -133,6 +134,23 @@ class TestConsole(TestCase):
         assert self.__storage.interrupt_requests == [True, False, False, False]
         assert self.__interpreter.jump_down_mask() == 0
         assert self.__interpreter.stop_down_mask() == 0
+
+    def test_before_advance_no_io(self) -> None:
+        self.__console.before_advance(self.__storage)
+        assert not self.__console.buffering()
+        assert self.__console.normal_io_status() == IOStatus.IDLE
+
+    def test_before_advance_buffering(self) -> None:
+        self.__storage.buffering = True
+        self.__console.before_advance(self.__storage)
+        assert self.__console.buffering()
+        assert self.__console.normal_io_status() == IOStatus.IDLE
+
+    def test_before_advance_normal_output(self) -> None:
+        self.__storage.normal_io_status = IOStatus.OUTPUT
+        self.__console.before_advance(self.__storage)
+        assert not self.__console.buffering()
+        assert self.__console.normal_io_status() == IOStatus.OUTPUT
 
 if __name__ == '__main__':
     unittest.main()

@@ -18,6 +18,7 @@ from enum import Enum
 import numpy as np
 from typing import Final
 from cdc160a import Arithmetic
+from cdc160a.IOStatus import IOStatus
 
 # MCS modes and corresponding codes
 MCS_MODE: Final[list[str]] = ["BFR", "DIR", "IND", "REL"]
@@ -78,6 +79,8 @@ class Storage:
         # the lock to InterruptLock.FREE after the next instruction
         # runs.
         self.interrupt_lock = InterruptLock.FREE
+        # Normal I/O Status.
+        self.normal_io_status = IOStatus.IDLE
         """
         Pending interrupt requests. Interrupt numbers 10, 20, 30, and 40
         are mapped to array index 0, 1, 2, and 3 respectively.

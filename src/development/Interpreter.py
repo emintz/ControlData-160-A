@@ -109,6 +109,9 @@ class Interpreter:
             self.__to_octal(storage.direct_storage_bank, 1),
             self.__to_octal(storage.indirect_storage_bank, 1),
             self.__to_octal(storage.relative_storage_bank, 1)))
+        print("Buffering: {0}, Normal I/O: {1}",
+              "Active" if storage.buffering else "Idle",
+              storage.normal_io_status)
         print("A: {0}, P: {1}, Interrupt Lock: {2}".format(
             self.__to_octal(storage.a_register, 4),
             self.__to_octal(storage.p_register, 4),

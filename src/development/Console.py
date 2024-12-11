@@ -1,3 +1,4 @@
+from cdc160a.IOStatus import IOStatus
 from cdc160a.Storage import Storage
 from system_specific import Factory
 from typing import Callable
@@ -15,8 +16,10 @@ class Console:
             self,
             input_checker: Callable[[], bool],
             interpreter: Interpreter):
+        self.__buffering = False
         self.__input_checker = input_checker
         self.__interpreter = interpreter
+        self.__normal_io_status = IOStatus.IDLE
 
     def before_instruction_fetch(self, storage: Storage) -> None:
         """
@@ -66,9 +69,15 @@ class Console:
                  loop should exit. This is to support PyUnit testing.
                  Production versions must return True.
         """
+        self.__buffering = storage.buffering
+        self.__normal_io_status = storage.normal_io_status
         return True
 
+    def buffering(self) -> bool:
+        return self.__buffering
 
+    def normal_io_status(self) -> IOStatus:
+        return self.__normal_io_status
 
 class CommandReader:
     """
