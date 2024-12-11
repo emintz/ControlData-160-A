@@ -480,6 +480,26 @@ class TestStorage(TestCase):
         assert self.storage.z_register == 0o1234
         assert self.storage.storage_cycle == MCS_MODE_REL
 
+    def test_relative_to_next_address(self) -> None:
+        self.storage.relative_storage_bank = 1
+        self.storage.s_register = 0o40
+        self.storage.write_relative_bank(0o40, 0o1234)
+        self.storage.s_relative_to_next_address()
+        assert self.storage.a_register == 0
+        assert self.storage.z_register == 0o1234
+        assert self.storage.storage_cycle == MCS_MODE_REL
+        assert self.storage.next_address() == 0o1234
+
+    def test_relative_to_p(self) -> None:
+        self.storage.relative_storage_bank = 1
+        self.storage.s_register = 0o40
+        self.storage.write_relative_bank(0o40, 0o1234)
+        self.storage.s_relative_to_p()
+        assert self.storage.a_register == 0
+        assert self.storage.z_register == 0o1234
+        assert self.storage.storage_cycle == MCS_MODE_REL
+        assert self.storage.p_register == 0o1234
+
     def test_s_relative_to_z(self) -> None:
         self.storage.relative_storage_bank = 1
         self.storage.s_register = 0o40

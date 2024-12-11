@@ -226,8 +226,6 @@ JUMP_FORWARD_INDIRECT = """
           NOP
           OCT 200
           ORG 200
-          OCT 300
-          ORG 300
           HLT
           END
 """
@@ -1130,7 +1128,8 @@ ZERO_JUMP_FORWARD_ZERO_A = """
           END
 """
 
-# More complex programs
+# More complex programs: invoke a subroutine and return from
+# same.
 CALL_AND_RETURN = """
           REM Invoke a subroutine and return
           BNK 3
@@ -1139,9 +1138,11 @@ CALL_AND_RETURN = """
           HLT
           ORG 200
           OCT 0  Return address goes here.
-          NOP
-          JFI 2
-          NOP
-          OCT 200
+          LDB 1  Return address -> A
+          STF 2  Store return address into the jump address
+          JFI 1
+          OCT 240
+          ORG 240
+          ERR
           END
 """

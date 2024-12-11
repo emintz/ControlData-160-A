@@ -501,7 +501,7 @@ class Test(TestCase):
             INSTRUCTION_ADDRESS + 0o10, 0o200)
         self.storage.write_relative_bank(0o200, 0o2000)
         Microinstructions.jump_forward_indirect(self.storage)
-        assert self.storage.get_next_execution_address() == 0o2000
+        assert self.storage.get_next_execution_address() == 0o200
 
     def test_jump_indirect(self) -> None:
         self.storage.write_direct_bank(0o10, 0o2000)

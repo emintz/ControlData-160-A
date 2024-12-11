@@ -517,7 +517,7 @@ class Test(TestCase):
         assert not self.storage.err_status
         assert self.storage.run_stop_status
         self.storage.advance_to_next_instruction()
-        assert self.storage.get_program_counter() == 0o1400
+        assert self.storage.get_program_counter() == 0o0400
 
     def test_jpi(self) -> None:
         assert Instructions.JPI.name() == "JPI"

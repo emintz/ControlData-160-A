@@ -871,7 +871,27 @@ class Storage:
         self.s_relative_to_z()
         self.z_to_a()
 
+    def s_relative_to_next_address(self) -> None:
+        """
+        [S(r)] -> next address
+
+        if S contains 200 and 200(r) contains 3400, the next
+        address will contain 3400 on exit.
+
+        :return: None
+        """
+        self.s_relative_to_z()
+        self.z_to_next_address()
+
     def s_relative_to_p(self) -> None:
+        """
+        [S(r)] -> P
+
+        if S contains 200 and 200(r) contains 3400, P
+        will contain 3400 on exit.
+
+        :return: None
+        """
         self.s_relative_to_z()
         self.z_to_p()
 
@@ -890,6 +910,14 @@ class Storage:
         self.__next_address = self.z_register
 
     def s_relative_to_z(self) -> None:
+        """
+        [S](r) -> Z
+
+        Move the contents of the relative location in S to Z. Often
+        used in instruction logic where the S value is set on entry.
+
+        :return: None
+        """
         self.s_absolute_to_z(self.relative_storage_bank)
         self.mode_relative()
 

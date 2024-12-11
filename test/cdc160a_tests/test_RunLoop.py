@@ -243,7 +243,7 @@ class TestRunLoop(TestCase):
     def test_jfi(self) -> None:
         self.load_test_program(Programs.JUMP_FORWARD_INDIRECT)
         self.__run_loop.run()
-        assert self.__storage.get_program_counter() == 0o300
+        assert self.__storage.get_program_counter() == 0o200
 
     def test_jpi(self) -> None:
         self.load_test_program(Programs.JUMP_INDIRECT)

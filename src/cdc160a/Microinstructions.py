@@ -216,7 +216,7 @@ def halt(storage: Storage) -> None:
     storage.stop()
 
 def jump_forward_indirect(storage: Storage) -> None:
-    storage.s_relative_indirect_to_next_address()
+    storage.s_relative_to_next_address()
 
 def jump_indirect(storage: Storage) -> None:
     """
