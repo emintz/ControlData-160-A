@@ -29,7 +29,7 @@ class TestConsole(TestCase):
         self.__command_reader = CommandReaderForTesting()
         self.__interpreter = Interpreter(COMMANDS, self.__command_reader)
         self.__console = Console(vacuous_input_checker, self.__interpreter)
-        self.__storage = Storage()
+        self.__storage = Storage([])
         self.__storage.run()
 
     def test_all_switches_centered(self) -> None:

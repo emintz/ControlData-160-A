@@ -19,7 +19,7 @@ class TestInterpreter(TestCase):
     def setUp(self) -> None:
         self.__command_reader = TestCommandReader()
         self.__interpreter = Interpreter.Interpreter(CommandInterpreters.COMMANDS, self.__command_reader)
-        self.__storage = Storage()
+        self.__storage = Storage([])
 
     def test_is_octal(self):
         assert not Interpreter.is_octal("")

@@ -11,23 +11,18 @@ a single input or output (respectfully) pump, while input and output-capable
 devices like tape drives will have one of each.
 
 Buffer pumps only move data. They do not manage other machine state.
+
+Note that the BufferPump class does not reference the Storage class
+to sidestep circular references in subclasses. If the BufferPump
+bound a Storage instance, circular references would occur.
 """
 
-from abc import ABC, abstractclassmethod, abstractmethod
-from cdc160a.Storage import Storage
+from abc import ABC, abstractmethod
 
 class BufferPump(ABC):
     """
     Base class for device-specific buffer pumps.
     """
-
-    def __init__(self, storage: Storage):
-        """
-        Constructor
-
-        :param storage: the emulator's memory and register file,
-        """
-        self._storage = storage
 
     @abstractmethod
     def pump(self, elapsed_cycles: int) -> bool:

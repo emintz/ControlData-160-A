@@ -7,7 +7,7 @@ from development.Interpreter import Interpreter
 Runs the command interpreter for manual testing. Not useful for production.
 """
 def main() -> None:
-    storage = Storage()
+    storage = Storage([])
     interpreter = Interpreter(COMMANDS, CommandReader())
     interpreter.run(storage)
 

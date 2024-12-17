@@ -15,7 +15,7 @@ class TestCommandInterpreters(TestCase):
     def setUp(self):
         self.__command_reader = TestCommandReader()
         self.__interpreter = Interpreter(CommandInterpreters.COMMANDS, self.__command_reader)
-        self.__storage = Storage()
+        self.__storage = Storage([])
 
     def test_halt(self) -> None:
         halt_runner = CommandInterpreters.Step()

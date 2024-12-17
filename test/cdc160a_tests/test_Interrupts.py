@@ -10,7 +10,7 @@ from test_support import Programs
 class TestInterrupts(unittest.TestCase):
     def setUp(self) -> None:
         self.__console = PyConsole()
-        self.__storage = Storage()
+        self.__storage = Storage([])
         self.__run_loop = RunLoop(self.__console, self.__storage)
         self.__storage.set_buffer_storage_bank(0o0)
         self.__storage.set_direct_storage_bank(0o2)

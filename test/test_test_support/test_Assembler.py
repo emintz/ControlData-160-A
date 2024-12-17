@@ -16,7 +16,7 @@ VACUOUS_PROGRAM = "          END\n"
 class TestAssembler(TestCase):
 
     def setUp(self) -> None:
-        self.__storage = Storage()
+        self.__storage = Storage([])
 
     def dearDown(self):
         self.__storage = None

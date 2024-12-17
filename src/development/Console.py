@@ -114,7 +114,7 @@ def main() -> None:
     :return: None
     """
     console = create_console()
-    storage = Storage()
+    storage = Storage([])
     while True:
         console.before_instruction_fetch(storage)
         console.before_instruction_logic(storage)

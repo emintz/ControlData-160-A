@@ -18,6 +18,7 @@ from enum import Enum
 import numpy as np
 from typing import Final
 from cdc160a import Arithmetic
+from cdc160a.Device import Device
 from cdc160a.IOStatus import IOStatus
 
 # MCS modes and corresponding codes
@@ -34,7 +35,14 @@ class InterruptLock(Enum):
     UNLOCK_PENDING = 2
 
 class Storage:
-    def __init__(self):
+    def __init__(self, devices: [Device]):
+        """
+        Constructor
+
+        :param devices: all connected I/O devices. Note that the standard
+                        configuration supports paper tape I/O, i.e., has
+                        both paper tape reader and writer.
+        """
         # Core memory, 8 banks of 4096 12-bit words
         self.memory = np.zeros((8, 4096), dtype=np.int16)
 
@@ -134,6 +142,8 @@ class Storage:
         # TODO(emintz): Storage Cycle, A, B, C, or D, with D being Relative
         # See MODES above. It's unclear what should happen with a direct access
         self.storage_cycle = MCS_MODE_REL
+        # All attached I/O devices
+        self.__devices = devices
         # The address of the next instruction. The 160-A has no corresponding
         # register. This is a hack that supports deferring the move
         # to the next instruction until we determine that the machine
@@ -1076,5 +1086,5 @@ class Storage:
 
 if __name__ == "__main__":
     print('Running storage in stand-alone mode.\n')
-    storage = Storage()
+    storage = Storage([])
     print('Program completed.\n')
