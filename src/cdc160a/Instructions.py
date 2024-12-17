@@ -17,6 +17,7 @@ The design supports the following run loop:
 4. Halt if the instruction halted the machine
 
 """
+from abc import abstractmethod, ABCMeta
 from cdc160a import EffectiveAddress
 from cdc160a import Microinstructions
 from cdc160a.Storage import Storage
@@ -52,7 +53,42 @@ def __double_advance(storage: Storage) -> None:
     """
     storage.next_after_two_word_instruction()
 
-class Instruction:
+
+class BaseInstruction(metaclass=ABCMeta):
+    def __init__(self, name: str):
+        self.__name = name
+
+    @abstractmethod
+    def determine_effective_address(self, storage):
+        """
+        Determine the instruction's effective address. The constructor
+        sets the method.
+
+        :param storage: the emulated 160A's memory and register file
+        :return: Nothing
+        """
+        pass
+
+    def name(self):
+        """
+        Instruction name accessor
+
+        :return: the instruction name, the assembler's mnemonic for the instruction
+        """
+        return self.__name
+
+    @abstractmethod
+    def perform_logic(self, storage):
+        """
+        Performs the Instruction's logic
+
+        :param storage: emulated 1650A memory and register file.
+        :return: instruction execution type in cycles
+        """
+        pass
+
+
+class Instruction(BaseInstruction):
     """
     Emulates a 160A Instruction with a fixed run time
 
@@ -63,12 +99,13 @@ class Instruction:
     or moving values.
 
     """
-    def __init__(self,
-                 name: str,
-                 effective_address: Callable[[Storage], None],
-                 logic : Callable[[Storage], None],
-                 advance : Callable[[Storage], None],
-                 cycles: int):
+    def __init__(
+            self,
+            name: str,
+            effective_address: Callable[[Storage], None],
+            logic: Callable[[Storage], None],
+            advance: Callable[[Storage], None],
+            cycles: int):
         """
         Constructor
 
@@ -84,11 +121,11 @@ class Instruction:
                Set this to 0 for instructions that must
                calculate their run time on the fly.
         """
+        super().__init__(name)
         self.__cycles = cycles
         self.__effective_address = effective_address
         self.__advance = advance
         self.__logic = logic
-        self.__name = name
 
     def determine_effective_address(self, storage: Storage) -> None:
         """
@@ -99,14 +136,6 @@ class Instruction:
         :return: Nothing
         """
         self.__effective_address(storage)
-
-    def name(self):
-        """
-        Instruction name accessor
-
-        :return: the instruction name, the assembler's mnemonic for the instruction
-        """
-        return self.__name
 
     def perform_logic(self, storage: Storage) -> int:
         """
@@ -119,7 +148,7 @@ class Instruction:
         self.__advance(storage)
         return self.__cycles
 
-class VariableTimingInstruction:
+class VariableTimingInstruction(BaseInstruction):
 
     def __init__(self,
                  name: str,
@@ -138,6 +167,7 @@ class VariableTimingInstruction:
                cycles.
         :param advance: advances the P register upon completion
         """
+        super().__init__(name)
         self.__effective_address = effective_address
         self.__advance = advance
         self.__logic = logic
@@ -152,14 +182,6 @@ class VariableTimingInstruction:
         :return: Nothing
         """
         self.__effective_address(storage)
-
-    def name(self):
-        """
-        Instruction name accessor
-
-        :return: the instruction name, the assembler's mnemonic for the instruction
-        """
-        return self.__name
 
     def perform_logic(self, storage: Storage) -> int:
         """

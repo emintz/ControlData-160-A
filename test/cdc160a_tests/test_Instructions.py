@@ -1,6 +1,8 @@
 import unittest
 from unittest import TestCase
 
+from cdc160a.Hardware import Hardware
+from cdc160a.InputOutput import InputOutput
 from cdc160a import Instructions
 from cdc160a.Storage import InterruptLock
 from cdc160a.Storage import MCS_MODE_DIR
@@ -18,6 +20,7 @@ AFTER_DOUBLE_WORD_INSTRUCTION_ADDRESS: Final[int] = INSTRUCTION_ADDRESS + 2
 class Test(TestCase):
 
     def setUp(self) -> None:
+        self.input_output = InputOutput([])
         self.storage = Storage()
         self.storage.memory[0, READ_AND_WRITE_ADDRESS] = 0o10
         self.storage.memory[1, READ_AND_WRITE_ADDRESS] = 0o11
@@ -35,9 +38,12 @@ class Test(TestCase):
         self.storage.indirect_storage_bank = 3
         self.storage.relative_storage_bank = 4
         self.storage.run()
+        self.hardware = Hardware(self.input_output, self.storage)
 
     def tearDown(self) -> None:
         self.storage = None
+        self.input_output = None
+        self.hardware = None
 
     def test_acj(self) -> None:
         assert Instructions.ACJ.name() == "ACJ"
