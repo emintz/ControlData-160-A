@@ -32,50 +32,69 @@ Instructions are decoded as follows:
 
    def decode(e: int) -> Instruction
 """
-import Instructions
-from Instructions import Instruction
+from abc import ABCMeta, abstractmethod
 
-class Singleton:
+import Instructions
+from Instructions import BaseInstruction
+
+
+class InstructionDecoder(metaclass=ABCMeta):
+    def __init__(self, opcode: int | None):
+        self.opcode = opcode
+
+    @abstractmethod
+    def decode(self, _):
+        pass
+
+
+class Singleton(InstructionDecoder):
     """
     Decoder for an op-code that has a single meaning for all possible
     E values.
     """
-    def __init__(self, instruction: Instruction, opcode: int):
+    def __init__(self, instruction: BaseInstruction, opcode: int):
+        super().__init__(opcode)
         self.__instruction = instruction
-        self.opcode = opcode
 
-    def decode(self, _) -> Instruction:
+    def decode(self, _) -> BaseInstruction:
         return self.__instruction
 
-class Bimodal:
+class Bimodal(InstructionDecoder):
     """
     Decoder for bimodal op-codes, which means one instruction when e == 0
     and another when e != 0
     """
-    def __init__(self, e_zero: Instruction, e_nonzero: Instruction, opcode: int):
+    def __init__(
+            self,
+            e_zero: BaseInstruction,
+            e_nonzero: BaseInstruction,
+            opcode: int):
+        super().__init__(opcode)
         self.__e_zero = e_zero
         self.__e_nonzero = e_nonzero
-        self.opcode = opcode
 
-    def decode(self, e: int) -> Instruction:
+    def decode(self, e: int) -> BaseInstruction:
         if e == 0:
             return self.__e_zero
         else:
             return self.__e_nonzero
 
-class Unimplemented:
+class Unimplemented(InstructionDecoder):
     """
     Temporary interpreter for as-yet unsupported op-codes.
     """
-    def decode(self, _) -> Instruction:
+    def __init__(self):
+        super().__init__(0o7777)
+
+    def decode(self, _) -> BaseInstruction:
         return Instructions.ERR
 
-class Opcode00:
+class Opcode00(InstructionDecoder):
 
     def __init__(self):
-        self.opcode = 0o00
+       super().__init__(0o00)
 
-    def decode(self, e: int) -> Instruction:
+    def decode(self, e: int) -> BaseInstruction:
         decoded_instruction = Instructions.ERR
         e_high = e >> 3
         match e_high:
@@ -100,7 +119,7 @@ class Opcode00:
                 pass
         return decoded_instruction
 
-class OpCode01:
+class OpCode01(InstructionDecoder):
     # TODO(emintz): the remaining instructions
     __e_to_instruction_00 = {
         0o00: Instructions.BLS,
@@ -130,9 +149,9 @@ class OpCode01:
     }
 
     def __init__(self):
-        self.opcode = 0o01
+        super().__init__(0o01)
 
-    def decode(self, e: int) -> Instruction:
+    def decode(self, e: int) -> BaseInstruction:
         decoded_instruction = Instructions.ERR
         e_high = (e & 0o70) >> 3
         match e_high:
@@ -159,11 +178,11 @@ class OpCode01:
 
         return decoded_instruction
 
-class OpCode76:
+class OpCode76(InstructionDecoder):
     def __init__(self):
-        self.opcode = 0o76
+        super().__init__(0o76)
 
-    def decode(self, e: int) -> Instruction:
+    def decode(self, e: int) -> BaseInstruction:
         if e == 0o00:
             return Instructions.ERR # TODO(emintz): INA
         if e == 0o77:
@@ -171,11 +190,11 @@ class OpCode76:
         return Instructions.HWI
 
 
-class OpCode77:
+class OpCode77(InstructionDecoder):
     def __init__(self):
-        self.opcode = 0o77
+        super().__init__(0o77)
 
-    def decode(self, e: int) -> Instruction:
+    def decode(self, e: int) -> BaseInstruction:
         if e == 0o00 or e == 0o77:
             return Instructions.HLT
 
@@ -188,8 +207,8 @@ class OpCode77:
 __UNIMPLEMENTED = Unimplemented()
 
 __DECODERS = [
-    Opcode00(),                                                  # 00
-    OpCode01(),                                                  # 01
+    Opcode00(),                                                 # 00
+    OpCode01(),                                                 # 01
     Singleton(Instructions.LPN, 0o02),                   # 02
     Singleton(Instructions.SCN, 0o03),                   # 03
     Singleton(Instructions.LDN, 0o04),                   # 04
@@ -250,13 +269,13 @@ __DECODERS = [
     __UNIMPLEMENTED,            # 73
     __UNIMPLEMENTED,            # 74
     __UNIMPLEMENTED,            # 75
-    OpCode76(),                                                # 76
-    OpCode77(),                 # 77
+    OpCode76(),                                                 # 76
+    OpCode77(),                                                 # 77
 ]
 
 def decoder_at(e: int):
     return __DECODERS[e]
 
 
-def decode(f: int, e: int) -> Instruction:
+def decode(f: int, e: int) -> BaseInstruction:
     return __DECODERS[f].decode(e)
