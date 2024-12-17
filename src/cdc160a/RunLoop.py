@@ -8,6 +8,7 @@ This is a temporary version to support testing, and needs a
 lot of work before we can integrate it with the console and
 I/O system.
 """
+from InputOutput import InputOutput
 import InstructionDecoder
 from Storage import Storage
 
@@ -16,10 +17,11 @@ class RunLoop:
     Run loop for the CDC 160-A emulator.
     """
 
-    def __init__(self, console, storage: Storage):
+    def __init__(self, console, storage: Storage, input_output: InputOutput):
         """
         Constructor. Note that the computer configuration is injected.
 
+        :param input_output:
         :param console: the CDC 160A console. May be a dummy for
                testing under PyUnit, a character-mode console for
                development, or a full-blown GUI.

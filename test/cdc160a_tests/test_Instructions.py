@@ -18,7 +18,7 @@ AFTER_DOUBLE_WORD_INSTRUCTION_ADDRESS: Final[int] = INSTRUCTION_ADDRESS + 2
 class Test(TestCase):
 
     def setUp(self) -> None:
-        self.storage = Storage([])
+        self.storage = Storage()
         self.storage.memory[0, READ_AND_WRITE_ADDRESS] = 0o10
         self.storage.memory[1, READ_AND_WRITE_ADDRESS] = 0o11
         self.storage.memory[2, READ_AND_WRITE_ADDRESS] = 0o12

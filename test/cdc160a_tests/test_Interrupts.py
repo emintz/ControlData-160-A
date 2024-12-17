@@ -1,7 +1,8 @@
 import unittest
 
-from cdc160a.RunLoop import RunLoop
+from cdc160a.InputOutput import InputOutput
 from cdc160a.Storage import InterruptLock
+from cdc160a.RunLoop import RunLoop
 from cdc160a.Storage import Storage
 from test_support.Assembler import assembler_from_string
 from test_support.PyunitConsole import PyConsole
@@ -10,8 +11,8 @@ from test_support import Programs
 class TestInterrupts(unittest.TestCase):
     def setUp(self) -> None:
         self.__console = PyConsole()
-        self.__storage = Storage([])
-        self.__run_loop = RunLoop(self.__console, self.__storage)
+        self.__storage = Storage()
+        self.__run_loop = RunLoop(self.__console, self.__storage, InputOutput([]))
         self.__storage.set_buffer_storage_bank(0o0)
         self.__storage.set_direct_storage_bank(0o2)
         self.__storage.set_indirect_storage_bank(0o1)

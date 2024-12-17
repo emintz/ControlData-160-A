@@ -15,7 +15,7 @@ class TestInterpreter(TestCase):
 
     def setUp(self) -> None:
         self.__command_reader = CommandReaderForTesting()
-        self.__storage = Storage([])
+        self.__storage = Storage()
         self.__interpreter = Interpreter.Interpreter(CommandInterpreters.COMMANDS, self.__command_reader)
 
 

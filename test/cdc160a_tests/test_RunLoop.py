@@ -1,6 +1,7 @@
 import unittest
 from unittest import TestCase
 
+from cdc160a.InputOutput import InputOutput
 from cdc160a.RunLoop import RunLoop
 from cdc160a.Storage import  Storage
 from test_support.Assembler import assembler_from_string
@@ -10,9 +11,10 @@ from test_support import Programs
 class TestRunLoop(TestCase):
 
     def setUp(self) -> None:
-        self.__storage = Storage([])
+        self.__storage = Storage()
         self.__console = PyConsole()
-        self.__run_loop = RunLoop(self.__console, self.__storage)
+        self.__run_loop = RunLoop(
+            self.__console, self.__storage, InputOutput([]))
         self.__storage.set_direct_storage_bank(0o2)
         self.__storage.set_indirect_storage_bank(0o1)
         self.__storage.set_relative_storage_bank(0o3)
