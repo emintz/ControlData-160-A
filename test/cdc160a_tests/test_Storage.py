@@ -428,6 +428,20 @@ class TestStorage(TestCase):
         assert self.storage.a_register == 0
         assert self.storage.z_register == 0o1234
 
+    def test_s_address_contents(self) -> None:
+        self.storage.memory[1, 0o100] = 0o4321
+        self.storage.s_register = 0o100
+        assert self.storage.s_address_contents(1) == 0o4321
+        assert self.storage.z_register == 0o4321
+
+    def test_s_relative_address_contents(self) -> None:
+        self.storage.relative_storage_bank = 1
+        self.storage.memory[1, 0o100] = 0o4321
+        self.storage.s_register = 0o100
+        assert self.storage.s_address_contents(1) == 0o4321
+        assert self.storage.z_register == 0o4321
+        assert self.storage.storage_cycle == MCS_MODE_REL
+
     def test_s_direct_to_a(self) -> None:
         self.storage.direct_storage_bank = 1
         self.storage.s_register = 0o40
@@ -593,6 +607,11 @@ class TestStorage(TestCase):
         self.storage.unpack_instruction()
         self.storage.set_indirect_bank_from_e()
         assert self.storage.indirect_storage_bank == 0o06
+
+    def test_set_interrupt_lock(self) -> None:
+        assert self.storage.interrupt_lock == InterruptLock.FREE
+        self.storage.set_interrupt_lock()
+        assert self.storage.interrupt_lock == InterruptLock.LOCKED
 
     def test_set_relative_bank_from_e_and_jump(self) -> None:
         self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0016)

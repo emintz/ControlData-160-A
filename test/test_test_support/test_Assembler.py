@@ -330,10 +330,16 @@ class TestAssembler(TestCase):
     def test_eta(self) -> None:
         self.__single_instruction_test("ETA", [0o0107])
 
+    def test_exc(self) -> None:
+        self.__single_instruction_test("EXC 4102", [0o7500, 0o4102])
+
+    def test_exf(self) -> None:
+        self.__single_instruction_test("EXF 40", [0o7540])
+
     def test_hwi(self) -> None:
         self.__single_instruction_test("HWI 64", [0o7664])
 
-    def test_hwI_e_too_small(self) -> None:
+    def test_hwi_e_too_small(self) -> None:
         # Deliberately generates an assembler error. Please ignore.
         assembler = self.assembler(SINGLE_INSTRUCTION_TEMPLATE.format("HWI 0"))
         assert not assembler.run()

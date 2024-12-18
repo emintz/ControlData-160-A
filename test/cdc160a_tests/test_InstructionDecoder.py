@@ -463,6 +463,13 @@ class Test(TestCase):
         for e in range(1, 0o100):
             assert decoder.decode(e).name() == "JFI"
 
+    def test_decode_75(self) -> None:
+        decoder = InstructionDecoder.decoder_at(0o75)
+        assert decoder.opcode == 0o75
+        assert decoder.decode(0o00).name() == "EXC"
+        for e in range(0o01, 0o100):
+            assert decoder.decode(e).name() == "EXF"
+
     def test_decode_76(self) -> None:
         decoder = InstructionDecoder.decoder_at(0o76)
         assert decoder.opcode == 0o76

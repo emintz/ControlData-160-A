@@ -191,6 +191,30 @@ ERROR_HALT = """
           ERR
           END
 """
+EXTERNAL_FUNCTION_CONSTANT = """
+          REM Selects the paper tape reader with a external function constant
+          REM instruction. Note that 4102 selects the reader, and provides
+          REM no device status
+          BNK 3
+          ORG 100
+          EXC 4102
+          HLT
+          END
+"""
+EXTERNAL_FUNCTION_FORWARD = """
+          REM Selects the paper tape reader with an external function forward
+                    REM instruction. Note that 4102 selects the reader, and provides
+          REM no device status
+          BNK 3
+          ORG 100
+          EXF 40
+          HLT
+          ORG 140
+          OCT 4102
+          END
+"""
+
+
 HALF_WRITE_INDIRECT = """
           REM Half Write Indirect: [E](d) -> S, A(0 .. 6) -> [S](i)
           REM Form the effective address from the value at E in the

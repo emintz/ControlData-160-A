@@ -82,22 +82,19 @@ class Device(ABC):
     @abstractmethod
     def external_function(
             self,
-            external_function_code) -> (ExternalFunctionAction, int | None):
+            external_function_code) -> (bool, int | None):
         """
         Performs the requested external function, a request emanating
         from an EXC or EXF instruction. All subclasses must override
         this method.
 
         :param external_function_code:
-        :return: a pair (2 item tuple) containing an action for the
-                 caller to take and an optional status code. If the
-                 function does not generate a status code, the second
-                 element will be None.
-        :raises: IllegalException if the device does not support the
-                 proffered code. A code is supported if and only if
-                 self.accepts(code) returns True.
+        :return: a pair (2 item tuple) containing True if the device
+                 supports the requested function and False otherwise,
+                 and an optional status code. If the function does not
+                 generate a status code, the second element will be None.
         """
-        raise IllegalInvocation
+        raise NotImplemented
 
     def initial_read_delay(self) -> int:
         """
@@ -130,19 +127,16 @@ class Device(ABC):
         """
         raise NotImplemented
 
-    def read(self) -> int:
+    def read(self) -> (bool, int):
         """
         Reads and returns one 12-bit word from the device. If the device
         returns partial words, the value is 0-padded on the left. Devices
         that can read must override this method.
 
-        :return: the input, as described above.
-
-        :raises: NotImplemented if the device cannot read. It is
-                 an error to invoke this method if the device do not
-                 support input (i.e. on output-only devices).
+        :return: a status code that is True if the read succeeds and False
+                 if it failed along with the input, as described above.
         """
-        raise NotImplemented
+        return False, 0
 
     def read_delay(self) -> int:
         """
@@ -158,18 +152,15 @@ class Device(ABC):
         """
         raise NotImplemented
 
-    def write(self, value: int) -> None:
+    def write(self, value: int) -> bool:
         """
         Write a single word to the device.
 
         :param value: the word to write. If the device writes partial
                       words, the least significant bits are written.
-        :return: None
-        :raises: NotImplemented if the device does not support writing
-                 (i.e. on read-only devices). It is an error to invoke
-                 this method on devices that do not support output.
+        :return: True if output succeeded, False otherwise
         """
-        raise NotImplemented
+        return False
 
     def write_delay(self) -> int:
         """

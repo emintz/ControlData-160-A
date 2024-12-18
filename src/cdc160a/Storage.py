@@ -135,6 +135,10 @@ class Storage:
         self.iba_status = False
         # OBA, True during all buffer output operations, False otherwise
         self.oba_status = False
+        # Machine hung status. Some errors, e.g. illegal external function,
+        # delay the machine indefinitely. If machine_hung is True, such
+        # an error has occurred and the machine will hang.
+        self.machine_hung = False
         # TODO(emintz): Storage Cycle, A, B, C, or D, with D being Relative
         # See MODES above. It's unclear what should happen with a direct access
         self.storage_cycle = MCS_MODE_REL
@@ -375,7 +379,7 @@ class Storage:
         Note: Successive calls read data from successive memory locations
         in the buffer storage bank. Data must be available to be transferred
         (i.e., the buffer entrance register contents must be strictly less
-        than the buffer exit register contents on entry. This is checked.
+        than the buffer exit register contents on entry). This is checked.
         The computer must be buffering when this method is called. This is
         also checked.
 
@@ -445,7 +449,7 @@ class Storage:
 
     def p_to_e_direct(self) -> None:
         """
-        Write [P] to E{d). The range of E contents depends on the op-code.
+        Write [P] to E(d). The range of E contents depends on the op-code.
 
         :return: None
         """
@@ -461,6 +465,14 @@ class Storage:
         assert interrupt_no & 0o07 == 0
         assert 0o10 <= interrupt_no <= 0o40
         self.interrupt_requests[(interrupt_no >> 3) - 1] = True
+
+    def s_address_contents(self, bank: int) -> int:
+        self.z_register = self.memory[bank, self.s_register]
+        return int(self.z_register)
+
+    def s_relative_address_contents(self) -> int:
+        self.storage_cycle = MCS_MODE_REL
+        return self.s_address_contents(self.relative_storage_bank)
 
     def service_pending_interrupts(self) -> None:
         match self.interrupt_lock:
@@ -485,6 +497,9 @@ class Storage:
             case InterruptLock.UNLOCK_PENDING:
                 # Ask me next time
                 self.interrupt_lock = InterruptLock.FREE
+
+    def set_interrupt_lock(self) -> None:
+        self.interrupt_lock = InterruptLock.LOCKED
 
     def start_buffering(self) -> None:
         assert not self.buffering
@@ -544,7 +559,7 @@ class Storage:
     def unpack_instruction(self) -> None:
         """
         Split a 12-bit machine instruction into F, the most significant 6 bits
-        a.k.a, the opcode into the F register and the least significant 6
+        a.k.a., the opcode into the F register and the least significant 6
         bits, the effective address, into the E register. Note that the
         E register has no counterpart in the real computer.
 
@@ -593,13 +608,18 @@ class Storage:
         """
         self.s_register = self.p_register + 1
 
+    def g_contents(self) -> int:
+        self.z_register = self.read_relative_bank(self.p_register + 1)
+        self.storage_cycle = MCS_MODE_REL
+        return int(self.z_register)
+
     def g_to_s(self) -> None:
         """
         Sets S, the effective address register, to [G(r)]
 
         :return: None
         """
-        self.z_register = self.read_relative_bank(self.p_register + 1)
+        self.z_register = self.g_contents()
         self.s_register = self.z_register
 
     def g_to_next_address(self) -> None:

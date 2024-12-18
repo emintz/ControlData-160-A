@@ -200,7 +200,6 @@ def e_to_a(hardware: Hardware) -> None:
     storage.e_to_z()
     storage.z_to_a()
 
-# Halt the machine and set the error status
 def error(hardware: Hardware) -> None:
     """
     Halt the machine and set the error status to true.
@@ -211,6 +210,22 @@ def error(hardware: Hardware) -> None:
     storage = hardware.storage
     storage.stop()
     storage.err_status = True
+
+def external_function(hardware: Hardware) -> None:
+    """
+    Perform an external function using [S](r) as the operand.
+
+    :param hardware: emulator hardware bundle including I/O and Storage
+
+    :return: None
+    """
+    storage = hardware.storage
+    storage.set_interrupt_lock()
+    operand = storage.s_relative_address_contents()
+    response, status = hardware.input_output.external_function(operand)
+    storage.machine_hung = not status
+    if response is not None:
+        hardware.storage.a_register = response
 
 def half_write_indirect(hardware: Hardware) -> None:
     """

@@ -37,7 +37,7 @@ class RunLoop:
         """
         Run a single instruction.
 
-        :return: True unless an ERR or HLT instruction is run.
+        :return: True unless user halts the emulator.
         """
         self.__console.before_instruction_fetch(self.__storage)
         self.__storage.service_pending_interrupts()

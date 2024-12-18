@@ -717,6 +717,8 @@ class Assembler:
             "END": StopAssembly(self, "ERR"),
             "ERR": FixedEValue(self, "ERR", 0o0000),
             "ETA": FixedEValue(self, "ETA", 0o0107),
+            "EXC": TwoWordZeroE(self, "EXC", 0o75),
+            "EXF": OneWordNonZeroE(self, "EXF", 0o75),
             "HLT": FixedEValue(self, "HLT", 0o7700),
             "HWI": OneWordRangeE(self, "HWI", 0o76, 0o01, 0o76),
             "IRJ": OneWordLowE(self, "IRJ", 0o00, 0o03),

@@ -268,7 +268,7 @@ __DECODERS = [
     __UNIMPLEMENTED,            # 72
     __UNIMPLEMENTED,            # 73
     __UNIMPLEMENTED,            # 74
-    __UNIMPLEMENTED,            # 75
+    Bimodal(Instructions.EXC, Instructions.EXF, 0o75),   # 75
     OpCode76(),                                                 # 76
     OpCode77(),                                                 # 77
 ]

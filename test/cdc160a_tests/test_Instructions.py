@@ -1,9 +1,12 @@
 import unittest
 from unittest import TestCase
+import os
+from tempfile import NamedTemporaryFile
 
 from cdc160a.Hardware import Hardware
 from cdc160a.InputOutput import InputOutput
 from cdc160a import Instructions
+from cdc160a.PaperTapeReader import PaperTapeReader
 from cdc160a.Storage import InterruptLock
 from cdc160a.Storage import MCS_MODE_DIR
 from cdc160a.Storage import MCS_MODE_IND
@@ -20,7 +23,8 @@ AFTER_DOUBLE_WORD_INSTRUCTION_ADDRESS: Final[int] = INSTRUCTION_ADDRESS + 2
 class Test(TestCase):
 
     def setUp(self) -> None:
-        self.input_output = InputOutput([])
+        self.paper_tape_reader = PaperTapeReader()
+        self.input_output = InputOutput([self.paper_tape_reader])
         self.storage = Storage()
         self.storage.memory[0, READ_AND_WRITE_ADDRESS] = 0o10
         self.storage.memory[1, READ_AND_WRITE_ADDRESS] = 0o11
@@ -466,6 +470,63 @@ class Test(TestCase):
         assert self.storage.a_register == 0o3333
         self.storage.advance_to_next_instruction()
         assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+
+    def test_exc(self) -> None:
+        temp_file = NamedTemporaryFile("w+", delete=False)
+        print("Temporary file: {0},".format(temp_file.name))
+        temp_file.write("456\n")
+        temp_file.close()
+
+        self.paper_tape_reader.open(temp_file.name)
+
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7500)
+        self.storage.write_relative_bank(G_ADDRESS, 0o4102)
+        self.storage.a_register = 0o5000
+        self.storage.unpack_instruction()
+        Instructions.EXC.determine_effective_address(self.storage)
+        assert self.storage.s_register == G_ADDRESS
+        assert Instructions.EXC.perform_logic(self.hardware) == 2
+        assert self.storage.a_register == 0o5000
+        assert not self.storage.machine_hung
+        assert self.storage.interrupt_lock == InterruptLock.LOCKED
+        assert (self.input_output.device_on_normal_channel() ==
+                self.paper_tape_reader)
+        assert self.input_output.device_on_buffer_channel() is None
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_DOUBLE_WORD_INSTRUCTION_ADDRESS)
+
+        self.paper_tape_reader.close()
+        os.unlink(temp_file.name)
+
+    def test_exf(self) -> None:
+        temp_file = NamedTemporaryFile("w+", delete=False)
+        print("Temporary file: {0},".format(temp_file.name))
+        temp_file.write("456\n")
+        temp_file.close()
+
+        self.paper_tape_reader.open(temp_file.name)
+
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7540)
+        self.storage.a_register = 0o5000
+        self.storage.write_relative_bank(
+            INSTRUCTION_ADDRESS + 0o40, 0o4102)
+        self.storage.unpack_instruction()
+        Instructions.EXF.determine_effective_address(self.storage)
+        assert self.storage.s_register == INSTRUCTION_ADDRESS + 0o40
+        assert Instructions.EXF.perform_logic(self.hardware) == 2
+        assert self.storage.a_register == 0o5000
+        assert self.storage.interrupt_lock == InterruptLock.LOCKED
+        assert not self.storage.machine_hung
+        assert (self.input_output.device_on_normal_channel() ==
+                self.paper_tape_reader)
+        assert self.input_output.device_on_buffer_channel() is None
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
+
+        self.paper_tape_reader.close()
+        os.unlink(temp_file.name)
 
     def test_hlt(self) -> None:
         # hlt

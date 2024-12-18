@@ -53,9 +53,10 @@ class PaperTapeReader(Device):
         return result
 
     def external_function(self, external_function_code: int) -> (
-            (ExternalFunctionAction, int | None)):
-        assert external_function_code == 0o4102
-        return ExternalFunctionAction.NORMAL_SELECT, None
+            (bool, int | None)):
+        return (
+            self.__input_file is not None and external_function_code == 0o4102,
+            None)
 
     def is_open(self) -> bool:
         return self.__input_file is not None
@@ -80,14 +81,16 @@ class PaperTapeReader(Device):
                 print("File {0} does not exist.".format(path_name))
         return result
 
-    def read(self) -> int:
+    def read(self) -> (bool, int):
         read_data = 0
+        status = self.__input_file is not None
         raw_input = self.__input_file.readline()
-        if re.match("^[0-7]+$", raw_input) is not None:
-            read_data = int(raw_input, 8)
-        else:
-            print("Illegal input: '{0}', using 0.".format(raw_input.strip()))
-        return read_data
+        if status:
+            if re.match("^[0-7]+$", raw_input) is not None:
+                read_data = int(raw_input, 8)
+            else:
+                print("Illegal input: '{0}', using 0.".format(raw_input.strip()))
+        return status, read_data
 
     def read_delay(self) -> int:
         return 446

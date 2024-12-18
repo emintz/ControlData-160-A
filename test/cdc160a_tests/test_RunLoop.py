@@ -1,9 +1,12 @@
 import unittest
 from unittest import TestCase
+import os
+from tempfile import NamedTemporaryFile
 
+from PaperTapeReader import PaperTapeReader
 from cdc160a.InputOutput import InputOutput
 from cdc160a.RunLoop import RunLoop
-from cdc160a.Storage import  Storage
+from cdc160a.Storage import InterruptLock, Storage
 from test_support.Assembler import assembler_from_string
 from test_support.PyunitConsole import PyConsole
 from test_support import Programs
@@ -11,10 +14,12 @@ from test_support import Programs
 class TestRunLoop(TestCase):
 
     def setUp(self) -> None:
-        self.__storage = Storage()
         self.__console = PyConsole()
+        self.__storage = Storage()
+        self.__paper_tape_reader = PaperTapeReader()
+        self.__input_output = InputOutput([self.__paper_tape_reader])
         self.__run_loop = RunLoop(
-            self.__console, self.__storage, InputOutput([]))
+            self.__console, self.__storage, self.__input_output)
         self.__storage.set_direct_storage_bank(0o2)
         self.__storage.set_indirect_storage_bank(0o1)
         self.__storage.set_relative_storage_bank(0o3)
@@ -229,6 +234,43 @@ class TestRunLoop(TestCase):
         assert self.__storage.buffer_entrance_register == 0o3000
         assert self.__storage.get_program_counter() == 0o106
         assert not self.__storage.buffering
+
+    def test_exc(self) -> None:
+        temp_file = NamedTemporaryFile("w+", delete=False)
+        print("Temporary file: {0},".format(temp_file.name))
+        temp_file.write("456\n")
+        temp_file.close()
+
+        self.__paper_tape_reader.open(temp_file.name)
+
+        self.load_test_program(Programs.EXTERNAL_FUNCTION_CONSTANT)
+        self.__run_loop.run()
+        assert self.__storage.interrupt_lock == InterruptLock.LOCKED
+        assert self.__input_output.device_on_buffer_channel() is None
+        assert (self.__input_output.device_on_normal_channel() ==
+                self.__paper_tape_reader)
+
+        self.__paper_tape_reader.close()
+        os.unlink(temp_file.name)
+
+    def test_exf(self) -> None:
+        temp_file = NamedTemporaryFile("w+", delete=False)
+        print("Temporary file: {0},".format(temp_file.name))
+        temp_file.write("456\n")
+        temp_file.close()
+
+        self.__paper_tape_reader.open(temp_file.name)
+
+        self.load_test_program(Programs.EXTERNAL_FUNCTION_FORWARD)
+        self.__run_loop.run()
+        assert self.__storage.interrupt_lock == InterruptLock.LOCKED
+        assert self.__input_output.device_on_buffer_channel() is None
+        assert (self.__input_output.device_on_normal_channel() ==
+                self.__paper_tape_reader)
+
+        self.__paper_tape_reader.close()
+        os.unlink(temp_file.name)
+
 
     def test_hwi(self) -> None:
         self.load_test_program(Programs.HALF_WRITE_INDIRECT)
