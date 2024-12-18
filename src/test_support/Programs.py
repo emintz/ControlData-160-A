@@ -203,7 +203,7 @@ EXTERNAL_FUNCTION_CONSTANT = """
 """
 EXTERNAL_FUNCTION_FORWARD = """
           REM Selects the paper tape reader with an external function forward
-                    REM instruction. Note that 4102 selects the reader, and provides
+          REM instruction. Note that 4102 selects the reader, and provides
           REM no device status
           BNK 3
           ORG 100
