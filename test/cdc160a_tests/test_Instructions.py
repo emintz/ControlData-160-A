@@ -52,7 +52,7 @@ class Test(TestCase):
         self.storage.a_register = 0o200
         Instructions.ACJ.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS
-        assert Instructions.ACJ.perform_logic(self.storage) == 1
+        assert Instructions.ACJ.perform_logic(self.hardware) == 1
         assert self.storage.direct_storage_bank == 0o06
         assert self.storage.indirect_storage_bank == 0o06
         assert self.storage.relative_storage_bank == 0o06
@@ -66,7 +66,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.ADB.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS - 1
-        assert Instructions.ADB.perform_logic(self.storage) == 2
+        assert Instructions.ADB.perform_logic(self.hardware) == 2
         assert self.storage.run_stop_status
         assert not self.storage.err_status
         assert self.storage.a_register == 0o1234
@@ -83,7 +83,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.ADC.determine_effective_address(self.storage)
         assert self.storage.s_register == G_ADDRESS
-        assert Instructions.ADC.perform_logic(self.storage) == 2
+        assert Instructions.ADC.perform_logic(self.hardware) == 2
         assert self.storage.run_stop_status
         assert not self.storage.err_status
         assert self.storage.a_register == 0o1234
@@ -100,7 +100,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.ADD.determine_effective_address(self.storage)
         assert self.storage.s_register == 0o40
-        assert Instructions.ADD.perform_logic(self.storage) == 2
+        assert Instructions.ADD.perform_logic(self.hardware) == 2
         assert self.storage.run_stop_status
         assert not self.storage.err_status
         assert self.storage.a_register == 0o1234
@@ -117,7 +117,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.ADF.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS + 2
-        assert Instructions.ADF.perform_logic(self.storage) == 2
+        assert Instructions.ADF.perform_logic(self.hardware) == 2
         assert self.storage.run_stop_status
         assert not self.storage.err_status
         assert self.storage.a_register == 0o1234
@@ -134,7 +134,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.ADI.determine_effective_address(self.storage)
         assert self.storage.s_register == 0o40
-        assert Instructions.ADI.perform_logic(self.storage) == 3
+        assert Instructions.ADI.perform_logic(self.hardware) == 3
         assert self.storage.run_stop_status
         assert not self.storage.err_status
         assert self.storage.a_register == 0o1234
@@ -151,7 +151,7 @@ class Test(TestCase):
         self.storage.a_register = 0o1213
         Instructions.ADM.determine_effective_address(self.storage)
         assert self.storage.s_register == READ_AND_WRITE_ADDRESS
-        assert Instructions.ADM.perform_logic(self.storage) == 3
+        assert Instructions.ADM.perform_logic(self.hardware) == 3
         assert self.storage.run_stop_status
         assert not self.storage.err_status
         assert self.storage.a_register == 0o1234
@@ -167,7 +167,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.ADN.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS
-        assert Instructions.ADN.perform_logic(self.storage) == 1
+        assert Instructions.ADN.perform_logic(self.hardware) == 1
         assert self.storage.run_stop_status
         assert not self.storage.err_status
         assert self.storage.a_register == 0o1234
@@ -184,7 +184,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.ADS.determine_effective_address(self.storage)
         assert self.storage.s_register == 0o7777
-        assert Instructions.ADS.perform_logic(self.storage) == 2
+        assert Instructions.ADS.perform_logic(self.hardware) == 2
         assert self.storage.run_stop_status
         assert not self.storage.err_status
         assert self.storage.a_register == 0o1234
@@ -202,7 +202,7 @@ class Test(TestCase):
         assert self.storage.s_register == INSTRUCTION_ADDRESS - 1
         assert self.storage.run_stop_status
         assert not self.storage.err_status
-        assert Instructions.AOB.perform_logic(self.storage) == 3
+        assert Instructions.AOB.perform_logic(self.hardware) == 3
         assert self.storage.a_register == 0o1234
         assert self.storage.read_relative_bank(INSTRUCTION_ADDRESS - 1) == 0o1234
         assert self.storage.run_stop_status
@@ -217,7 +217,7 @@ class Test(TestCase):
         assert self.storage.s_register == G_ADDRESS
         assert not self.storage.err_status
         assert self.storage.run_stop_status
-        assert Instructions.AOC.perform_logic(self.storage) == 3
+        assert Instructions.AOC.perform_logic(self.hardware) == 3
         assert self.storage.read_relative_bank(G_ADDRESS) == 0o1234
         assert not self.storage.err_status
         assert self.storage.run_stop_status
@@ -233,7 +233,7 @@ class Test(TestCase):
         assert self.storage.s_register == 0o10
         assert self.storage.run_stop_status
         assert not self.storage.err_status
-        assert Instructions.AOD.perform_logic(self.storage) == 3
+        assert Instructions.AOD.perform_logic(self.hardware) == 3
         assert not self.storage.err_status
         assert self.storage.run_stop_status
         assert self.storage.a_register == 0o1234
@@ -251,7 +251,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.AOF.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS + 0o10
-        assert Instructions.AOF.perform_logic(self.storage) == 3
+        assert Instructions.AOF.perform_logic(self.hardware) == 3
         assert self.storage.a_register == 0o1234
         assert self.storage.read_relative_bank(INSTRUCTION_ADDRESS + 0o10) == 0o1234
         assert not self.storage.err_status
@@ -269,7 +269,7 @@ class Test(TestCase):
         assert self.storage.s_register == 0o14
         assert not self.storage.err_status
         assert self.storage.run_stop_status
-        assert Instructions.AOI.perform_logic(self.storage) == 4
+        assert Instructions.AOI.perform_logic(self.hardware) == 4
         assert self.storage.a_register == 0o1234
         assert self.storage.read_indirect_bank(0o14) == 0o1234
         assert not self.storage.err_status
@@ -288,7 +288,7 @@ class Test(TestCase):
         assert self.storage.s_register == 0o200
         assert not self.storage.err_status
         assert self.storage.run_stop_status
-        assert Instructions.AOM.perform_logic(self.storage) == 4
+        assert Instructions.AOM.perform_logic(self.hardware) == 4
         assert self.storage.a_register == 0o1234
         assert self.storage.read_relative_bank(0o200) == 0o1234
         assert not self.storage.err_status
@@ -307,7 +307,7 @@ class Test(TestCase):
         self.storage.start_buffering()
         Instructions.ATE.determine_effective_address(self.storage)
         assert self.storage.s_register == 0o100
-        assert Instructions.ATE.perform_logic(self.storage) == 2
+        assert Instructions.ATE.perform_logic(self.hardware) == 2
         assert self.storage.buffer_entrance_register == 0
         assert self.storage.buffer_exit_register == 0o7777
         assert self.storage.buffering
@@ -324,7 +324,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.ATE.determine_effective_address(self.storage)
         assert self.storage.s_register == 0o100
-        assert Instructions.ATE.perform_logic(self.storage) == 1
+        assert Instructions.ATE.perform_logic(self.hardware) == 1
         assert self.storage.buffer_entrance_register == 0o200
         assert self.storage.buffer_exit_register == 0
         assert not self.storage.buffering
@@ -347,7 +347,7 @@ class Test(TestCase):
         self.storage.start_buffering()
         Instructions.ATX.determine_effective_address(self.storage)
         assert self.storage.s_register == 0o100
-        assert Instructions.ATX.perform_logic(self.storage) == 2
+        assert Instructions.ATX.perform_logic(self.hardware) == 2
         assert self.storage.buffer_entrance_register == 0
         assert self.storage.buffer_exit_register == 0o7777
         assert self.storage.buffering
@@ -365,7 +365,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.ATX.determine_effective_address(self.storage)
         assert self.storage.get_program_counter() == 0o100
-        assert Instructions.ATX.perform_logic(self.storage) == 1
+        assert Instructions.ATX.perform_logic(self.hardware) == 1
         assert self.storage.buffer_exit_register == 0o200
         assert self.storage.buffer_entrance_register == 0
         assert not self.storage.buffering
@@ -384,7 +384,7 @@ class Test(TestCase):
         self.storage.start_buffering()
         Instructions.BLS.determine_effective_address(self.storage)
         assert self.storage.get_program_counter() == 0o100
-        assert Instructions.BLS.perform_logic(self.storage) == 2
+        assert Instructions.BLS.perform_logic(self.hardware) == 2
         assert self.storage.buffer_entrance_register == 0o200
         assert self.storage.buffer_exit_register == 0o401
         assert self.storage.buffering
@@ -403,7 +403,7 @@ class Test(TestCase):
         Instructions.BLS.determine_effective_address(self.storage)
         assert self.storage.get_program_counter() == 0o100
         assert not self.storage.buffering
-        assert Instructions.BLS.perform_logic(self.storage) == 0o201
+        assert Instructions.BLS.perform_logic(self.hardware) == 0o201
         assert self.storage.buffer_entrance_register == 0o401
         assert self.storage.buffer_exit_register == 0o401
         assert self.storage.read_buffer_bank(0o177) == 0
@@ -420,7 +420,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.CTA.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS
-        assert Instructions.CIL.perform_logic(self.storage) == 1
+        assert Instructions.CIL.perform_logic(self.hardware) == 1
         assert self.storage.interrupt_lock == InterruptLock.UNLOCK_PENDING
         self.storage.advance_to_next_instruction()
         assert self.storage.get_program_counter() == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
@@ -434,7 +434,7 @@ class Test(TestCase):
         self.storage.set_relative_storage_bank(0o4)
         Instructions.CTA.determine_effective_address(self.storage)
         assert self.storage.get_program_counter() == INSTRUCTION_ADDRESS
-        Instructions.CTA.perform_logic(self.storage)
+        Instructions.CTA.perform_logic(self.hardware)
         assert self.storage.a_register == 0o1234
         self.storage.advance_to_next_instruction()
         assert (self.storage.get_program_counter() ==
@@ -447,7 +447,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         self.storage.a_register = 0o200
         assert self.storage.s_register == INSTRUCTION_ADDRESS
-        assert Instructions.DRJ.perform_logic(self.storage) == 1
+        assert Instructions.DRJ.perform_logic(self.hardware) == 1
         assert self.storage.direct_storage_bank == 0o06
         assert self.storage.relative_storage_bank == 0o06
         self.storage.advance_to_next_instruction()
@@ -460,7 +460,7 @@ class Test(TestCase):
         self.storage.a_register = 0o3333
         self.storage.unpack_instruction()
         Instructions.ERR.determine_effective_address(self.storage)
-        assert Instructions.ERR.perform_logic(self.storage) == 1
+        assert Instructions.ERR.perform_logic(self.hardware) == 1
         assert not self.storage.run_stop_status
         assert self.storage.err_status
         assert self.storage.a_register == 0o3333
@@ -474,7 +474,7 @@ class Test(TestCase):
         self.storage.a_register = 0o3333
         self.storage.unpack_instruction()
         Instructions.ERR.determine_effective_address(self.storage)
-        assert Instructions.HLT.perform_logic(self.storage) == 1
+        assert Instructions.HLT.perform_logic(self.hardware) == 1
         assert not self.storage.run_stop_status
         assert not self.storage.err_status
         assert self.storage.a_register == 0o3333
@@ -491,7 +491,7 @@ class Test(TestCase):
         self.storage.a_register = 0o6521
         Instructions.HWI.determine_effective_address(self.storage)
         assert self.storage.s_register == 0o3200
-        assert Instructions.HWI.perform_logic(self.storage) == 4
+        assert Instructions.HWI.perform_logic(self.hardware) == 4
         assert self.storage.read_indirect_bank(0o3200) == 0o4321
         assert self.storage.storage_cycle == MCS_MODE_IND
         self.storage.advance_to_next_instruction()
@@ -505,7 +505,7 @@ class Test(TestCase):
         self.storage.a_register = 0o200
         Instructions.IRJ.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS
-        assert Instructions.IRJ.perform_logic(self.storage) == 1
+        assert Instructions.IRJ.perform_logic(self.hardware) == 1
         assert self.storage.indirect_storage_bank == 0o06
         assert self.storage.relative_storage_bank == 0o06
         self.storage.advance_to_next_instruction()
@@ -519,7 +519,7 @@ class Test(TestCase):
         self.storage.write_relative_bank(0o400, 0o1400)
         Instructions.JFI.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS + 0o10
-        assert Instructions.JFI.perform_logic(self.storage) == 2
+        assert Instructions.JFI.perform_logic(self.hardware) == 2
         assert not self.storage.err_status
         assert self.storage.run_stop_status
         self.storage.advance_to_next_instruction()
@@ -530,7 +530,7 @@ class Test(TestCase):
         self.storage.write_direct_bank(0o20, 0o200)
         self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7020)
         self.storage.unpack_instruction()
-        assert Instructions.JPI.perform_logic(self.storage) == 2
+        assert Instructions.JPI.perform_logic(self.hardware) == 2
         assert self.storage.get_next_execution_address() == 0o200
 
     def test_jpr(self) -> None:
@@ -540,7 +540,7 @@ class Test(TestCase):
         self.storage.write_relative_bank(G_ADDRESS, 0o1000)
         Instructions.JPR.determine_effective_address(self.storage)
         assert self.storage.s_register == 0o1000
-        assert Instructions.JPR.perform_logic(self.storage) == 3
+        assert Instructions.JPR.perform_logic(self.hardware) == 3
         assert (self.storage.read_relative_bank(0o1000) ==
                 INSTRUCTION_ADDRESS + 2)
         self.storage.advance_to_next_instruction()
@@ -552,7 +552,7 @@ class Test(TestCase):
         self.storage.write_relative_bank(INSTRUCTION_ADDRESS - 0o10, 0o5555)
         self.storage.unpack_instruction()
         Instructions.LCB.determine_effective_address(self.storage)
-        Instructions.LCB.perform_logic(self.storage)
+        Instructions.LCB.perform_logic(self.hardware)
         assert self.storage.z_register == 0O5555
         assert self.storage.a_register == 0o5555 ^ 0o7777
         self.storage.advance_to_next_instruction()
@@ -566,7 +566,7 @@ class Test(TestCase):
         self.storage.p_register = INSTRUCTION_ADDRESS
         self.storage.unpack_instruction()
         Instructions.LCC.determine_effective_address(self.storage)
-        assert Instructions.LCC.perform_logic(self.storage) == 2
+        assert Instructions.LCC.perform_logic(self.hardware) == 2
         assert self.storage.z_register == 0o6666
         assert self.storage.a_register == 0o6666 ^ 0o7777
         self.storage.advance_to_next_instruction()
@@ -578,7 +578,7 @@ class Test(TestCase):
         self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o2445)
         self.storage.write_direct_bank(INSTRUCTION_ADDRESS, 0o7654)
         self.storage.unpack_instruction()
-        assert Instructions.LCD.perform_logic(self.storage) == 2
+        assert Instructions.LCD.perform_logic(self.hardware) == 2
         assert self.storage.s_register == INSTRUCTION_ADDRESS
         assert self.storage.z_register == 0o7654
         assert self.storage.a_register == 0o7654 ^ 0o7777
@@ -592,7 +592,7 @@ class Test(TestCase):
         self.storage.write_relative_bank(INSTRUCTION_ADDRESS + 0o20, 0o2222)
         self.storage.unpack_instruction()
         Instructions.LCF.determine_effective_address(self.storage)
-        Instructions.LCF.perform_logic(self.storage)
+        Instructions.LCF.perform_logic(self.hardware)
         assert self.storage.z_register == 0o2222
         assert self.storage.a_register ==0o2222 ^ 0o7777
         self.storage.advance_to_next_instruction()
@@ -605,7 +605,7 @@ class Test(TestCase):
         self.storage.write_indirect_bank(0o45, 0o7654)
         self.storage.unpack_instruction()
         Instructions.LCI.determine_effective_address(self.storage)
-        assert Instructions.LCI.perform_logic(self.storage) == 3
+        assert Instructions.LCI.perform_logic(self.hardware) == 3
         assert self.storage.s_register == 0o45
         assert self.storage.z_register == 0o7654
         assert self.storage.a_register == 0o7654 ^ 0o7777
@@ -620,7 +620,7 @@ class Test(TestCase):
         self.storage.write_indirect_bank(0o137, 0o1370)
         self.storage.unpack_instruction()
         Instructions.LCM.determine_effective_address(self.storage)
-        assert Instructions.LCM.perform_logic(self.storage) ==3
+        assert Instructions.LCM.perform_logic(self.hardware) ==3
         assert self.storage.s_register == 0o137
         assert self.storage.z_register == 0o1370
         assert self.storage.a_register == 0o1370 ^ 0o7777
@@ -633,7 +633,7 @@ class Test(TestCase):
         self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0537)
         self.storage.unpack_instruction()
         Instructions.LCN.determine_effective_address(self.storage)
-        assert Instructions.LCN.perform_logic(self.storage) == 1
+        assert Instructions.LCN.perform_logic(self.hardware) == 1
         self.storage.advance_to_next_instruction()
         assert self.storage.s_register == INSTRUCTION_ADDRESS
         assert self.storage.z_register == 0o37
@@ -643,7 +643,7 @@ class Test(TestCase):
         self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o2700)
         self.storage.unpack_instruction()
         Instructions.LCS.determine_effective_address(self.storage)
-        assert Instructions.LCS.perform_logic(self.storage) == 2
+        assert Instructions.LCS.perform_logic(self.hardware) == 2
         assert self.storage.z_register == 0o77
         assert self.storage.a_register == 0o77 ^ 0o7777
         self.storage.advance_to_next_instruction()
@@ -655,7 +655,7 @@ class Test(TestCase):
         self.storage.write_relative_bank(INSTRUCTION_ADDRESS - 0o10, 0o5555)
         self.storage.unpack_instruction()
         Instructions.LDB.determine_effective_address(self.storage)
-        Instructions.LDB.perform_logic(self.storage)
+        Instructions.LDB.perform_logic(self.hardware)
         assert self.storage.z_register == 0O5555
         assert self.storage.a_register == 0o5555
         self.storage.advance_to_next_instruction()
@@ -669,7 +669,7 @@ class Test(TestCase):
         self.storage.p_register = INSTRUCTION_ADDRESS
         self.storage.unpack_instruction()
         Instructions.LDC.determine_effective_address(self.storage)
-        assert Instructions.LDC.perform_logic(self.storage) == 2
+        assert Instructions.LDC.perform_logic(self.hardware) == 2
         assert self.storage.z_register == 0o6666
         assert self.storage.a_register == 0o6666
         self.storage.advance_to_next_instruction()
@@ -681,7 +681,7 @@ class Test(TestCase):
         self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o2045)
         self.storage.write_direct_bank(INSTRUCTION_ADDRESS, 0o7654)
         self.storage.unpack_instruction()
-        assert Instructions.LDD.perform_logic(self.storage) == 2
+        assert Instructions.LDD.perform_logic(self.hardware) == 2
         assert self.storage.s_register == INSTRUCTION_ADDRESS
         assert self.storage.z_register == 0o7654
         assert self.storage.a_register == 0o7654
@@ -695,7 +695,7 @@ class Test(TestCase):
         self.storage.write_relative_bank(INSTRUCTION_ADDRESS + 0o20, 0o2222)
         self.storage.unpack_instruction()
         Instructions.LDF.determine_effective_address(self.storage)
-        Instructions.LDF.perform_logic(self.storage)
+        Instructions.LDF.perform_logic(self.hardware)
         assert self.storage.z_register == 0o2222
         assert self.storage.a_register ==0o2222
         self.storage.advance_to_next_instruction()
@@ -708,7 +708,7 @@ class Test(TestCase):
         self.storage.write_indirect_bank(0o45, 0o7654)
         self.storage.unpack_instruction()
         Instructions.LDI.determine_effective_address(self.storage)
-        assert Instructions.LDI.perform_logic(self.storage) == 3
+        assert Instructions.LDI.perform_logic(self.hardware) == 3
         assert self.storage.s_register == 0o45
         assert self.storage.z_register == 0o7654
         assert self.storage.a_register == 0o7654
@@ -723,7 +723,7 @@ class Test(TestCase):
         self.storage.write_indirect_bank(0o137, 0o1370)
         self.storage.unpack_instruction()
         Instructions.LDM.determine_effective_address(self.storage)
-        assert Instructions.LDM.perform_logic(self.storage) ==3
+        assert Instructions.LDM.perform_logic(self.hardware) ==3
         assert self.storage.s_register == 0o137
         assert self.storage.z_register == 0o1370
         assert self.storage.a_register == 0o1370
@@ -736,7 +736,7 @@ class Test(TestCase):
         self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0437)
         self.storage.unpack_instruction()
         Instructions.LDN.determine_effective_address(self.storage)
-        assert Instructions.LDN.perform_logic(self.storage) == 1
+        assert Instructions.LDN.perform_logic(self.hardware) == 1
         self.storage.advance_to_next_instruction()
         assert self.storage.s_register == INSTRUCTION_ADDRESS
         assert self.storage.z_register == 0o37
@@ -746,7 +746,7 @@ class Test(TestCase):
         self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o3200)
         self.storage.unpack_instruction()
         Instructions.LDS.determine_effective_address(self.storage)
-        assert Instructions.LDS.perform_logic(self.storage) == 2
+        assert Instructions.LDS.perform_logic(self.hardware) == 2
         assert self.storage.z_register == 0o77
         assert self.storage.a_register == 0o77
         self.storage.advance_to_next_instruction()
@@ -760,7 +760,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.LPC.determine_effective_address(self.storage)
         assert self.storage.s_register == G_ADDRESS
-        assert Instructions.LPC.perform_logic(self.storage) == 2
+        assert Instructions.LPC.perform_logic(self.hardware) == 2
         assert self.storage.z_register == 0o77
         assert self.storage.a_register == 0o21
         self.storage.advance_to_next_instruction()
@@ -775,7 +775,7 @@ class Test(TestCase):
         assert self.storage.s_register == INSTRUCTION_ADDRESS
         Instructions.LPD.determine_effective_address(self.storage)
         assert self.storage.s_register == 0o40
-        assert Instructions.LPD.perform_logic(self.storage) == 2
+        assert Instructions.LPD.perform_logic(self.hardware) == 2
         assert self.storage.z_register == 0o77
         assert self.storage.a_register == 0o21
         self.storage.advance_to_next_instruction()
@@ -789,7 +789,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.LPF.determine_effective_address(self.storage)
         assert self.storage.s_register == G_ADDRESS
-        assert Instructions.LPF.perform_logic(self.storage) == 2
+        assert Instructions.LPF.perform_logic(self.hardware) == 2
         assert self.storage.z_register == 0o77
         assert self.storage.a_register == 0o21
         self.storage.advance_to_next_instruction()
@@ -804,7 +804,7 @@ class Test(TestCase):
         assert self.storage.s_register == INSTRUCTION_ADDRESS
         Instructions.LPI.determine_effective_address(self.storage)
         assert self.storage.s_register == 0o40
-        assert Instructions.LPI.perform_logic(self.storage) == 3
+        assert Instructions.LPI.perform_logic(self.hardware) == 3
         assert self.storage.z_register == 0o77
         assert self.storage.a_register == 0o21
         self.storage.advance_to_next_instruction()
@@ -820,7 +820,7 @@ class Test(TestCase):
         assert self.storage.s_register == INSTRUCTION_ADDRESS
         Instructions.LPM.determine_effective_address(self.storage)
         assert self.storage.s_register == 0o140
-        assert Instructions.LPM.perform_logic(self.storage) == 3
+        assert Instructions.LPM.perform_logic(self.hardware) == 3
         assert self.storage.z_register == 0o77
         assert self.storage.a_register == 0o21
         self.storage.advance_to_next_instruction()
@@ -834,7 +834,7 @@ class Test(TestCase):
         assert self.storage.s_register == INSTRUCTION_ADDRESS
         Instructions.LPN.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS
-        assert Instructions.LPN.perform_logic(self.storage) == 1
+        assert Instructions.LPN.perform_logic(self.hardware) == 1
         assert self.storage.z_register == 0o77
         assert self.storage.a_register == 0o21
         self.storage.advance_to_next_instruction()
@@ -848,7 +848,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.LPS.determine_effective_address(self.storage)
         assert self.storage.s_register == 0o7777
-        assert Instructions.LPS.perform_logic(self.storage) == 2
+        assert Instructions.LPS.perform_logic(self.hardware) == 2
         assert self.storage.z_register == 0o77
         assert self.storage.a_register == 0o21
         self.storage.advance_to_next_instruction()
@@ -861,7 +861,7 @@ class Test(TestCase):
         self.storage.z_register = 0o4001
         self.storage.a_register = 0o4001
         Instructions.LS1.determine_effective_address(self.storage)
-        assert Instructions.LS1.perform_logic(self.storage) == 1
+        assert Instructions.LS1.perform_logic(self.hardware) == 1
         assert self.storage.run_stop_status
         assert self.storage.z_register == 0o4001
         assert self.storage.a_register == 0o0003
@@ -875,7 +875,7 @@ class Test(TestCase):
         self.storage.z_register = 0o6001
         self.storage.a_register = 0o6001
         Instructions.LS2.determine_effective_address(self.storage)
-        assert Instructions.LS2.perform_logic(self.storage) == 1
+        assert Instructions.LS2.perform_logic(self.hardware) == 1
         assert self.storage.run_stop_status
         assert self.storage.z_register == 0o6001
         assert self.storage.a_register == 0o0007
@@ -889,7 +889,7 @@ class Test(TestCase):
         self.storage.z_register = 0o7000
         self.storage.a_register = 0o7000
         Instructions.LS3.determine_effective_address(self.storage)
-        assert Instructions.LS3.perform_logic(self.storage) == 1
+        assert Instructions.LS3.perform_logic(self.hardware) == 1
         assert self.storage.run_stop_status
         assert self.storage.z_register == 0o7000
         assert self.storage.a_register == 0o0007
@@ -903,7 +903,7 @@ class Test(TestCase):
         self.storage.z_register = 0o3412
         self.storage.z_to_a()
         Instructions.LS6.determine_effective_address(self.storage)
-        assert Instructions.LS6.perform_logic(self.storage) == 1
+        assert Instructions.LS6.perform_logic(self.hardware) == 1
         assert self.storage.run_stop_status
         assert self.storage.z_register == 0o3412
         assert self.storage.a_register == 0o1234
@@ -916,7 +916,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         self.storage.a_register = 1
         Instructions.MUH.determine_effective_address(self.storage) # Does nothing.
-        assert Instructions.MUH.perform_logic(self.storage) == 1
+        assert Instructions.MUH.perform_logic(self.hardware) == 1
         assert self.storage.run_stop_status
         assert self.storage.a_register == 100
         assert not self.storage.err_status
@@ -930,7 +930,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         self.storage.a_register = 1
         Instructions.MUT.determine_effective_address(self.storage) # Does nothing.
-        assert Instructions.MUT.perform_logic(self.storage) == 1
+        assert Instructions.MUT.perform_logic(self.hardware) == 1
         assert self.storage.run_stop_status
         assert self.storage.a_register == 10
         assert not self.storage.err_status
@@ -944,7 +944,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.NJB.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS - 2
-        Instructions.NJB.perform_logic(self.storage)
+        Instructions.NJB.perform_logic(self.hardware)
         assert (self.storage.next_address() ==
                 INSTRUCTION_ADDRESS - 2)
         self.storage.advance_to_next_instruction()
@@ -957,7 +957,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.NJB.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS - 2
-        Instructions.NJB.perform_logic(self.storage)
+        Instructions.NJB.perform_logic(self.hardware)
         assert (self.storage.next_address() ==
                 INSTRUCTION_ADDRESS - 2)
         self.storage.advance_to_next_instruction()
@@ -970,7 +970,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.NJB.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS - 2
-        Instructions.NJB.perform_logic(self.storage)
+        Instructions.NJB.perform_logic(self.hardware)
         assert (self.storage.next_address() ==
                 AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
         self.storage.advance_to_next_instruction()
@@ -983,7 +983,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.NJB.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS - 2
-        Instructions.NJB.perform_logic(self.storage)
+        Instructions.NJB.perform_logic(self.hardware)
         assert (self.storage.next_address() ==
                 AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
         self.storage.advance_to_next_instruction()
@@ -997,7 +997,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.NJF.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS + 0o0040
-        Instructions.NJF.perform_logic(self.storage)
+        Instructions.NJF.perform_logic(self.hardware)
         assert self.storage.next_address() == INSTRUCTION_ADDRESS + 0o0040
         self.storage.advance_to_next_instruction()
         assert self.storage.p_register == INSTRUCTION_ADDRESS + 0o0040
@@ -1009,7 +1009,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.NJF.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS + 0o0040
-        Instructions.NJF.perform_logic(self.storage)
+        Instructions.NJF.perform_logic(self.hardware)
         assert self.storage.next_address() == INSTRUCTION_ADDRESS + 0o0040
         self.storage.advance_to_next_instruction()
         assert self.storage.p_register == INSTRUCTION_ADDRESS + 0o0040
@@ -1021,7 +1021,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.NJF.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS + 0o0040
-        Instructions.NJF.perform_logic(self.storage)
+        Instructions.NJF.perform_logic(self.hardware)
         assert self.storage.next_address() == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
         self.storage.advance_to_next_instruction()
         assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
@@ -1033,7 +1033,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.NJF.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS + 0o0040
-        Instructions.NJF.perform_logic(self.storage)
+        Instructions.NJF.perform_logic(self.hardware)
         assert self.storage.next_address() == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
         self.storage.advance_to_next_instruction()
         assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
@@ -1045,7 +1045,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.NZB.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS - 0o0040
-        Instructions.NZB.perform_logic(self.storage)
+        Instructions.NZB.perform_logic(self.hardware)
         assert self.storage.next_address() == INSTRUCTION_ADDRESS - 0o0040
         self.storage.advance_to_next_instruction()
         assert self.storage.p_register == INSTRUCTION_ADDRESS - 0o0040
@@ -1057,7 +1057,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.NZB.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS - 0o0040
-        Instructions.NZB.perform_logic(self.storage)
+        Instructions.NZB.perform_logic(self.hardware)
         assert self.storage.next_address() == INSTRUCTION_ADDRESS - 0o0040
         self.storage.advance_to_next_instruction()
         assert self.storage.p_register == INSTRUCTION_ADDRESS - 0o0040
@@ -1069,7 +1069,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.NZB.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS - 0o0040
-        Instructions.NZB.perform_logic(self.storage)
+        Instructions.NZB.perform_logic(self.hardware)
         assert self.storage.next_address() == INSTRUCTION_ADDRESS - 0o0040
         self.storage.advance_to_next_instruction()
         assert self.storage.p_register == INSTRUCTION_ADDRESS - 0o0040
@@ -1081,7 +1081,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.NZB.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS - 0o0040
-        Instructions.NZB.perform_logic(self.storage)
+        Instructions.NZB.perform_logic(self.hardware)
         assert self.storage.next_address() == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
         self.storage.advance_to_next_instruction()
         assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
@@ -1093,7 +1093,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.NZF.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS + 0o0040
-        Instructions.NZF.perform_logic(self.storage)
+        Instructions.NZF.perform_logic(self.hardware)
         assert self.storage.next_address() == INSTRUCTION_ADDRESS + 0o0040
         self.storage.advance_to_next_instruction()
         assert self.storage.p_register == INSTRUCTION_ADDRESS + 0o0040
@@ -1105,7 +1105,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.NZF.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS + 0o0040
-        Instructions.NZF.perform_logic(self.storage)
+        Instructions.NZF.perform_logic(self.hardware)
         assert self.storage.next_address() == INSTRUCTION_ADDRESS + 0o0040
         self.storage.advance_to_next_instruction()
         assert self.storage.p_register == INSTRUCTION_ADDRESS + 0o0040
@@ -1117,7 +1117,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.NZF.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS + 0o0040
-        Instructions.NZF.perform_logic(self.storage)
+        Instructions.NZF.perform_logic(self.hardware)
         assert self.storage.next_address() == INSTRUCTION_ADDRESS + 0o0040
         self.storage.advance_to_next_instruction()
         assert self.storage.p_register == INSTRUCTION_ADDRESS + 0o0040
@@ -1129,7 +1129,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.NZF.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS + 0o0040
-        Instructions.NZF.perform_logic(self.storage)
+        Instructions.NZF.perform_logic(self.hardware)
         assert self.storage.next_address() == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
         self.storage.advance_to_next_instruction()
         assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
@@ -1140,7 +1140,7 @@ class Test(TestCase):
         self.storage.z_register = 0o3333
         self.storage.a_register = 0o3333
         Instructions.NOP.determine_effective_address(self.storage)
-        assert Instructions.NOP.perform_logic(self.storage) == 1
+        assert Instructions.NOP.perform_logic(self.hardware) == 1
         assert self.storage.a_register == 0o3333
         assert self.storage.z_register == 0o3333
         self.storage.advance_to_next_instruction()
@@ -1153,7 +1153,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.PJF.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS + 0o0040
-        Instructions.PJF.perform_logic(self.storage)
+        Instructions.PJF.perform_logic(self.hardware)
         assert self.storage.next_address() == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
         self.storage.advance_to_next_instruction()
         assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
@@ -1165,7 +1165,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.PJB.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS - 0o0040
-        Instructions.PJB.perform_logic(self.storage)
+        Instructions.PJB.perform_logic(self.hardware)
         assert self.storage.next_address() == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
         self.storage.advance_to_next_instruction()
         assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
@@ -1177,7 +1177,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.PJB.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS - 0o0040
-        Instructions.PJB.perform_logic(self.storage)
+        Instructions.PJB.perform_logic(self.hardware)
         assert self.storage.next_address() == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
         self.storage.advance_to_next_instruction()
         assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
@@ -1189,7 +1189,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.PJB.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS - 0o0040
-        Instructions.PJB.perform_logic(self.storage)
+        Instructions.PJB.perform_logic(self.hardware)
         assert self.storage.next_address() == INSTRUCTION_ADDRESS - 0o0040
         self.storage.advance_to_next_instruction()
         assert self.storage.p_register == INSTRUCTION_ADDRESS - 0o0040
@@ -1201,7 +1201,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.PJB.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS - 0o0040
-        Instructions.PJB.perform_logic(self.storage)
+        Instructions.PJB.perform_logic(self.hardware)
         assert self.storage.next_address() == INSTRUCTION_ADDRESS - 0o0040
         self.storage.advance_to_next_instruction()
         assert self.storage.p_register == INSTRUCTION_ADDRESS - 0o0040
@@ -1213,7 +1213,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.PJF.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS + 0o0040
-        Instructions.PJF.perform_logic(self.storage)
+        Instructions.PJF.perform_logic(self.hardware)
         assert self.storage.next_address() == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
         self.storage.advance_to_next_instruction()
         assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
@@ -1225,7 +1225,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.PJF.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS + 0o0040
-        Instructions.PJF.perform_logic(self.storage)
+        Instructions.PJF.perform_logic(self.hardware)
         assert self.storage.next_address() == INSTRUCTION_ADDRESS + 0o0040
         self.storage.advance_to_next_instruction()
         assert self.storage.p_register == INSTRUCTION_ADDRESS + 0o0040
@@ -1238,7 +1238,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.PJF.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS + 0o0040
-        Instructions.PJF.perform_logic(self.storage)
+        Instructions.PJF.perform_logic(self.hardware)
         assert self.storage.next_address() == INSTRUCTION_ADDRESS + 0o0040
         self.storage.advance_to_next_instruction()
         assert self.storage.p_register == INSTRUCTION_ADDRESS + 0o0040
@@ -1247,7 +1247,7 @@ class Test(TestCase):
         assert Instructions.PTA.name() == "PTA"
         self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0101)
         self.storage.unpack_instruction()
-        Instructions.PTA.perform_logic(self.storage)
+        Instructions.PTA.perform_logic(self.hardware)
         assert self.storage.a_register == INSTRUCTION_ADDRESS
         self.storage.advance_to_next_instruction()
         assert (self.storage.p_register ==
@@ -1262,7 +1262,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.RAB.determine_effective_address(self.storage)
         assert self.storage.s_register == address
-        assert Instructions.RAB.perform_logic(self.storage) == 3
+        assert Instructions.RAB.perform_logic(self.hardware) == 3
         assert self.storage.run_stop_status
         assert not self.storage.err_status
         assert self.storage.s_register == address
@@ -1281,7 +1281,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.RAC.determine_effective_address(self.storage)
         assert self.storage.s_register == address
-        assert Instructions.RAC.perform_logic(self.storage) == 3
+        assert Instructions.RAC.perform_logic(self.hardware) == 3
         assert self.storage.run_stop_status
         assert not self.storage.err_status
         assert self.storage.s_register == address
@@ -1301,7 +1301,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.RAD.determine_effective_address(self.storage)
         assert self.storage.s_register == address
-        assert Instructions.RAD.perform_logic(self.storage) == 3
+        assert Instructions.RAD.perform_logic(self.hardware) == 3
         assert self.storage.run_stop_status
         assert not self.storage.err_status
         assert self.storage.s_register == address
@@ -1320,7 +1320,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.RAF.determine_effective_address(self.storage)
         assert self.storage.s_register == address
-        assert Instructions.RAF.perform_logic(self.storage) == 3
+        assert Instructions.RAF.perform_logic(self.hardware) == 3
         assert self.storage.run_stop_status
         assert not self.storage.err_status
         assert self.storage.s_register == address
@@ -1339,7 +1339,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.RAS.determine_effective_address(self.storage)
         assert self.storage.s_register == address
-        assert Instructions.RAS.perform_logic(self.storage) == 3
+        assert Instructions.RAS.perform_logic(self.hardware) == 3
         assert self.storage.run_stop_status
         assert not self.storage.err_status
         assert self.storage.s_register == address
@@ -1359,7 +1359,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.RAI.determine_effective_address(self.storage)
         assert self.storage.s_register == 0o20
-        assert Instructions.RAI.perform_logic(self.storage) == 4
+        assert Instructions.RAI.perform_logic(self.hardware) == 4
         assert self.storage.run_stop_status
         assert not self.storage.err_status
         assert self.storage.s_register == address
@@ -1379,7 +1379,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.RAM.determine_effective_address(self.storage)
         assert self.storage.s_register == address
-        assert Instructions.RAM.perform_logic(self.storage) == 4
+        assert Instructions.RAM.perform_logic(self.hardware) == 4
         assert self.storage.run_stop_status
         assert not self.storage.err_status
         assert self.storage.s_register == address
@@ -1396,7 +1396,7 @@ class Test(TestCase):
         self.storage.z_register = 0o4020
         self.storage.a_register = 0o4020
         Instructions.RS1.determine_effective_address(self.storage)
-        assert Instructions.RS1.perform_logic(self.storage) == 1
+        assert Instructions.RS1.perform_logic(self.hardware) == 1
         assert self.storage.run_stop_status
         assert self.storage.z_register == 0o4020
         assert self.storage.a_register == 0o6010
@@ -1409,13 +1409,13 @@ class Test(TestCase):
         self.storage.z_register = 0o0007
         self.storage.z_to_a()
         Instructions.RS2.determine_effective_address(self.storage)
-        assert Instructions.RS2.perform_logic(self.storage) == 1
+        assert Instructions.RS2.perform_logic(self.hardware) == 1
         assert self.storage.run_stop_status
         assert self.storage.z_register == 0o0007
         assert self.storage.a_register == 0o0001
         self.storage.z_register = 0o4007
         self.storage.z_to_a()
-        assert Instructions.RS2.perform_logic(self.storage) == 1
+        assert Instructions.RS2.perform_logic(self.hardware) == 1
         assert self.storage.run_stop_status
         assert self.storage.z_register == 0o4007
         assert self.storage.a_register == 0o7001
@@ -1427,7 +1427,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.SBU.determine_effective_address(self.storage)
         assert self.storage.get_program_counter() == INSTRUCTION_ADDRESS
-        assert Instructions.SBU.perform_logic(self.storage) == 1
+        assert Instructions.SBU.perform_logic(self.hardware) == 1
         assert self.storage.buffer_storage_bank == 0o06
         self.storage.advance_to_next_instruction()
         assert (self.storage.get_program_counter() ==
@@ -1441,7 +1441,7 @@ class Test(TestCase):
         self.storage.a_register = 0o12
         Instructions.SCB.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS - 0o02
-        assert Instructions.SCB.perform_logic(self.storage) == 2
+        assert Instructions.SCB.perform_logic(self.hardware) == 2
         assert self.storage.z_register == 0o14
         assert self.storage.a_register == 0o06
         self.storage.advance_to_next_instruction()
@@ -1456,7 +1456,7 @@ class Test(TestCase):
         self.storage.a_register = 0o12
         Instructions.SCC.determine_effective_address(self.storage)
         assert self.storage.s_register == G_ADDRESS
-        assert Instructions.SCC.perform_logic(self.storage) == 2
+        assert Instructions.SCC.perform_logic(self.hardware) == 2
         assert self.storage.z_register == 0o14
         assert self.storage.a_register == 0o06
         assert not self.storage.err_status
@@ -1472,7 +1472,7 @@ class Test(TestCase):
         self.storage.a_register = 0o12
         Instructions.SCD.determine_effective_address(self.storage)
         assert self.storage.s_register == 0o24
-        assert Instructions.SCD.perform_logic(self.storage) == 2
+        assert Instructions.SCD.perform_logic(self.hardware) == 2
         assert self.storage.z_register == 0o14
         assert self.storage.a_register == 0o06
         assert not self.storage.err_status
@@ -1488,7 +1488,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.SCF.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS + 0o24
-        assert Instructions.SCF.perform_logic(self.storage) == 2
+        assert Instructions.SCF.perform_logic(self.hardware) == 2
         assert self.storage.z_register == 0o14
         assert self.storage.a_register == 0o006
         assert not self.storage.err_status
@@ -1504,7 +1504,7 @@ class Test(TestCase):
         self.storage.a_register = 0o12
         Instructions.SCI.determine_effective_address(self.storage)
         assert self.storage.s_register == 0o24
-        assert Instructions.SCI.perform_logic(self.storage) == 3
+        assert Instructions.SCI.perform_logic(self.hardware) == 3
         assert self.storage.z_register == 0o14
         assert self.storage.a_register == 0o06
         assert not self.storage.err_status
@@ -1521,7 +1521,7 @@ class Test(TestCase):
         self.storage.a_register = 0o12
         Instructions.SCM.determine_effective_address(self.storage)
         assert self.storage.s_register == READ_AND_WRITE_ADDRESS
-        Instructions.SCM.perform_logic(self.storage)
+        Instructions.SCM.perform_logic(self.hardware)
         assert self.storage.z_register == 0o14
         assert self.storage.a_register == 0o06
         assert not self.storage.err_status
@@ -1536,7 +1536,7 @@ class Test(TestCase):
         self.storage.a_register = 0o12
         Instructions.SCN.determine_effective_address(self.storage)
         assert self.storage.get_program_counter() == INSTRUCTION_ADDRESS
-        assert Instructions.SCN.perform_logic(self.storage) == 1
+        assert Instructions.SCN.perform_logic(self.hardware) == 1
         assert not self.storage.err_status
         assert self.storage.a_register == 0o6
         self.storage.advance_to_next_instruction()
@@ -1550,7 +1550,7 @@ class Test(TestCase):
         self.storage.a_register = 0o12
         Instructions.SCS.determine_effective_address(self.storage)
         assert self.storage.get_program_counter() == INSTRUCTION_ADDRESS
-        assert Instructions.SCS.perform_logic(self.storage) == 2
+        assert Instructions.SCS.perform_logic(self.hardware) == 2
         assert self.storage.z_register == 0o14
         assert self.storage.a_register == 0o06
         assert not self.storage.err_status
@@ -1564,7 +1564,7 @@ class Test(TestCase):
         self.storage.a_register = 0o0210
         self.storage.unpack_instruction()
         Instructions.STB.determine_effective_address(self.storage)
-        assert Instructions.STB.perform_logic(self.storage) == 3
+        assert Instructions.STB.perform_logic(self.hardware) == 3
         assert self.storage.z_register == 0o0210
         assert self.storage.read_relative_bank(
             INSTRUCTION_ADDRESS - 0o15) == 0o0210
@@ -1578,7 +1578,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.SDC.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS
-        assert Instructions.SDC.perform_logic(self.storage) == 1
+        assert Instructions.SDC.perform_logic(self.hardware) == 1
         assert self.storage.direct_storage_bank == 0o06
         self.storage.advance_to_next_instruction()
         assert (self.storage.get_program_counter() ==
@@ -1590,7 +1590,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.SIC.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS
-        assert Instructions.SIC.perform_logic(self.storage) == 1
+        assert Instructions.SIC.perform_logic(self.hardware) == 1
         assert self.storage.indirect_storage_bank == 0o06
         self.storage.advance_to_next_instruction()
         assert (self.storage.get_program_counter() ==
@@ -1602,7 +1602,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.SID.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS
-        assert Instructions.SID.perform_logic(self.storage) == 1
+        assert Instructions.SID.perform_logic(self.hardware) == 1
         assert self.storage.direct_storage_bank == 0o06
         assert self.storage.indirect_storage_bank == 0o06
         self.storage.advance_to_next_instruction()
@@ -1618,7 +1618,7 @@ class Test(TestCase):
         self.storage.set_stop_switch_mask(0o6)
         Instructions.SJS.determine_effective_address(self.storage)
         assert self.storage.s_register == G_ADDRESS
-        assert Instructions.SJS.perform_logic(self.storage) == 2
+        assert Instructions.SJS.perform_logic(self.hardware) == 2
         assert not self.storage.run_stop_status
         self.storage.advance_to_next_instruction()
         assert self.storage.get_program_counter() == 0o200
@@ -1632,7 +1632,7 @@ class Test(TestCase):
         self.storage.set_stop_switch_mask(0o6)
         Instructions.SJS.determine_effective_address(self.storage)
         assert self.storage.s_register == G_ADDRESS
-        assert Instructions.SJS.perform_logic(self.storage) == 1
+        assert Instructions.SJS.perform_logic(self.hardware) == 1
         assert not self.storage.run_stop_status
         self.storage.advance_to_next_instruction()
         assert (self.storage.get_program_counter() ==
@@ -1647,7 +1647,7 @@ class Test(TestCase):
         self.storage.set_stop_switch_mask(0o5)
         Instructions.SJS.determine_effective_address(self.storage)
         assert self.storage.s_register == G_ADDRESS
-        assert Instructions.SJS.perform_logic(self.storage) == 2
+        assert Instructions.SJS.perform_logic(self.hardware) == 2
         assert self.storage.run_stop_status
         self.storage.advance_to_next_instruction()
         assert self.storage.get_program_counter() == 0o200
@@ -1661,7 +1661,7 @@ class Test(TestCase):
         self.storage.set_stop_switch_mask(0o5)
         Instructions.SJS.determine_effective_address(self.storage)
         assert self.storage.s_register == G_ADDRESS
-        assert Instructions.SJS.perform_logic(self.storage) == 1
+        assert Instructions.SJS.perform_logic(self.hardware) == 1
         assert self.storage.run_stop_status
         self.storage.advance_to_next_instruction()
         assert (self.storage.get_program_counter() ==
@@ -1675,7 +1675,7 @@ class Test(TestCase):
         self.storage.set_jump_switch_mask(0o5)
         Instructions.SLJ.determine_effective_address(self.storage)
         assert self.storage.s_register == G_ADDRESS
-        assert Instructions.SLJ.perform_logic(self.storage) == 2
+        assert Instructions.SLJ.perform_logic(self.hardware) == 2
         self.storage.advance_to_next_instruction()
         assert self.storage.get_program_counter() == 0o200
 
@@ -1687,7 +1687,7 @@ class Test(TestCase):
         self.storage.set_jump_switch_mask(0o1)
         Instructions.SLJ.determine_effective_address(self.storage)
         assert self.storage.s_register == G_ADDRESS
-        assert Instructions.SLJ.perform_logic(self.storage) == 1
+        assert Instructions.SLJ.perform_logic(self.hardware) == 1
         self.storage.advance_to_next_instruction()
         assert (self.storage.get_program_counter() ==
                 AFTER_DOUBLE_WORD_INSTRUCTION_ADDRESS)
@@ -1699,7 +1699,7 @@ class Test(TestCase):
         self.storage.set_stop_switch_mask(0o6)
         Instructions.SLJ.determine_effective_address(self.storage)
         assert self.storage.s_register == G_ADDRESS
-        assert Instructions.SLS.perform_logic(self.storage) == 1
+        assert Instructions.SLS.perform_logic(self.hardware) == 1
         assert not self.storage.run_stop_status
         self.storage.advance_to_next_instruction()
         assert (self.storage.get_program_counter() ==
@@ -1712,7 +1712,7 @@ class Test(TestCase):
         self.storage.set_stop_switch_mask(0o5)
         Instructions.SLJ.determine_effective_address(self.storage)
         assert self.storage.s_register == G_ADDRESS
-        assert Instructions.SLS.perform_logic(self.storage) == 1
+        assert Instructions.SLS.perform_logic(self.hardware) == 1
         assert self.storage.run_stop_status
         self.storage.advance_to_next_instruction()
         assert (self.storage.get_program_counter() ==
@@ -1725,7 +1725,7 @@ class Test(TestCase):
         self.storage.a_register = 0o200
         Instructions.SRJ.determine_effective_address(self.storage)
         assert self.storage.get_program_counter() == INSTRUCTION_ADDRESS
-        assert Instructions.SRJ.perform_logic(self.storage) == 1
+        assert Instructions.SRJ.perform_logic(self.hardware) == 1
         assert self.storage.relative_storage_bank == 0o06
         self.storage.advance_to_next_instruction()
         assert self.storage.get_program_counter() == 0o200
@@ -1736,7 +1736,7 @@ class Test(TestCase):
         self.storage.a_register = 0o0210
         self.storage.unpack_instruction()
         Instructions.STD.determine_effective_address(self.storage)
-        assert Instructions.STD.perform_logic(self.storage) == 3
+        assert Instructions.STD.perform_logic(self.hardware) == 3
         assert self.storage.z_register == 0o0210
         assert self.storage.read_direct_bank(0o15) == 0o0210
         self.storage.advance_to_next_instruction()
@@ -1751,7 +1751,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.SBB.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS - 3
-        assert Instructions.SBB.perform_logic(self.storage) == 2
+        assert Instructions.SBB.perform_logic(self.hardware) == 2
         assert self.storage.z_register == 0o77
         assert self.storage.a_register == 0o4321
         self.storage.advance_to_next_instruction()
@@ -1766,7 +1766,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.SBC.determine_effective_address(self.storage)
         assert self.storage.s_register == G_ADDRESS
-        assert Instructions.SBC.perform_logic(self.storage) == 2
+        assert Instructions.SBC.perform_logic(self.hardware) == 2
         assert self.storage.z_register == 0o1234
         assert self.storage.a_register -- 0o4321
         self.storage.advance_to_next_instruction()
@@ -1781,7 +1781,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.SBD.determine_effective_address(self.storage)
         assert self.storage.s_register == 0o40
-        assert Instructions.SBD.perform_logic(self.storage) == 2
+        assert Instructions.SBD.perform_logic(self.hardware) == 2
         assert self.storage.z_register == 0o14
         assert self.storage.a_register == 0o4321
         self.storage.advance_to_next_instruction()
@@ -1795,7 +1795,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.SBF.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS + 3
-        assert Instructions.SBF.perform_logic(self.storage) == 2
+        assert Instructions.SBF.perform_logic(self.hardware) == 2
         assert self.storage.z_register == 0o1234
         assert self.storage.a_register == 0o4321
         self.storage.advance_to_next_instruction()
@@ -1810,7 +1810,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.SBI.determine_effective_address(self.storage)
         assert self.storage.s_register == 0o10
-        assert Instructions.SBI.perform_logic(self.storage) == 3
+        assert Instructions.SBI.perform_logic(self.hardware) == 3
         assert self.storage.z_register == 0o13
         assert self.storage.a_register == 0o4321
         self.storage.advance_to_next_instruction()
@@ -1824,7 +1824,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.SRB.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS - 2
-        assert Instructions.SRB.perform_logic(self.storage) == 3
+        assert Instructions.SRB.perform_logic(self.hardware) == 3
         assert self.storage.storage_cycle == MCS_MODE_REL
         assert self.storage.a_register == 0o0003
         assert self.storage.z_register == 0o0003
@@ -1843,7 +1843,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.SRC.determine_effective_address(self.storage)
         assert self.storage.s_register == G_ADDRESS
-        assert Instructions.SRC.perform_logic(self.storage) == 3
+        assert Instructions.SRC.perform_logic(self.hardware) == 3
         assert self.storage.storage_cycle == MCS_MODE_REL
         assert self.storage.a_register == 0o0003
         assert self.storage.z_register == 0o0003
@@ -1861,7 +1861,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.SRD.determine_effective_address(self.storage)
         assert self.storage.s_register == 0o30
-        assert Instructions.SRD.perform_logic(self.storage) == 3
+        assert Instructions.SRD.perform_logic(self.hardware) == 3
         assert self.storage.storage_cycle == MCS_MODE_DIR
         assert self.storage.a_register == 0o0003
         assert self.storage.z_register == 0o0003
@@ -1879,7 +1879,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.SRF.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS + 2
-        assert Instructions.SRF.perform_logic(self.storage) == 3
+        assert Instructions.SRF.perform_logic(self.hardware) == 3
         assert self.storage.storage_cycle == MCS_MODE_REL
         assert self.storage.a_register == 0o0003
         assert self.storage.z_register == 0o0003
@@ -1893,7 +1893,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.SRI.determine_effective_address(self.storage)
         assert self.storage.s_register == 0o14
-        assert Instructions.SRI.perform_logic(self.storage) == 4
+        assert Instructions.SRI.perform_logic(self.hardware) == 4
         assert self.storage.storage_cycle == MCS_MODE_IND
         assert self.storage.a_register == 0o0003
         assert self.storage.z_register == 0o0003
@@ -1912,7 +1912,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.SRM.determine_effective_address(self.storage)
         assert self.storage.s_register == READ_AND_WRITE_ADDRESS
-        assert Instructions.SRM.perform_logic(self.storage) == 4
+        assert Instructions.SRM.perform_logic(self.hardware) == 4
         assert self.storage.storage_cycle == MCS_MODE_REL
         assert self.storage.a_register == 0o0003
         assert self.storage.z_register == 0o0003
@@ -1926,7 +1926,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.SRS.determine_effective_address(self.storage)
         assert self.storage.s_register == 0o7777
-        assert Instructions.SRS.perform_logic(self.storage) == 3
+        assert Instructions.SRS.perform_logic(self.hardware) == 3
         assert self.storage.a_register == 0o0003
         assert self.storage.z_register == 0o0003
         assert self.storage.read_specific() == 0o0003
@@ -1940,7 +1940,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.SBM.determine_effective_address(self.storage)
         assert self.storage.s_register == READ_AND_WRITE_ADDRESS
-        assert Instructions.SBM.perform_logic(self.storage) == 3
+        assert Instructions.SBM.perform_logic(self.hardware) == 3
         assert self.storage.z_register == 0o241
         assert self.storage.a_register == 0o4321
         self.storage.advance_to_next_instruction()
@@ -1954,7 +1954,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.SBN.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS
-        assert Instructions.SBN.perform_logic(self.storage) == 1
+        assert Instructions.SBN.perform_logic(self.hardware) == 1
         assert self.storage.z_register == 0o40
         assert self.storage.a_register == 0o1234
         self.storage.advance_to_next_instruction()
@@ -1968,7 +1968,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.SBS.determine_effective_address(self.storage)
         assert self.storage.s_register == 0o7777
-        assert Instructions.SBS.perform_logic(self.storage) == 2
+        assert Instructions.SBS.perform_logic(self.hardware) == 2
         assert self.storage.z_register == 0o77
         assert self.storage.a_register == 0o4321
         self.storage.advance_to_next_instruction()
@@ -1983,7 +1983,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.STC.determine_effective_address(self.storage)
         assert self.storage.s_register == G_ADDRESS
-        assert Instructions.STC.perform_logic(self.storage) == 3
+        assert Instructions.STC.perform_logic(self.hardware) == 3
         self.storage.advance_to_next_instruction()
         assert self.storage.z_register == 0o4321
         assert self.storage.read_relative_bank(G_ADDRESS) == 0o4321
@@ -1997,7 +1997,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.STE.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS
-        assert Instructions.STE.perform_logic(self.storage) == 3
+        assert Instructions.STE.perform_logic(self.hardware) == 3
         assert self.storage.read_direct_bank(0o63) == 0o300
         assert self.storage.buffer_entrance_register == 0o5000
         self.storage.advance_to_next_instruction()
@@ -2012,7 +2012,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.STF.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS + 0o10
-        Instructions.STF.perform_logic(self.storage)
+        Instructions.STF.perform_logic(self.hardware)
         self.storage.advance_to_next_instruction()
         assert self.storage.z_register == 0o0210
         assert (self.storage.read_relative_bank(INSTRUCTION_ADDRESS + 0o10) ==
@@ -2026,7 +2026,7 @@ class Test(TestCase):
         self.storage.a_register = 0o0210
         self.storage.unpack_instruction()
         Instructions.STI.determine_effective_address(self.storage)
-        assert Instructions.STI.perform_logic(self.storage) == 4
+        assert Instructions.STI.perform_logic(self.hardware) == 4
         assert self.storage.z_register == 0o0210
         assert self.storage.read_indirect_bank(0o14) == 0o0210
         self.storage.advance_to_next_instruction()
@@ -2042,7 +2042,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.STM.determine_effective_address(self.storage)
         assert self.storage.s_register == READ_AND_WRITE_ADDRESS
-        assert Instructions.STM.perform_logic(self.storage) == 4
+        assert Instructions.STM.perform_logic(self.hardware) == 4
         assert self.storage.z_register == 0o1234
         assert self.storage.read_relative_bank(READ_AND_WRITE_ADDRESS) == 0o1234
         self.storage.advance_to_next_instruction()
@@ -2056,7 +2056,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.STP.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS
-        Instructions.STP.perform_logic(self.storage)
+        Instructions.STP.perform_logic(self.hardware)
         assert self.storage.read_direct_bank(0o55) == INSTRUCTION_ADDRESS
 
     def test_sts(self) -> None:
@@ -2066,7 +2066,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.STS.determine_effective_address(self.storage)
         assert self.storage.s_register == 0o7777
-        assert Instructions.STS.perform_logic(self.storage)
+        assert Instructions.STS.perform_logic(self.hardware)
         assert self.storage.z_register == 0o1234
         assert self.storage.read_specific() == 0o1234
         self.storage.advance_to_next_instruction()
@@ -2079,7 +2079,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.ZJB.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS - 0o0040
-        Instructions.ZJB.perform_logic(self.storage)
+        Instructions.ZJB.perform_logic(self.hardware)
         assert self.storage.next_address() == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
         self.storage.advance_to_next_instruction()
         assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
@@ -2090,7 +2090,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.ZJB.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS - 0o0040
-        Instructions.ZJB.perform_logic(self.storage)
+        Instructions.ZJB.perform_logic(self.hardware)
         assert self.storage.next_address() == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
         self.storage.advance_to_next_instruction()
         assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
@@ -2101,7 +2101,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.ZJB.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS - 0o0040
-        Instructions.ZJB.perform_logic(self.storage)
+        Instructions.ZJB.perform_logic(self.hardware)
         assert self.storage.next_address() == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
         self.storage.advance_to_next_instruction()
         assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
@@ -2113,7 +2113,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.ZJB.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS - 0o0040
-        Instructions.ZJB.perform_logic(self.storage)
+        Instructions.ZJB.perform_logic(self.hardware)
         assert self.storage.next_address() == INSTRUCTION_ADDRESS - 0o0040
         self.storage.advance_to_next_instruction()
         assert self.storage.p_register == INSTRUCTION_ADDRESS - 0o0040
@@ -2124,7 +2124,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.ZJF.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS + 0o0040
-        Instructions.ZJF.perform_logic(self.storage)
+        Instructions.ZJF.perform_logic(self.hardware)
         assert self.storage.next_address() == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
         self.storage.advance_to_next_instruction()
         assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
@@ -2135,7 +2135,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.ZJF.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS + 0o0040
-        Instructions.ZJF.perform_logic(self.storage)
+        Instructions.ZJF.perform_logic(self.hardware)
         assert self.storage.next_address() == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
         self.storage.advance_to_next_instruction()
         assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
@@ -2146,7 +2146,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.ZJF.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS + 0o0040
-        Instructions.ZJF.perform_logic(self.storage)
+        Instructions.ZJF.perform_logic(self.hardware)
         assert self.storage.next_address() == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
         self.storage.advance_to_next_instruction()
         assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
@@ -2158,7 +2158,7 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         Instructions.ZJF.determine_effective_address(self.storage)
         assert self.storage.s_register == INSTRUCTION_ADDRESS + 0o0040
-        Instructions.ZJF.perform_logic(self.storage)
+        Instructions.ZJF.perform_logic(self.hardware)
         assert self.storage.next_address() == INSTRUCTION_ADDRESS + 0o0040
         self.storage.advance_to_next_instruction()
         assert self.storage.p_register == INSTRUCTION_ADDRESS + 0o0040

@@ -8,6 +8,7 @@ This is a temporary version to support testing, and needs a
 lot of work before we can integrate it with the console and
 I/O system.
 """
+from Hardware import Hardware
 from InputOutput import InputOutput
 import InstructionDecoder
 from Storage import Storage
@@ -28,7 +29,9 @@ class RunLoop:
         :param storage: CDC 160-A memory and register file
         """
         self.__console = console
+        self.__input_output = input_output
         self.__storage = storage
+        self.__hardware = Hardware(self.__input_output, self.__storage)
 
     def single_step(self) -> bool:
         """
@@ -44,7 +47,7 @@ class RunLoop:
         current_instruction = decoder.decode(self.__storage.f_e)
         current_instruction.determine_effective_address(self.__storage)
         self.__console.before_instruction_logic(self.__storage)
-        current_instruction.perform_logic(self.__storage)
+        current_instruction.perform_logic(self.__hardware)
         if not self.__console.before_advance(self.__storage):
             return False
         self.__storage.advance_to_next_instruction()

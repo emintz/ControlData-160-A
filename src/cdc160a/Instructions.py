@@ -19,6 +19,7 @@ The design supports the following run loop:
 """
 from abc import abstractmethod, ABCMeta
 from cdc160a import EffectiveAddress
+from cdc160a.Hardware import Hardware
 from cdc160a import Microinstructions
 from cdc160a.Storage import Storage
 from typing import Callable
@@ -59,7 +60,7 @@ class BaseInstruction(metaclass=ABCMeta):
         self.__name = name
 
     @abstractmethod
-    def determine_effective_address(self, storage):
+    def determine_effective_address(self, storage: Storage):
         """
         Determine the instruction's effective address. The constructor
         sets the method.
@@ -78,11 +79,11 @@ class BaseInstruction(metaclass=ABCMeta):
         return self.__name
 
     @abstractmethod
-    def perform_logic(self, storage):
+    def perform_logic(self, hardware: Hardware):
         """
         Performs the Instruction's logic
 
-        :param storage: emulated 1650A memory and register file.
+        :param hardware: the 160-A hardware: Storage, I/O, etc.
         :return: instruction execution type in cycles
         """
         pass
@@ -103,7 +104,7 @@ class Instruction(BaseInstruction):
             self,
             name: str,
             effective_address: Callable[[Storage], None],
-            logic: Callable[[Storage], None],
+            logic: Callable[[Hardware], None],
             advance: Callable[[Storage], None],
             cycles: int):
         """
@@ -137,15 +138,15 @@ class Instruction(BaseInstruction):
         """
         self.__effective_address(storage)
 
-    def perform_logic(self, storage: Storage) -> int:
+    def perform_logic(self, hardware: Hardware) -> int:
         """
         Performs the Instruction's logic
 
-        :param storage: emulated 1650A memory and register file.
+        :param hardware: 160-A hardware, including Storage and I/O.
         :return: instruction execution type in cycles
         """
-        self.__logic(storage)
-        self.__advance(storage)
+        self.__logic(hardware)
+        self.__advance(hardware.storage)
         return self.__cycles
 
 class VariableTimingInstruction(BaseInstruction):
@@ -153,7 +154,7 @@ class VariableTimingInstruction(BaseInstruction):
     def __init__(self,
                  name: str,
                  effective_address: Callable[[Storage], None],
-                 logic: Callable[[Storage], int],
+                 logic: Callable[[Hardware], int],
                  advance: Callable[[Storage], None]):
         """
         Constructor
@@ -183,18 +184,22 @@ class VariableTimingInstruction(BaseInstruction):
         """
         self.__effective_address(storage)
 
-    def perform_logic(self, storage: Storage) -> int:
+    def perform_logic(self, hardware: Hardware) -> int:
         """
         Performs the Instruction's logic
 
-        :param storage: emulated 1650A memory and register file.
+    :param hardware: emulator hardware including storage and I/O
         :return: instruction execution type in cycles
         """
-        cycles = self.__logic(storage)
-        self.__advance(storage)
+        cycles = self.__logic(hardware)
+        self.__advance(hardware.storage)
         return cycles
 
-def __no_advance_instruction(name, effective_address, logic, cycles: int) -> Instruction:
+def __no_advance_instruction(
+        name: str,
+        effective_address: Callable[[Storage], None],
+        logic: Callable[[Hardware], None],
+        cycles: int) -> Instruction:
     """
     Convenience factory method that creates "no advance" instructions
 
@@ -210,7 +215,7 @@ def __no_advance_instruction(name, effective_address, logic, cycles: int) -> Ins
 def __single_advance_instruction(
         name: str,
         effective_address: Callable[[Storage], None],
-        logic: Callable[[Storage], None],
+        logic: Callable[[Hardware], None],
         cycles: int) -> Instruction:
     """
     Convenience factory method that creates one-word instructions that
@@ -228,7 +233,7 @@ def __single_advance_instruction(
 def __double_advance_instruction(
         name: str,
         effective_address: Callable[[Storage], None],
-        logic: Callable[[Storage], None],
+        logic: Callable[[Hardware], None],
         cycles: int) -> Instruction:
     """
     Convenience factory method that creates two-word instructions that
