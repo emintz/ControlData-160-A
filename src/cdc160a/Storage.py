@@ -254,6 +254,18 @@ class Storage:
         self.buffer_entrance_register += 1
         return self.buffer_entrance_register < self.buffer_exit_register
 
+    def clear(self) -> None:
+        self.buffering = False
+        self.a_register = 0
+        self.p_register = 0
+        self.f_e = 0
+        self.f_instruction = 0
+        self.z_register = 0
+        self.relative_storage_bank = 0
+        self.run_stop_status = False
+        self.interrupt_lock = InterruptLock.FREE
+        self.machine_hung = False
+
     def complement_a(self) -> None:
         self.a_register = self.a_register ^ 0o7777
 

@@ -6,8 +6,9 @@ class InputOutput:
         self.__device_on_buffer_channel = None
         self.__device_on_normal_channel = None
 
-
-    # TODO(emintz): implement I/O functionality.
+    def clear(self) -> None:
+        self.__device_on_buffer_channel = None
+        self.__device_on_normal_channel = None
 
     def device_on_buffer_channel(self) -> Device:
         return self.__device_on_buffer_channel

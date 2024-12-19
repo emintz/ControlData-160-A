@@ -29,6 +29,11 @@ class AssembleAndRunIfErrorFree(Runner):
             print("Error: file {0} not found.".format(setting))
         return True
 
+class Clear(Runner):
+    def apply(self, interpreter: Interpreter, storage: Storage, setting: str) -> bool:
+        storage.clear()
+        return True
+
 class Exit(Runner):
 
     def apply(self, interpreter: Interpreter, storage: Storage, setting: str) -> bool:
@@ -165,6 +170,7 @@ class StopSwitch(Runner):
 # Available commands
 COMMANDS: {str: Runner} = {
     "assemble": AssembleAndRunIfErrorFree(),
+    "clear": Clear(),
     "exit": Exit(),
     "halt": Step(),
     "jump1": JumpSwitch(0),
