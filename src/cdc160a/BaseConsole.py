@@ -1,10 +1,13 @@
-from BaseConsole import BaseConsole
+from abc import ABCMeta, abstractmethod
+
 from cdc160a.InputOutput import InputOutput
 from cdc160a.Storage import Storage
 
-class PyConsole(BaseConsole):
-    pass
-
+class BaseConsole(metaclass=ABCMeta):
+    """
+    Abstract base class for CDC 160-A Console implementations.
+    """
+    @abstractmethod
     def before_instruction_fetch(
             self,
             storage: Storage,
@@ -22,8 +25,11 @@ class PyConsole(BaseConsole):
         """
         pass
 
+    @abstractmethod
     def before_instruction_logic(
-            self, storage: Storage,
+            self,
+            storage:
+            Storage,
             input_output: InputOutput) -> None:
         """
         Perform console-related tasks required to run instruction logic.
@@ -38,10 +44,11 @@ class PyConsole(BaseConsole):
         """
         pass
 
+    @abstractmethod
     def before_advance(
             self,
             storage: Storage,
-            input_output: InputOutput) -> bool:
+            input_output: InputOutput)  -> bool:
         """
         Perform module-related tasks required to advance to the next
         instruction. Implementations should stop and display the console
@@ -56,4 +63,4 @@ class PyConsole(BaseConsole):
                  loop should exit. This is to support PyUnit testing.
                  Production versions must return True.
         """
-        return storage.run_stop_status
+        pass

@@ -8,6 +8,7 @@ This is a temporary version to support testing, and needs a
 lot of work before we can integrate it with the console and
 I/O system.
 """
+from BaseConsole import BaseConsole
 from Hardware import Hardware
 from InputOutput import InputOutput
 import InstructionDecoder
@@ -18,7 +19,7 @@ class RunLoop:
     Run loop for the CDC 160-A emulator.
     """
 
-    def __init__(self, console, storage: Storage, input_output: InputOutput):
+    def __init__(self, console: BaseConsole, storage: Storage, input_output: InputOutput):
         """
         Constructor. Note that the computer configuration is injected.
 
@@ -39,16 +40,16 @@ class RunLoop:
 
         :return: True unless user halts the emulator.
         """
-        self.__console.before_instruction_fetch(self.__storage)
+        self.__console.before_instruction_fetch(self.__storage, self.__input_output)
         self.__storage.service_pending_interrupts()
         # TODO(emintz): service pending buffer requests
         self.__storage.unpack_instruction()
         decoder = InstructionDecoder.decoder_at(self.__storage.f_instruction)
         current_instruction = decoder.decode(self.__storage.f_e)
         current_instruction.determine_effective_address(self.__storage)
-        self.__console.before_instruction_logic(self.__storage)
+        self.__console.before_instruction_logic(self.__storage, self.__input_output)
         current_instruction.perform_logic(self.__hardware)
-        if not self.__console.before_advance(self.__storage):
+        if not self.__console.before_advance(self.__storage, self.__input_output):
             return False
         self.__storage.advance_to_next_instruction()
         return True
