@@ -26,7 +26,12 @@ class Runner(ABC):
     Base class for all command runners.
     """
     @abstractmethod
-    def apply(self, interpreter, storage: Storage, setting: str) -> bool:
+    def apply(
+            self,
+            interpreter,
+            storage: Storage,
+            input_output: InputOutput,
+            setting: str) -> bool:
         """
         Runs the command. Subclasses must override this method
 
@@ -34,6 +39,7 @@ class Runner(ABC):
                method and provides an API that allows commands to
                manipulate the console.
         :param storage: the interpreter's memory and register file
+        :param input_output: I/O subsystem
         :param setting: command's parameter
         :return: True if the console should keep interpreting commands,
                  False if the interpreter should exit and let the emulator
@@ -41,7 +47,8 @@ class Runner(ABC):
         """
         return True
 
-    def _to_int(self, min: int, max: int, value: str) -> int:
+    @staticmethod
+    def _to_int(min: int, max: int, value: str) -> int:
         """
         Converts a string that represents an octal value into an integer
         having the represented value, then validates the result.
@@ -140,11 +147,17 @@ class Interpreter:
             "Normal I/O device",
             input_output.device_on_normal_channel())
 
-    def run_command(self, storage: Storage, name: str, arg: str) -> bool:
+    def run_command(
+            self,
+            storage: Storage,
+            input_output: InputOutput,
+            name: str,
+            arg: str) -> bool:
         """
         Runs a single console command
 
         :param storage: emulator memory and register file
+        :param input_output: I/O subsystem
         :param name: command name (e.g. halt)
         :param arg: command argument, an octal value
         :return: True if the interpreter should keep running, False if it
@@ -152,16 +165,22 @@ class Interpreter:
         """
         result = True
         if name in self.__commands:
-            result = self.__commands[name].apply(self, storage, arg)
+            result = self.__commands[name].apply(
+                self, storage, input_output, arg)
         else:
             print("Unknown command:", name)
         return result
 
-    def next_command(self, storage: Storage, tokens: [str]) -> bool:
+    def next_command(
+            self,
+            storage: Storage,
+            input_output: InputOutput,
+            tokens: [str]) -> bool:
         """
         Read and run the next available console command
 
         :param storage: emulator memory and register file
+        :param input_output: I/O subsystem
         :param tokens: tokenized command
         :return: True if the interpreter should keep running, False if it
                  should return and let the emulator get on with it.
@@ -170,26 +189,28 @@ class Interpreter:
         if len(tokens) == 0:
             print("Blank like ignored.")
         elif len(tokens) == 1:
-            result = self.run_command(storage, tokens[0], "")
+            result = self.run_command(storage, input_output, tokens[0], "")
         else:
-            result = self.run_command(storage, tokens[0], tokens[1])
+            result = self.run_command(storage, input_output, tokens[0], tokens[1])
         return result
 
-    def read_and_run_command(self, storage: Storage) -> bool:
+    def read_and_run_command(
+            self, storage: Storage, input_output: InputOutput) -> bool:
         """
         Read a command from the input and run it.
 
         :param storage: emulator memory and register file
+        :param input_output: I/O subsystem
         :return: True if the interpreter should keep running, False if it
                  should return and let the emulator get on with it.
         """
         tokens = self.__command_reader.read_command()
-        return self.next_command(storage, tokens)
+        return self.next_command(storage, input_output, tokens)
 
     def run(self, storage: Storage, input_output: InputOutput) -> None:
         while True:
             self.__display(storage, input_output)
-            if not self.read_and_run_command(storage):
+            if not self.read_and_run_command(storage, input_output):
                 break
         pass
 

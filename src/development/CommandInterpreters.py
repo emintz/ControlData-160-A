@@ -2,8 +2,9 @@
 """
 Command interpreter for the character mode console.
 """
+from cdc160a.InputOutput import InputOutput
 from cdc160a.Storage import Storage
-from test_support.Assembler import Assembler, assembler_from_file
+from test_support.Assembler import assembler_from_file
 from development.Interpreter import Interpreter
 from development.Interpreter import Runner
 
@@ -21,7 +22,11 @@ class AssembleAndRunIfErrorFree(Runner):
     Assemble source from a specified text file. If the assembly produces no
     errors, run the assembled program.
     """
-    def apply(self, interpreter: Interpreter, storage: Storage, setting: str) -> bool:
+    def apply(
+            self,
+            interpreter: Interpreter,
+            storage: Storage, input_output: InputOutput,
+            setting: str) -> bool:
         assembler = assembler_from_file(setting, storage)
         if assembler is not None:
             assembler.run()
@@ -30,13 +35,23 @@ class AssembleAndRunIfErrorFree(Runner):
         return True
 
 class Clear(Runner):
-    def apply(self, interpreter: Interpreter, storage: Storage, setting: str) -> bool:
+    def apply(
+            self,
+            interpreter: Interpreter,
+            storage: Storage,
+            input_output: InputOutput,
+            setting: str) -> bool:
         storage.clear()
+        input_output.clear()
         return True
 
 class Exit(Runner):
 
-    def apply(self, interpreter: Interpreter, storage: Storage, setting: str) -> bool:
+    def apply(
+            self,
+            interpreter: Interpreter,
+            storage: Storage, input_output:
+            InputOutput, setting: str) -> bool:
         really_exit = input("Do you really want to quit the emulator (y/N)? ")
         if really_exit.strip() == "y":
             print("Goodbye.")
@@ -54,7 +69,12 @@ class JumpSwitch(Runner):
     def __init__(self, switch_number: int):
         self.__switch_number = switch_number
 
-    def apply(self, interpreter: Interpreter, storage: Storage, setting: str) -> bool:
+    def apply(
+            self,
+            interpreter: Interpreter,
+            storage: Storage,
+            input_output: InputOutput,
+            setting: str) -> bool:
         match setting:
             case "center":
                 interpreter.jump_switch_off(self.__switch_number)
@@ -69,12 +89,17 @@ class JumpSwitch(Runner):
         storage.set_jump_switch_mask(mask)
         return True
 
-class Resume:
+class Resume(Runner):
     """
     Resumes execution.
     """
 
-    def apply(self, interpreter: Interpreter, storage: Storage, setting: str) -> bool:
+    def apply(
+            self,
+            interpreter: Interpreter,
+            storage: Storage,
+            input_output: InputOutput,
+            setting: str) -> bool:
         storage.run()
         return False
 
@@ -82,7 +107,12 @@ class SetA(Runner):
     """
     Sets the accumulator (i.e. A register)
     """
-    def apply(self, interpreter: Interpreter, storage: Storage, setting: str) -> bool:
+    def apply(
+            self,
+            interpreter: Interpreter,
+            storage: Storage,
+            input_output: InputOutput,
+            setting: str) -> bool:
         value = self._to_int(0o0, 0o7777, setting)
         if 0 <= value:
             storage.a_register = value
@@ -92,7 +122,12 @@ class SetB(Runner):
     """
     Set the buffer control bank number
     """
-    def apply(self, interpreter: Interpreter, storage: Storage, setting: str) -> bool:
+    def apply(
+            self,
+            interpreter: Interpreter,
+            storage: Storage,
+            input_output: InputOutput,
+            setting: str) -> bool:
         value = self._to_int(0, 0o7, setting)
         if 0 <= value:
             storage.buffer_storage_bank = value
@@ -102,7 +137,12 @@ class SetD(Runner):
     """
     Set the direct storage bank number
     """
-    def apply(self, interpreter: Interpreter, storage: Storage, setting: str) -> bool:
+    def apply(
+            self,
+            interpreter: Interpreter,
+            storage: Storage,
+            input_output: InputOutput,
+            setting: str) -> bool:
         value = self._to_int(0o0, 0o7, setting)
         if 0 <= value:
             storage.direct_storage_bank = value
@@ -112,7 +152,12 @@ class SetI(Runner):
     """
     Set the indirect storage bank number
     """
-    def apply(self, interpreter: Interpreter, storage: Storage, setting: str) -> bool:
+    def apply(
+            self,
+            interpreter: Interpreter,
+            storage: Storage,
+            input_output: InputOutput,
+            setting: str) -> bool:
         value = self._to_int(0o0, 0o7, setting)
         if 0 <= value:
             storage.indirect_storage_bank = value
@@ -122,7 +167,12 @@ class SetP(Runner):
     """
     Set the program address (i.e. P register)
     """
-    def apply(self, interpreter: Interpreter, storage: Storage, setting: str) -> bool:
+    def apply(
+            self,
+            interpreter: Interpreter,
+            storage: Storage,
+            input_output: InputOutput,
+            setting: str) -> bool:
         value = self._to_int(0o0, 0o7777, setting)
         if 0 <= value:
             storage.p_register = value
@@ -132,7 +182,12 @@ class SetR(Runner):
     """
     Set the relative bank number
     """
-    def apply(self, interpreter: Interpreter, storage: Storage, setting: str) -> bool:
+    def apply(
+            self,
+            interpreter: Interpreter,
+            storage: Storage,
+            input_output: InputOutput,
+            setting: str) -> bool:
         value = self._to_int(0o0, 0o7, setting)
         if 0 <= value:
             storage.relative_storage_bank = value
@@ -142,7 +197,11 @@ class Step(Runner):
     """
     Run the next instruction.
     """
-    def apply(self, interpreter: Interpreter, storage: Storage, setting: str) -> bool:
+    def apply(
+            self,
+            interpreter: Interpreter,
+            storage: Storage, input_output: InputOutput,
+            setting: str) -> bool:
         storage.stop()
         return False
 
@@ -153,7 +212,12 @@ class StopSwitch(Runner):
     def __init__(self, switch_number: int):
         self.__switch_number = switch_number
 
-    def apply(self, interpreter: Interpreter, storage: Storage, setting: str) -> bool:
+    def apply(
+            self,
+            interpreter: Interpreter,
+            storage: Storage,
+            input_output: InputOutput,
+            setting: str) -> bool:
         match setting:
             case "center":
                 interpreter.stop_switch_off(self.__switch_number)
