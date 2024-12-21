@@ -39,7 +39,7 @@ class Console(BaseConsole):
         :return: None
         """
         if not storage.run_stop_status or self.__input_checker():
-            self.__interpreter.run(storage)
+            self.__interpreter.run(storage, input_output)
         storage.set_jump_switch_mask(self.__interpreter.jump_set_mask())
         storage.set_stop_switch_mask(self.__interpreter.stop_set_mask())
         if (self.__interpreter.jump_down_mask() != 0 and

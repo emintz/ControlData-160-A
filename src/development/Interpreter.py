@@ -6,6 +6,9 @@ Note: unlike the actual 160-A console, this simulation
       is active. Be warned!
 """
 from abc import ABC, abstractmethod
+
+from cdc160a.Device import Device
+from cdc160a.InputOutput import InputOutput
 from cdc160a.Storage import Storage
 from development.SwitchBank import SwitchBank
 
@@ -75,7 +78,20 @@ class Interpreter:
         self.__jump_switches = SwitchBank()
         self.__stop_switches = SwitchBank()
 
-    def __to_octal(self, value: int, length: int) -> str:
+    @staticmethod
+    def __print_device(description: str, device: Device | None) -> None:
+        """
+        Print the active device name if any.
+        :param description: device description (e.g. "Buffered device")
+        :param device: the active device, or None if no device is active
+        :return: None
+        """
+        print(
+            "{0}: {1}".format(description,
+                               "None" if device is None else device.name()))
+
+    @staticmethod
+    def __to_octal(value: int, length: int) -> str:
         """
         Converts integers to fixed format octal.
 
@@ -88,10 +104,11 @@ class Interpreter:
         justified = unjustified.rjust(length, '0')
         return justified
 
-    def __display(self, storage: Storage) -> None:
+    def __display(self, storage: Storage, input_output: InputOutput) -> None:
         """
         Display the emulator state
 
+        :param input_output: I/O subsystem
         :param storage: emulator memory and register file
         :return: None
         """
@@ -116,7 +133,12 @@ class Interpreter:
             self.__to_octal(storage.a_register, 4),
             self.__to_octal(storage.p_register, 4),
             storage.interrupt_lock))
-
+        self.__print_device(
+            "Buffered I/O device ",
+            input_output.device_on_buffer_channel())
+        self.__print_device(
+            "Normal I/O device",
+            input_output.device_on_normal_channel())
 
     def run_command(self, storage: Storage, name: str, arg: str) -> bool:
         """
@@ -164,9 +186,9 @@ class Interpreter:
         tokens = self.__command_reader.read_command()
         return self.next_command(storage, tokens)
 
-    def run(self, storage: Storage) -> None:
+    def run(self, storage: Storage, input_output: InputOutput) -> None:
         while True:
-            self.__display(storage)
+            self.__display(storage, input_output)
             if not self.read_and_run_command(storage):
                 break
         pass

@@ -39,6 +39,7 @@ class Device(ABC):
     """
     def __init__(
             self,
+            name: str,
             can_read: bool,
             can_write: bool,
             cycles_per_transfer: int,
@@ -47,6 +48,7 @@ class Device(ABC):
         Constructor. Note that a device must be able to read, write, or
         both.
 
+        :param name: device name, e.g. "Paper Tape Reader"; for display only.
         :param can_read: True if the device can read, False otherwise
         :param can_write: True if the device can write, False otherwise.
         :param cycles_per_transfer: number of machine cycles required to
@@ -60,6 +62,7 @@ class Device(ABC):
                                    asynchronous I/O.
         """
         assert can_read or can_write
+        self.__name = name
         self.__can_read = can_read
         self.__can_write = can_write
         self.__cycles_per_transfer = cycles_per_transfer
@@ -126,6 +129,9 @@ class Device(ABC):
                  devices that do not support output (i.e. input-only devices).
         """
         raise NotImplemented
+
+    def name(self) -> str:
+        return self.__name
 
     def read(self) -> (bool, int):
         """

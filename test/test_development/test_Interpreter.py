@@ -220,12 +220,12 @@ class TestInterpreter(TestCase):
 
     def test_interpreter_exit_on_run(self) -> None:
         self.__command_reader.command = ["run"]
-        self.__interpreter.run(self.__storage)
+        self.__interpreter.run(self.__storage, None)
         # Test succeeds if it doesn't hang
 
     def test_interpreter_exit_on_step(self) -> None:
         self.__command_reader.command = ["step"]
-        self.__interpreter.run(self.__storage)
+        self.__interpreter.run(self.__storage, None)
         # Test succeeds if it doesn't hang
 
     def test_unknown_command(self) -> None:

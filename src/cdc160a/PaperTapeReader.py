@@ -32,6 +32,7 @@ class PaperTapeReader(Device):
 
     def __init__(self):
         super().__init__(
+            "Paper Tape Reader",
             True,
             False,
             446,

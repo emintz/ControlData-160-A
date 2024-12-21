@@ -37,7 +37,7 @@ class Clear(Runner):
 class Exit(Runner):
 
     def apply(self, interpreter: Interpreter, storage: Storage, setting: str) -> bool:
-        really_exit = input("Do you really want to quit the interpreter (y/N)? ")
+        really_exit = input("Do you really want to quit the emulator (y/N)? ")
         if really_exit.strip() == "y":
             print("Goodbye.")
             exit(0)
