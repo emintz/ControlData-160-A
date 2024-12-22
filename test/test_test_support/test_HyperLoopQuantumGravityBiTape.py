@@ -43,6 +43,9 @@ class TestHyperLoopQuantumGravityBiTape(TestCase):
         assert request_validity
         assert status == 0o0000
 
+    def test_read_delay(self) -> None:
+        assert self.__bi_tape.read_delay() == 3
+
     def test_write(self) -> None:
         self.__bi_tape.set_online_status(True)
         expected_output = [0o0001, 0o0010, 0o0100, 0o1000,
@@ -51,6 +54,9 @@ class TestHyperLoopQuantumGravityBiTape(TestCase):
             assert self.__bi_tape.write(value_to_write)
 
         assert self.__bi_tape.output_data() == expected_output
+
+    def test_write_delay(self) -> None:
+        assert self.__bi_tape.write_delay() == 4
 
     def test_rewind(self) -> None:
         self.__bi_tape.set_online_status(True)

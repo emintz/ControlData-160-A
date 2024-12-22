@@ -1,3 +1,5 @@
+from operator import ifloordiv
+
 from cdc160a import Device
 
 class InputOutput:
@@ -45,6 +47,11 @@ class InputOutput:
                 self.__device_on_normal_channel = device
 
         return response, status
+
+    def read_delay(self) -> int:
+        return self.__device_on_normal_channel.read_delay() \
+            if self.__device_on_normal_channel is not None \
+            else 0
 
     def read_normal(self) -> (bool, int):
         """

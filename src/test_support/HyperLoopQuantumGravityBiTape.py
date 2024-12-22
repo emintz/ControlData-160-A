@@ -75,6 +75,9 @@ class HyperLoopQuantumGravityBiTape(Device):
             self.__input_position += 1
         return status, read_value
 
+    def read_delay(self) -> int:
+        return 3
+
     def set_online_status(self, status: bool) -> None:
         self.__online = status
 
@@ -82,3 +85,6 @@ class HyperLoopQuantumGravityBiTape(Device):
         if self.__online:
             self.__output_data.append(value)
         return self.__online
+
+    def write_delay(self) -> int:
+        return 4

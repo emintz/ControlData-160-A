@@ -354,6 +354,12 @@ class TestAssembler(TestCase):
     def test_jpi(self) -> None:
         self.__single_instruction_test("JPI 24", [0o7024])
 
+    def test_ina(self) -> None:
+        self.__single_instruction_test("INA", [0o7600])
+
+    def test_inp(self) -> None:
+        self.__single_instruction_test("INP 10 320", [0o7210, 0o0320])
+
     def test_nop_then_halt(self) -> None:
         assembler = self.assembler(Programs.NOOP_THEN_HALT)
         assert assembler.run()

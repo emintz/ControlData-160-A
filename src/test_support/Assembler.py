@@ -720,6 +720,8 @@ class Assembler:
             "EXC": TwoWordZeroE(self, "EXC", 0o75),
             "EXF": OneWordNonZeroE(self, "EXF", 0o75),
             "HLT": FixedEValue(self, "HLT", 0o7700),
+            "INA": FixedEValue(self, "INA", 0o7600),
+            "INP": TwoWordVariableE(self, "INP", 0o72, lambda e: True, lambda e:  e),
             "HWI": OneWordRangeE(self, "HWI", 0o76, 0o01, 0o76),
             "IRJ": OneWordLowE(self, "IRJ", 0o00, 0o03),
             "JFI": OneWordNonZeroE(self, "JFI", 0o71),

@@ -124,3 +124,12 @@ def via_direct_at_e(storage: Storage) -> None:
     :return: None
     """
     storage.e_direct_to_s()
+
+def vacuous(storage: Storage) -> None:
+    """
+    No effective address, loaves S unchanged
+
+    :param storage:  memory and register file
+    :return: None
+    """
+    pass

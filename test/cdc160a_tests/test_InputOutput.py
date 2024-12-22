@@ -4,11 +4,18 @@ from tempfile import NamedTemporaryFile
 
 from cdc160a.InputOutput import InputOutput
 from cdc160a.PaperTapeReader import PaperTapeReader
+from test_support.HyperLoopQuantumGravityBiTape import HyperLoopQuantumGravityBiTape
+
+_BI_TAPE_INPUT_DATA = [
+    0o7777, 0o0001, 0o0200, 0o0210, 0o1111,
+    0o4001, 0o4011, 0o4111, 0o4112, 0o4122]
 
 class TestInputOutput(TestCase):
     def setUp(self) -> None:
+        self.__bi_tape = HyperLoopQuantumGravityBiTape(_BI_TAPE_INPUT_DATA)
         self.__paper_tape_reader = PaperTapeReader()
-        self.__input_output = InputOutput([self.__paper_tape_reader])
+        self.__input_output = InputOutput(
+            [self.__paper_tape_reader, self.__bi_tape])
 
     def test_select_no_device_accepts_code(self):
         assert self.__input_output.device_on_buffer_channel() is None
@@ -44,6 +51,17 @@ class TestInputOutput(TestCase):
         assert status
         assert self.__input_output.device_on_buffer_channel() is None
         assert self.__input_output.device_on_normal_channel() == self.__paper_tape_reader
+
+    def test_read_delay_no_device_selected(self) -> None:
+        assert self.__input_output.read_delay() == 0
+
+    def test_read_delay_bi_tape_selected(self) -> None:
+        self.__bi_tape.set_online_status(True)
+        device_status, valid_request =\
+            self.__input_output.external_function(0o3700)
+        assert device_status == 0o0001
+        assert valid_request
+        assert self.__input_output.read_delay() == 3
 
     def test_read_no_device_selected(self) -> None:
         status, value = self.__input_output.read_normal()

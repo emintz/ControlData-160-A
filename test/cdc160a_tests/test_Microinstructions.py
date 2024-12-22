@@ -8,6 +8,7 @@ from cdc160a.Storage import InterruptLock
 from cdc160a.Storage import MCS_MODE_IND
 from cdc160a import Microinstructions
 from cdc160a.Storage import Storage
+from test_support.HyperLoopQuantumGravityBiTape import HyperLoopQuantumGravityBiTape
 from typing import Final
 
 from cdc160a_tests.test_Instructions import (
@@ -18,12 +19,22 @@ from cdc160a_tests.test_Instructions import (
     READ_AND_WRITE_ADDRESS)
 
 JUMP_ADDRESS: Final[int] = 0o2000
+FIRST_WORD_ADDRESS: Final[int] = 0o200
+LAST_WORD_ADDRESS_PLUS_ONE: Final[int] = 0o210
+
+_BI_TAPE_INPUT_DATA = [
+    0o0000, 0o0001, 0o0200, 0o0210, 0o1111,
+    0o4001, 0o4011, 0o4111, 0o4112, 0o4122]
+
 
 class Test(TestCase):
 
     def setUp(self) -> None:
+        self.bi_tape = HyperLoopQuantumGravityBiTape(
+            _BI_TAPE_INPUT_DATA)
         self.paper_tape_reader = PaperTapeReader()
-        self.input_output = InputOutput([self.paper_tape_reader])
+        self.input_output = InputOutput([
+            self.paper_tape_reader, self.bi_tape])
         self.storage = Storage()
         self.storage.memory[0, READ_AND_WRITE_ADDRESS] = 0o10
         self.storage.memory[1, READ_AND_WRITE_ADDRESS] = 0o11
@@ -341,6 +352,59 @@ class Test(TestCase):
         assert self.storage.run_stop_status
         assert self.storage.z_register == 0o7654
         assert self.storage.a_register == 0o7654 ^ 0o7777
+
+    def test_input_to_a_no_device_selected(self) -> None:
+        self.storage.a_register = 0o1234
+        assert Microinstructions.input_to_a(self.hardware) == 0
+        assert self.storage.a_register == 0o1234
+        assert self.storage.machine_hung
+
+    def test_input_device_offline(self) -> None:
+        status , valid_request = self.input_output.external_function(
+            0o3700)
+        assert valid_request
+        assert status == 0o4000
+        self.storage.a_register = 0o1234
+        assert Microinstructions.input_to_a(self.hardware) == 3
+        assert self.storage.a_register == 0o1234
+        assert self.storage.machine_hung
+
+    def test_input_device_online(self) -> None:
+        self.bi_tape.set_online_status(True)
+        status , valid_request = self.input_output.external_function(
+            0o3700)
+        assert valid_request
+        assert status == 0o0001
+        self.storage.a_register = 0o1234
+        assert Microinstructions.input_to_a(self.hardware) == 3
+        assert self.storage.a_register == 0o0000
+        assert not self.storage.machine_hung
+
+    def test_input_to_memory(self) -> None:
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7210)
+        self.storage.write_relative_bank(G_ADDRESS, LAST_WORD_ADDRESS_PLUS_ONE)
+        self.storage.unpack_instruction()
+        self.storage.s_register = FIRST_WORD_ADDRESS
+
+        self.bi_tape.set_online_status(True)
+        device_status, valid_request = (
+            self.input_output.external_function(0o3700))
+        assert valid_request
+        assert device_status == 0o0001
+
+        assert Microinstructions.input_to_memory(self.hardware) == 0o10 * 3
+
+        assert self.storage.read_indirect_bank(
+            FIRST_WORD_ADDRESS - 1) == 0
+        assert self.storage.read_indirect_bank(
+            LAST_WORD_ADDRESS_PLUS_ONE) == 0
+        for location in range(
+                FIRST_WORD_ADDRESS, LAST_WORD_ADDRESS_PLUS_ONE):
+            expected_value_index = location - FIRST_WORD_ADDRESS
+            assert (self.storage.read_indirect_bank(location) ==
+                    _BI_TAPE_INPUT_DATA[expected_value_index])
+
+        assert not self.storage.machine_hung
 
     def test_multiply_a_by_10(self) -> None:
         # MUT

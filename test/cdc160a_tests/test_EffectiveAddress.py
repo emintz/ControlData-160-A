@@ -116,5 +116,13 @@ class Test(TestCase):
         EffectiveAddress.via_direct_at_e(self.storage)
         assert self.storage.s_register == 0o2400
 
+    def test_vacuous(self) -> None:
+        # ITA
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7600)
+        self.storage.unpack_instruction()
+        self.storage.s_register = 0o7654
+        EffectiveAddress.vacuous(self.storage)
+        assert self.storage.s_register == 0o7654
+
 if __name__ == "__main__":
     unittest.main()

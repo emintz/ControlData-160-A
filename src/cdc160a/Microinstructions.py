@@ -240,9 +240,45 @@ def half_write_indirect(hardware: Hardware) -> None:
     """
     hardware.storage.half_write_to_s_indirect()
 
-# Halt the machine without setting the error status
 def halt(hardware: Hardware) -> None:
+    """
+    Halt the machine without setting the error status
+
+    :param hardware: emulator hardware subsystems
+    :return: None
+    """
     hardware.storage.stop()
+
+def input_to_a(hardware: Hardware) -> int:
+    status, value = hardware.input_output.read_normal()
+    if status:
+        hardware.storage.a_register = value
+    else:
+        hardware.storage.indefinite_delay()
+    return hardware.input_output.read_delay()
+
+def input_to_memory(hardware: Hardware) -> int:
+    """
+    Read from the normal input channel to the indirect memory
+    bank. When this method is invoked, the S register must contain
+    the input memory's FWA, and [G] must contain its LWA + 1.
+    Input is read to the indirect memory bank.
+
+    :param hardware: the emulated hardware, including storage
+                     and I/O
+    :return: the number of cycles used in reading.
+    """
+    elapsed_cycles = 0
+    lwa_plus_one = hardware.storage.g_contents()
+    while hardware.storage.s_register < lwa_plus_one and not \
+        hardware.storage.machine_hung:
+        read_status, input_word = hardware.input_output.read_normal()
+        if read_status:
+            hardware.storage.store_at_s_indirect_and_increment_s(input_word)
+        else:
+            hardware.storage.machine_hung = True
+        elapsed_cycles += hardware.input_output.read_delay()
+    return elapsed_cycles
 
 def jump_forward_indirect(hardware: Hardware) -> None:
     hardware.storage.s_relative_to_next_address()

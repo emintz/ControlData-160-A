@@ -8,16 +8,24 @@ from cdc160a.InputOutput import InputOutput
 from cdc160a.RunLoop import RunLoop
 from cdc160a.Storage import InterruptLock, Storage
 from test_support.Assembler import assembler_from_string
+from test_support.HyperLoopQuantumGravityBiTape import HyperLoopQuantumGravityBiTape
 from test_support.PyunitConsole import PyConsole
 from test_support import Programs
+
+
+_BI_TAPE_INPUT_DATA = [
+    0o7777, 0o0001, 0o0200, 0o0210, 0o1111,
+    0o4001, 0o4011, 0o4111, 0o4112, 0o4122]
 
 class TestRunLoop(TestCase):
 
     def setUp(self) -> None:
+        self.__bi_tape = HyperLoopQuantumGravityBiTape(_BI_TAPE_INPUT_DATA)
         self.__console = PyConsole()
         self.__storage = Storage()
         self.__paper_tape_reader = PaperTapeReader()
-        self.__input_output = InputOutput([self.__paper_tape_reader])
+        self.__input_output = InputOutput(
+            [self.__paper_tape_reader, self.__bi_tape])
         self.__run_loop = RunLoop(
             self.__console, self.__storage, self.__input_output)
         self.__storage.set_direct_storage_bank(0o2)
@@ -271,11 +279,27 @@ class TestRunLoop(TestCase):
         self.__paper_tape_reader.close()
         os.unlink(temp_file.name)
 
-
     def test_hwi(self) -> None:
         self.load_test_program(Programs.HALF_WRITE_INDIRECT)
         self.__run_loop.run()
         assert self.__storage.read_indirect_bank(0o2100) == 0o4321
+
+    def test_ina(self) -> None:
+        self.__bi_tape.set_online_status(True)
+        self.load_test_program(Programs.INPUT_TO_A)
+        self.__run_loop.run()
+        assert self.__storage.a_register == 0o7777
+        assert self.__storage.get_program_counter() == 0o0106
+
+    def test_inp(self) -> None:
+        self.__bi_tape.set_online_status(True)
+        self.load_test_program(Programs.INPUT_TO_MEMORY)
+        self.__run_loop.run()
+        assert self.__storage.get_program_counter() == 0o107
+        for location in range(0o300, 0o310):
+            expected_value_index = location - 0o300
+            assert (self.__storage.read_indirect_bank(location) ==
+                    _BI_TAPE_INPUT_DATA[expected_value_index])
 
     def test_irj(self) -> None:
         self.load_test_program(Programs.SET_INDIRECT_AND_RELATIVE_BANK_CONTROL_AND_JUMP)
@@ -610,7 +634,7 @@ class TestRunLoop(TestCase):
         self.__run_loop.run()
         assert self.__storage.get_program_counter() == 0o100
         # Note: cannot restart loop after a halt instruction
-        # because, when running a test, it run loop would restart
+        # because, when running a test, its run loop would restart
         # from the SLS address and simply rerun the instruction.
         # The best we can do is  check the next address.
         assert self.__storage.get_next_execution_address() == 0o200
@@ -622,7 +646,7 @@ class TestRunLoop(TestCase):
         self.__run_loop.run()
         assert self.__storage.get_program_counter() == 0o100
         # Note: cannot restart loop after a halt instruction
-        # because, when running a test, it run loop would restart
+        # because, when running a test, its run loop would restart
         # from the SLS address and simply rerun the instruction.
         # The best we can do is  check the next address.
         assert self.__storage.get_next_execution_address() == 0o102

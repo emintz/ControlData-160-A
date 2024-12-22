@@ -184,7 +184,7 @@ class OpCode76(InstructionDecoder):
 
     def decode(self, e: int) -> BaseInstruction:
         if e == 0o00:
-            return Instructions.ERR # TODO(emintz): INA
+            return Instructions.ITA
         if e == 0o77:
             return Instructions.ERR # TODO(emintz): OTA
         return Instructions.HWI
@@ -265,7 +265,7 @@ __DECODERS = [
     Singleton(Instructions.NJB, 0o67),                   # 67
     Singleton(Instructions.JPI, 0o70),                   # 70
     Bimodal(Instructions.JPR, Instructions.JFI, 0o71),   # 71
-    __UNIMPLEMENTED,            # 72
+    Singleton(Instructions.INP, 0o72),                   # 72
     __UNIMPLEMENTED,            # 73
     __UNIMPLEMENTED,            # 74
     Bimodal(Instructions.EXC, Instructions.EXF, 0o75),   # 75

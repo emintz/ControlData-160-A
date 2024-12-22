@@ -273,6 +273,13 @@ class TestStorage(TestCase):
         assert self.storage.z_register == 0o17
         assert self.storage.storage_cycle == MCS_MODE_REL
 
+    def test_g_contents(self) -> None:
+        self.storage.relative_storage_bank = 3
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7201)
+        self.storage.write_relative_bank(G_ADDRESS, READ_AND_WRITE_ADDRESS,)
+        self.storage.unpack_instruction()
+        assert self.storage.g_contents() == READ_AND_WRITE_ADDRESS
+
     def test_g_to_next_address(self) -> None:
         self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7710)
         self.storage.write_relative_bank(G_ADDRESS, 0o1000)
@@ -296,6 +303,11 @@ class TestStorage(TestCase):
         self.storage.write_indirect_bank(self.storage.s_register, 0o4367)
         self.storage.half_write_to_s_indirect()
         assert self.storage.read_indirect_bank(0o200) == 0o4321
+
+    def test_indefinite_delay(self) -> None:
+        assert not self.storage.machine_hung
+        self.storage.indefinite_delay()
+        assert self.storage.machine_hung
 
     def test_jump_switches(self) -> None:
         self.storage.set_jump_switch_mask(0)
@@ -432,6 +444,12 @@ class TestStorage(TestCase):
         assert self.storage.interrupt_requests == [False, True, False, False]
         self.storage.request_interrupt(0o40)
         assert self.storage.interrupt_requests == [False, True, False, True]
+
+    def test_retrieve_s_indirect_and_increment_s(self) -> None:
+        self.storage.indirect_storage_bank = 2
+        self.storage.s_register = READ_AND_WRITE_ADDRESS
+        assert self.storage.retrieve_s_indirect_and_increment_s() == 0o12
+        assert self.storage.s_register == READ_AND_WRITE_ADDRESS + 1
 
     def test_run(self) -> None:
         self.storage.run_stop_status = False
@@ -732,6 +750,15 @@ class TestStorage(TestCase):
         self.storage.specific_to_z()
         assert self.storage.z_register == 0o1234
         assert self.storage.a_register == 0
+
+    def test_store_s_indirect_and_increment_s(self) -> None:
+        self.storage.storage_cycle = MCS_MODE_REL
+        self.storage.indirect_storage_bank = 2
+        assert self.storage.read_indirect_bank(READ_AND_WRITE_ADDRESS) == 0o12
+        self.storage.s_register = READ_AND_WRITE_ADDRESS
+        self.storage.store_at_s_indirect_and_increment_s(0o5432)
+        assert self.storage.read_indirect_bank(READ_AND_WRITE_ADDRESS) == 0o5432
+        assert self.storage.s_register == READ_AND_WRITE_ADDRESS + 1
 
     def test_stop(self) -> None:
         self.storage.run_stop_status = True

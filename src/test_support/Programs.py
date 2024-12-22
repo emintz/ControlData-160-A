@@ -213,8 +213,6 @@ EXTERNAL_FUNCTION_FORWARD = """
           OCT 4102
           END
 """
-
-
 HALF_WRITE_INDIRECT = """
           REM Half Write Indirect: [E](d) -> S, A(0 .. 6) -> [S](i)
           REM Form the effective address from the value at E in the
@@ -240,6 +238,52 @@ HALT = """
           BNK 3
           ORG 100
           HLT
+          END
+"""
+INPUT_TO_A = """
+          REM Reads one word from the HyperLoopQuantumGravityBiTape
+          REM to A. Device must be on and have one or more words
+          REM of input available. We only need one.
+          REM
+          REM Bank settings:
+          REM   Buffer: 0
+          REM   Direct: 2
+          REM   Indirect: 1
+          REM   Relative: 3
+          REM
+          BNK 3
+          ORG 100
+          EXC 3700   Select the HyperLoopQuantumGravityBiTape
+          SBN 1      Return should be 0001 -- Input Available
+          ZJF 2      Should skip the next instruction
+          HLT        Halt if device is off or has no available input
+          INA        One word if input to the A register
+          HLT        Success halt.
+          END
+"""
+INPUT_TO_MEMORY = """
+          REM Reads 0o10 (decimal 8) words from the 
+          REM HyperLoopQuantumGravityBiTape to the indirect storage
+          REM bank starting at 0o300 and ending at 0o307. Note that
+          REM the last word address + 1 will be 0o310. The 
+          REM HyperLoopQuantumGravityBiTape must be on-line and
+          REM have 8 or more input words available.
+          REM
+          REM Bank settings:
+          REM   Buffer: 0
+          REM   Direct: 2
+          REM   Indirect: 1
+          REM   Relative: 3
+          REM
+          BNK 3
+          ORG 100
+          EXC 3700   Select the HyperLoopQuantumGravityBiTape
+          SBN 1      Return should be 0001 -- Input Available
+          ZJF 2      Should skip the next instruction
+          HLT        Halt if device is off or has no available input
+          INP 3 310  Normal input, LWA + 1 is 310
+          HLT        Success halt.
+          OCT 300    FWA (first word address)
           END
 """
 INTERRUPT_10_SIMPLE = """

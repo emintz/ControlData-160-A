@@ -361,6 +361,10 @@ class Storage:
         self.z_register |= self.a_register & 0o77
         self.z_to_s_indirect()
 
+    def indefinite_delay(self) -> None:
+        print("Machine hung.")
+        self.machine_hung = True
+
     def load_a(self, bank: int, address: int)-> None:
         """
         Move [address(bank)] -> Z and A
@@ -478,6 +482,17 @@ class Storage:
         assert 0o10 <= interrupt_no <= 0o40
         self.interrupt_requests[(interrupt_no >> 3) - 1] = True
 
+    def retrieve_s_indirect_and_increment_s(self) -> int:
+        """
+        Retrieve [S(i)] and increment S
+
+        :return: the retrieved value.
+        """
+        self.storage_cycle = MCS_MODE_IND
+        retrieved_value = self.memory[self.indirect_storage_bank, self.s_register]
+        self.s_register += 1
+        return int(retrieved_value)
+
     def s_address_contents(self, bank: int) -> int:
         self.z_register = self.memory[bank, self.s_register]
         return int(self.z_register)
@@ -532,6 +547,11 @@ class Storage:
         """
         self.z_register = self.a_register
         self.memory[bank, self.s_register] = self.z_register
+
+    def store_at_s_indirect_and_increment_s(self, value: int) -> None:
+        self.storage_cycle = MCS_MODE_IND
+        self.memory[self.indirect_storage_bank, self.s_register] = value
+        self.s_register += 1
 
     def subtract_e_from_a(self) -> None:
         """
@@ -621,6 +641,12 @@ class Storage:
         self.s_register = self.p_register + 1
 
     def g_contents(self) -> int:
+        """
+        [G](r) -> return value
+
+        :return: the contents of the relative bank location given
+                 in G.
+        """
         self.z_register = self.read_relative_bank(self.p_register + 1)
         self.storage_cycle = MCS_MODE_REL
         return int(self.z_register)
