@@ -83,3 +83,35 @@ class TestInputOutput(TestCase):
 
         self.__paper_tape_reader.close()
         os.unlink(temp_file.name)
+
+    def test_write_delay_no_device_selected(self) -> None:
+        assert self.__input_output.write_delay() == 0
+
+    def test_write_delay_bi_tape_selected(self) -> None:
+        device_status, operation_succeeded = (
+            self.__input_output.external_function(0o3700))
+        assert operation_succeeded
+        assert device_status == 0o4000
+        assert self.__input_output.write_delay() == 4
+
+    def test_write_no_device_selected(self) -> None:
+        assert not self.__input_output.write_normal(0o4040)
+
+    def test_write_device_selected_and_offline(self) -> None:
+        device_status, operation_succeeded = (
+            self.__input_output.external_function(0o3700))
+        assert operation_succeeded
+        assert device_status == 0o4000
+
+        assert not self.__input_output.write_normal(0o4040)
+        assert self.__bi_tape.output_data() == []
+
+    def test_write_device_selected_and_ready(self) -> None:
+        self.__bi_tape.set_online_status(True)
+        device_status, operation_succeeded = (
+            self.__input_output.external_function(0o3700))
+        assert operation_succeeded
+        assert device_status == 0o0001
+
+        assert self.__input_output.write_normal(0o4040)
+        assert self.__bi_tape.output_data() == [0o4040]
