@@ -588,9 +588,13 @@ class Test(TestCase):
 
         Instructions.INP.determine_effective_address(self.storage)
         assert self.storage.s_register == FIRST_WORD_ADDRESS
+        assert not self.storage.in_status
         assert Instructions.INP.perform_logic(
             self.hardware) == 0o10 * 3
         assert not self.storage.machine_hung
+        assert self.storage.in_status
+        Instructions.INP.post_process(self.hardware)
+        assert not self.storage.in_status
         assert self.storage.read_indirect_bank(
             FIRST_WORD_ADDRESS - 1) == 0
         assert self.storage.read_indirect_bank(
@@ -599,6 +603,8 @@ class Test(TestCase):
             expected_value_index = location - FIRST_WORD_ADDRESS
             assert self.storage.read_indirect_bank(
                 location) == _BI_TAPE_INPUT_DATA[expected_value_index]
+        self.storage.advance_to_next_instruction()
+        assert self.storage.get_program_counter() == AFTER_DOUBLE_WORD_INSTRUCTION_ADDRESS
 
     def test_irj(self) -> None:
         assert Instructions.IRJ.name() == "IRJ"

@@ -49,6 +49,8 @@ class RunLoop:
         current_instruction.determine_effective_address(self.__storage)
         self.__console.before_instruction_logic(self.__storage, self.__input_output)
         current_instruction.perform_logic(self.__hardware)
+        # TODO(emintz): Scaling delay, 6.4 microseconds/cycle
+        current_instruction.post_process(self.__hardware)
         if not self.__console.before_advance(self.__storage, self.__input_output):
             return False
         self.__storage.advance_to_next_instruction()
