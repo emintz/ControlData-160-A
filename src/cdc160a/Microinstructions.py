@@ -276,7 +276,7 @@ def input_to_memory(hardware: Hardware) -> int:
         if read_status:
             hardware.storage.store_at_s_indirect_and_increment_s(input_word)
         else:
-            hardware.storage.machine_hung = True
+            hardware.storage.indefinite_delay()
         elapsed_cycles += hardware.input_output.read_delay()
     return elapsed_cycles
 
