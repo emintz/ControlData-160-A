@@ -268,6 +268,7 @@ def input_to_memory(hardware: Hardware) -> int:
                      and I/O
     :return: the number of cycles used in reading.
     """
+    hardware.storage.normal_output_active()
     elapsed_cycles = 0
     lwa_plus_one = hardware.storage.g_contents()
     while hardware.storage.s_register < lwa_plus_one and not \
@@ -278,6 +279,9 @@ def input_to_memory(hardware: Hardware) -> int:
         else:
             hardware.storage.indefinite_delay()
         elapsed_cycles += hardware.input_output.read_delay()
+    # TODO(emintz): place holder: inactivate normal output after
+    #               a delay, not here.
+    hardware.storage.normal_input_inactive()
     return elapsed_cycles
 
 def jump_forward_indirect(hardware: Hardware) -> None:

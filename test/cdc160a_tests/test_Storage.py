@@ -408,6 +408,20 @@ class TestStorage(TestCase):
         self.storage.advance_to_next_instruction()
         assert self.storage.get_program_counter() == 0o0001
 
+    def test_normal_input_active_and_inactive(self) -> None:
+        assert not self.storage.in_status
+        self.storage.normal_input_active()
+        assert self.storage.in_status
+        self.storage.normal_input_inactive()
+        assert not self.storage.in_status
+
+    def test_normal_output_active_and_inactive(self) -> None:
+        assert not self.storage.out_status
+        self.storage.normal_output_active()
+        assert self.storage.out_status
+        self.storage.normal_output_inactive()
+        assert not self.storage.out_status
+
     def test_p_to_a(self) -> None:
         self.storage.p_register = 0o3241
         self.storage.p_to_a()

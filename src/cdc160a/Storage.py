@@ -454,6 +454,18 @@ class Storage:
         """
         self.storage_cycle = MCS_MODE_REL
 
+    def normal_input_active(self) -> None:
+        self.in_status = True
+
+    def normal_input_inactive(self) -> None:
+        self.in_status = False
+
+    def normal_output_active(self) -> None:
+        self.out_status = True
+
+    def normal_output_inactive(self) -> None:
+        self.out_status = False
+
     def p_to_s(self) -> None:
         """
         Move the contents of the P (program counter) register to the
