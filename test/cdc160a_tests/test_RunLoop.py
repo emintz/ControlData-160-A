@@ -28,6 +28,7 @@ class TestRunLoop(TestCase):
             [self.__paper_tape_reader, self.__bi_tape])
         self.__run_loop = RunLoop(
             self.__console, self.__storage, self.__input_output)
+        self.__storage.set_buffer_storage_bank(0o0)
         self.__storage.set_direct_storage_bank(0o2)
         self.__storage.set_indirect_storage_bank(0o1)
         self.__storage.set_relative_storage_bank(0o3)
@@ -429,6 +430,28 @@ class TestRunLoop(TestCase):
         self.__run_loop.run()
         assert not self.__storage.err_status
         assert self.__storage.p_register == 0o103
+
+    def test_out_a(self) -> None:
+        self.__bi_tape.set_online_status(True)
+        self.load_test_program(Programs.OUTPUT_FROM_A)
+        self.__run_loop.run()
+        assert not self.__storage.machine_hung
+        assert self.__bi_tape.output_data() == [0o34]
+
+    def test_out_from_memory(self) -> None:
+        self.__bi_tape.set_online_status(True)
+        self.load_test_program(Programs.OUTPUT_FROM_MEMORY)
+        self.__run_loop.run()
+        assert self.__storage.get_program_counter() == 0o0105
+        assert self.__bi_tape.output_data() == [
+            0o10, 0o06, 0o04, 0o02, 0o00, 0o01, 0o03, 0o05, 0o07]
+
+    def test_out_no_address(self) -> None:
+        self.__bi_tape.set_online_status(True)
+        self.load_test_program(Programs.OUTPUT_NO_ADDRESS)
+        self.__run_loop.run()
+        assert not self.__storage.machine_hung
+        assert self.__bi_tape.output_data() == [0o34]
 
     def test_pjb_a_minus_zero(self) -> None:
         self.load_test_program(Programs.POSITIVE_JUMP_BACKWARD_MINUS_ZERO_A)

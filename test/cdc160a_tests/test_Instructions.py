@@ -620,7 +620,7 @@ class Test(TestCase):
         assert self.storage.get_program_counter() == 0o200
 
     def test_ita(self) -> None:
-        assert Instructions.ITA.name() == "ITA"
+        assert Instructions.INA.name() == "INA"
         self.bi_tape.set_online_status(True)
         device_status, valid_request = self.input_output.external_function(
             0o3700)
@@ -631,9 +631,9 @@ class Test(TestCase):
         self.storage.unpack_instruction()
         self.storage.a_register = 0o1234
         self.storage.s_register = 0o4321
-        Instructions.ITA.determine_effective_address(self.storage)
+        Instructions.INA.determine_effective_address(self.storage)
         assert self.storage.s_register == 0o4321
-        assert Instructions.ITA.perform_logic(self.hardware) == 3
+        assert Instructions.INA.perform_logic(self.hardware) == 3
         assert self.storage.a_register == 0o7777
         self.storage.advance_to_next_instruction()
         assert (self.storage.get_program_counter() ==
@@ -1273,6 +1273,164 @@ class Test(TestCase):
         assert self.storage.z_register == 0o3333
         self.storage.advance_to_next_instruction()
         assert self.storage.p_register == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS
+
+    def test_ota(self) -> None:
+        self.bi_tape.set_online_status(True)
+
+        # EXC 3700  Select the HyperLoopQuantumGravityBiTape
+        self.storage.service_pending_interrupts()
+        self.storage.p_register = INSTRUCTION_ADDRESS
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7500)
+        self.storage.write_relative_bank(G_ADDRESS, 0o3700)
+        self.storage.unpack_instruction()
+        Instructions.EXC.determine_effective_address(self.storage)
+        Instructions.EXC.perform_logic(self.hardware)
+        Instructions.EXC.post_process(self.hardware)
+        self.storage.advance_to_next_instruction()
+        assert self.storage.interrupt_lock == InterruptLock.LOCKED
+        assert (self.storage.get_program_counter() ==
+                AFTER_DOUBLE_WORD_INSTRUCTION_ADDRESS)
+        assert not self.storage.machine_hung
+
+        # CIL   Clear interrupt lockout
+        self.storage.service_pending_interrupts()
+        self.storage.p_register = INSTRUCTION_ADDRESS
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0120)
+        self.storage.unpack_instruction()
+        Instructions.CIL.determine_effective_address(self.storage)
+        Instructions.CIL.perform_logic(self.hardware)
+        Instructions.CIL.post_process(self.hardware)
+        self.storage.advance_to_next_instruction()
+        assert self.storage.interrupt_lock == InterruptLock.UNLOCK_PENDING
+        assert (self.storage.get_program_counter() ==
+                AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
+        assert not self.storage.machine_hung
+
+        # OTA  Write the contents of the accumulator to the selected
+        #      normal output device
+        self.storage.service_pending_interrupts()
+        self.storage.p_register = INSTRUCTION_ADDRESS
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7677)
+        self.storage.unpack_instruction()
+        self.storage.a_register = 0o7070
+        Instructions.OTA.determine_effective_address(self.storage)
+        assert Instructions.OTA.perform_logic(self.hardware) == 4
+        assert self.storage.out_status
+        Instructions.OTA.post_process(self.hardware)
+        assert not self.storage.out_status
+        self.storage.advance_to_next_instruction()
+        assert self.storage.interrupt_lock == InterruptLock.FREE
+        assert (self.storage.get_program_counter() ==
+                AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
+        assert not self.storage.machine_hung
+        assert self.bi_tape.output_data() == [0o7070]
+
+    def test_otn(self) -> None:
+        self.bi_tape.set_online_status(True)
+
+        # EXC 3700  Select the HyperLoopQuantumGravityBiTape
+        self.storage.service_pending_interrupts()
+        self.storage.p_register = INSTRUCTION_ADDRESS
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7500)
+        self.storage.write_relative_bank(G_ADDRESS, 0o3700)
+        self.storage.unpack_instruction()
+        Instructions.EXC.determine_effective_address(self.storage)
+        Instructions.EXC.perform_logic(self.hardware)
+        Instructions.EXC.post_process(self.hardware)
+        self.storage.advance_to_next_instruction()
+        assert self.storage.interrupt_lock == InterruptLock.LOCKED
+        assert (self.storage.get_program_counter() ==
+                AFTER_DOUBLE_WORD_INSTRUCTION_ADDRESS)
+        assert not self.storage.machine_hung
+
+        # CIL   Clear interrupt lockout
+        self.storage.service_pending_interrupts()
+        self.storage.p_register = INSTRUCTION_ADDRESS
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0120)
+        self.storage.unpack_instruction()
+        Instructions.CIL.determine_effective_address(self.storage)
+        Instructions.CIL.perform_logic(self.hardware)
+        Instructions.CIL.post_process(self.hardware)
+        self.storage.advance_to_next_instruction()
+        assert self.storage.interrupt_lock == InterruptLock.UNLOCK_PENDING
+        assert (self.storage.get_program_counter() ==
+                AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
+        assert not self.storage.machine_hung
+
+        # OTN 47 Write the E (47, the low 6 bits of the instruction)
+        #      to the selected normal output device
+        self.storage.service_pending_interrupts()
+        self.storage.p_register = INSTRUCTION_ADDRESS
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7447)
+        self.storage.unpack_instruction()
+        self.storage.a_register = 0o7070
+        Instructions.OTN.determine_effective_address(self.storage)
+        assert Instructions.OTN.perform_logic(self.hardware) == 4
+        assert self.storage.out_status
+        Instructions.OTN.post_process(self.hardware)
+        assert not self.storage.out_status
+        self.storage.advance_to_next_instruction()
+        assert self.storage.interrupt_lock == InterruptLock.FREE
+        assert (self.storage.get_program_counter() ==
+                AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
+        assert not self.storage.machine_hung
+        assert self.bi_tape.output_data() == [0o0047]
+
+    def test_out(self) -> None:
+        self.bi_tape.set_online_status(True)
+
+        # Set up the data to write.
+        write_location = READ_AND_WRITE_ADDRESS
+        for value in _BI_TAPE_INPUT_DATA:
+            self.storage.write_indirect_bank(write_location, value)
+            write_location += 1
+
+        # EXC 3700  Select the HyperLoopQuantumGravityBiTape
+        self.storage.service_pending_interrupts()
+        self.storage.p_register = INSTRUCTION_ADDRESS
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7500)
+        self.storage.write_relative_bank(G_ADDRESS, 0o3700)
+        self.storage.unpack_instruction()
+        Instructions.EXC.determine_effective_address(self.storage)
+        Instructions.EXC.perform_logic(self.hardware)
+        Instructions.EXC.post_process(self.hardware)
+        self.storage.advance_to_next_instruction()
+        assert self.storage.interrupt_lock == InterruptLock.LOCKED
+        assert (self.storage.get_program_counter() == AFTER_DOUBLE_WORD_INSTRUCTION_ADDRESS)
+        assert not self.storage.machine_hung
+
+        # CIL   Clear interrupt lockout
+        self.storage.service_pending_interrupts()
+        self.storage.p_register = INSTRUCTION_ADDRESS
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o0120)
+        self.storage.unpack_instruction()
+        Instructions.CIL.determine_effective_address(self.storage)
+        Instructions.CIL.perform_logic(self.hardware)
+        Instructions.CIL.post_process(self.hardware)
+        self.storage.advance_to_next_instruction()
+        assert self.storage.interrupt_lock == InterruptLock.UNLOCK_PENDING
+        assert (self.storage.get_program_counter() == AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
+        assert not self.storage.machine_hung
+
+        # OUT 4 1246  Write from the indirect memory bank,
+        #             starting from ([P] + 4)(i) and ending
+        #             at 1245 (1246 is the LWA + 1)
+        self.storage.service_pending_interrupts()
+        self.storage.p_register = INSTRUCTION_ADDRESS
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7204)
+        self.storage.write_relative_bank(G_ADDRESS, READ_AND_WRITE_ADDRESS + 10)
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS + 4, READ_AND_WRITE_ADDRESS)
+        self.storage.unpack_instruction()
+        Instructions.OUT.determine_effective_address(self.storage)
+        assert Instructions.OUT.perform_logic(self.hardware) == 40
+        assert self.storage.out_status
+        Instructions.OUT.post_process(self.hardware)
+        assert not self.storage.out_status
+        self.storage.advance_to_next_instruction()
+        assert self.storage.interrupt_lock == InterruptLock.FREE
+        assert (self.storage.get_program_counter() == AFTER_DOUBLE_WORD_INSTRUCTION_ADDRESS)
+        assert not self.storage.machine_hung
+        assert self.bi_tape.output_data() == _BI_TAPE_INPUT_DATA
 
     def test_pjf_a_minus_zero(self) -> None:
         # PJF

@@ -484,6 +484,13 @@ class Storage:
         self.z_register = self.p_register
         self.write_direct_bank(self.f_e, self.z_register)
 
+    def read_from_s_indirect_and_increment_s(self) -> int:
+        self.storage_cycle = MCS_MODE_IND
+        retrieved_value = self.memory[
+            self.indirect_storage_bank, self.s_register]
+        self.s_register += 1
+        return int(retrieved_value)
+
     def request_interrupt(self, interrupt_no: int) -> None:
         """
         Request the machine to perform the specified interrupt.

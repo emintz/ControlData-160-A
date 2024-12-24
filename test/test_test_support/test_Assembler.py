@@ -511,13 +511,6 @@ class TestAssembler(TestCase):
     def test_mut(self) -> None:
         self.__single_instruction_test("MUT", [0o112])
 
-    def test_oct(self) -> None:
-        assembler = self.assembler(Programs.SET_LITERAL)
-        assembler.run()
-        assert assembler.address() == 0o0101
-        assert assembler.bank() == 3
-        assert self.__storage.read_absolute(3, 0o0100) == 0o1234
-
     def test_njb(self) -> None:
         self.__single_instruction_test("NJB 50", [0o6750])
         self.__single_instruction_test("NJB 0", [0o6700])
@@ -540,6 +533,24 @@ class TestAssembler(TestCase):
     def test_pjb(self) -> None:
         self.__single_instruction_test("PJB 34", [0o6634])
         self.__single_instruction_test("PJB 0", [0o6600])
+
+    def test_oct(self) -> None:
+        assembler = self.assembler(Programs.SET_LITERAL)
+        assembler.run()
+        assert assembler.address() == 0o0101
+        assert assembler.bank() == 3
+        assert self.__storage.read_absolute(3, 0o0100) == 0o1234
+
+    def test_ota(self) -> None:
+        self.__single_instruction_test("OTA", [0o7677])
+
+    def test_otn(self) -> None:
+        self.__single_instruction_test(
+            "OTN 40", [0o7440])
+
+    def test_out(self) -> None:
+        self.__single_instruction_test(
+            "OUT 4 300", [0o7304, 0o0300])
 
     def test_pjf(self) -> None:
         self.__single_instruction_test(

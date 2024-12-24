@@ -356,7 +356,7 @@ INP = VariableTimingInstruction("INP", EffectiveAddress.forward_indirect, Microi
                                 __finish_normal_input, __double_advance)
 IRJ = __no_advance_instruction("IRJ", EffectiveAddress.no_address, Microinstructions.set_ind_rel_bank_from_e_and_jump,
                                __vacuous_post_processor, 1)
-ITA = VariableTimingInstruction("ITA", EffectiveAddress.vacuous, Microinstructions.input_to_a, __finish_normal_input,
+INA = VariableTimingInstruction("INA", EffectiveAddress.vacuous, Microinstructions.input_to_a, __finish_normal_input,
                                 __single_advance)
 JFI = __no_advance_instruction("JFI", EffectiveAddress.relative_forward, Microinstructions.jump_forward_indirect,
                                __vacuous_post_processor, 2)
@@ -438,6 +438,12 @@ NZF = __no_advance_instruction("NZF", EffectiveAddress.relative_forward, Microin
                                __vacuous_post_processor, 1)
 PJB = __no_advance_instruction("PJB", EffectiveAddress.relative_backward, Microinstructions.jump_if_a_positive,
                                __vacuous_post_processor, 1)
+OTA = VariableTimingInstruction("OTA", EffectiveAddress.no_address, Microinstructions.output_from_a,
+                                __finish_normal_output, __single_advance)
+OTN = VariableTimingInstruction("OTN", EffectiveAddress.no_address, Microinstructions.output_no_address,
+                                __finish_normal_output, __single_advance)
+OUT = VariableTimingInstruction("OUT", EffectiveAddress.forward_indirect, Microinstructions.output_from_memory,
+                                __finish_normal_output, __double_advance)
 PJF = __no_advance_instruction("PJF", EffectiveAddress.relative_forward, Microinstructions.jump_if_a_positive,
                                __vacuous_post_processor, 1)
 PTA = __single_advance_instruction("PTA", EffectiveAddress.no_address, Microinstructions.p_to_a,

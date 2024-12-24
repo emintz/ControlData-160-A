@@ -541,6 +541,12 @@ class TestStorage(TestCase):
         self.storage.s_relative_indirect_to_next_address()
         assert self.storage.get_next_execution_address() == 0o4132
 
+    def test_read_from_s_indirect_and_increment_s(self) -> None:
+        self.storage.s_register = READ_AND_WRITE_ADDRESS
+        self.storage.write_indirect_bank(READ_AND_WRITE_ADDRESS, 0o6060)
+        assert self.storage.read_from_s_indirect_and_increment_s() == 0o6060
+        assert self.storage.s_register == READ_AND_WRITE_ADDRESS + 1
+
     def test_s_relative_to_a(self) -> None:
         self.storage.relative_storage_bank = 1
         self.storage.s_register = 0o40

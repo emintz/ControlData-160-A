@@ -879,3 +879,68 @@ def jump_if_a_zero(hardware: Hardware) -> None:
         storage.s_to_next_address()
     else:
         storage.next_after_one_word_instruction()
+
+def __write_word_normal(hardware: Hardware, value: int) -> bool:
+    """
+    Write one word to the selected output device.
+
+   :param hardware: the emulated hardware, including storage
+                     and I/O
+    :param value: the word to write
+    :return: True if the write succeeds, False otherwise. The write
+             will fail when no output device is selected or if the
+             selected device is off-line.
+    """
+    hardware.storage.normal_output_active()
+    status = hardware.input_output.write_normal(value)
+    if not status:
+        hardware.storage.indefinite_delay()
+    return status
+
+def output_from_a(hardware: Hardware) -> int:
+    """
+    Write the contents of the A register to the device on the
+    normal output channel. Hang the computer if the write fails.
+
+    :param hardware: the emulated hardware, including storage
+                     and I/O
+    :return: the number of cycles used
+    """
+    __write_word_normal(hardware, hardware.storage.a_register)
+    return hardware.input_output.write_delay()
+
+def output_no_address(hardware: Hardware) -> int:
+    """
+    Write the contents of the F_E register to the device on the
+    normal output channel. Hang the computer if the write fails.
+
+    :param hardware: the emulated hardware, including storage
+                     and I/O
+    :return: the number of cycles used
+    """
+    __write_word_normal(hardware, hardware.storage.f_e)
+    return hardware.input_output.write_delay()
+
+def output_from_memory(hardware: Hardware) -> int:
+    """
+    Synchronous write from the indirect memory bank to the device
+    on the normal channel. G contains the LWA to write and S,
+    the effective address, contains the FWA. At the end of
+    a successful write, S will contain the LWA written from.
+    Hang if the write fails.
+
+    :param hardware: the emulated hardware, including storage
+                     and I/O
+    :return: the number of cycles used
+    """
+    elapsed_cycles = 0
+    lwa_plus_one = hardware.storage.g_contents()
+    i_o_status = True
+    while i_o_status and hardware.storage.s_register < lwa_plus_one and not \
+        hardware.storage.machine_hung:
+        i_o_status = __write_word_normal(
+            hardware,
+            hardware.storage.read_from_s_indirect_and_increment_s())
+        elapsed_cycles += hardware.input_output.write_delay()
+
+    return elapsed_cycles

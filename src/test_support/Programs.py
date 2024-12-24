@@ -526,6 +526,65 @@ NONZERO_JUMP_FORWARD_ZERO_A = """
           HLT
           END
 """
+OUTPUT_FROM_A = """
+          REM Write one word from the A register to the 
+          REM HyperLoopQuantumGravityBiTape.
+          BNK 3
+          ORG 100
+          EXC 3700    Select the HyperLoopQuantumGravityBiTape
+          CIL         External functions lock interrupts
+          LDN 34      Value to write
+          OTA         Write to the BiTape
+          HLT         We done
+          END
+"""
+OUTPUT_FROM_MEMORY = """
+          REM Write from the indirect bank to the
+          REM HyperLoopQuantumGravityBiTape. The
+          REM program writes the data to memory
+          REM
+          REM Storage banks are initialized as follows:
+          REM
+          REM   Bank             Setting
+          REM   ---------------- -------
+          REM   Buffer                 0
+          REM   Direct                 2
+          REM   Indirect               1
+          REM   Relative               3
+          REM
+          BNK 3
+          ORG 100
+          EXC 3700    Select the HyperLoopQuantumGravityBiTape
+          CIL         External functions lock out interrupts
+          OUT 3 211   Write data from indirect memory bank. Start at address
+          REM         found at * + 4 up to but not including 211 
+          HLT         Success!
+          OCT 200     Write from address 200.
+          REM Initialize the output buffer.
+          BNK 1
+          ORG 200     9 words of output data starts here.
+          OCT 10
+          OCT  6
+          OCT  4
+          OCT  2
+          OCT  0
+          OCT  1
+          OCT  3
+          OCT  5
+          OCT  7
+          END
+"""
+OUTPUT_NO_ADDRESS = """
+          REM Write one word to the HyperLoopQuantumGravityBiTape
+          REM and verify the results.
+          BNK 3
+          ORG 100
+          EXC 3700    Select the HyperLoopQuantumGravityBiTape
+          CIL         External functions lock interrupts
+          OTN 34      Write to the BiTape
+          HLT         We done
+          END
+"""
 P_TO_A = """
           REM P to A, [P] -> A
           BNK 3

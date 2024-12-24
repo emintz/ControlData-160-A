@@ -987,6 +987,65 @@ class Test(TestCase):
         assert self.storage.z_register == 0o1000
         assert self.storage.a_register == 0o1234
 
+    # Note: the following three tests validate device selection.
+    #       It's enough to test the happy path after they run.
+    def test_output_a_normal_no_device_selected(self) -> None:
+        self.storage.a_register = 0o1414
+        assert not self.storage.machine_hung
+        assert not self.storage.out_status
+        Microinstructions.output_from_a(self.hardware)
+        assert self.storage.machine_hung
+        assert self.bi_tape.output_data() == []
+        assert self.storage.out_status
+
+    def test_output_a_normal_device_offline_and_selected(self) -> None:
+        self.input_output.external_function(0o3700)
+        self.storage.a_register = 0o1414
+        assert not self.storage.machine_hung
+        assert not self.storage.out_status
+        Microinstructions.output_from_a(self.hardware)
+        assert self.storage.machine_hung
+        assert self.bi_tape.output_data() == []
+        assert self.storage.out_status
+
+    def test_output_a_normal_device_online_and_selected(self) -> None:
+        self.bi_tape.set_online_status(True)
+        self.input_output.external_function(0o3700)
+        self.storage.a_register = 0o1414
+        assert not self.storage.machine_hung
+        assert not self.storage.out_status
+        Microinstructions.output_from_a(self.hardware)
+        assert not self.storage.machine_hung
+        assert self.bi_tape.output_data() == [0o1414]
+        assert self.storage.out_status
+
+    def test_output_no_address_normal_happy_path(self) -> None:
+        self.bi_tape.set_online_status(True)
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7421)
+        self.storage.unpack_instruction()
+        self.input_output.external_function(0o3700)
+        self.storage.a_register = 0o1414
+        assert not self.storage.machine_hung
+        assert not self.storage.out_status
+        Microinstructions.output_no_address(self.hardware)
+        assert not self.storage.machine_hung
+        assert self.bi_tape.output_data() == [0o0021]
+        assert self.storage.out_status
+
+    def test_output_from_memory(self) -> None:
+        self.bi_tape.set_online_status(True)
+        write_location = READ_AND_WRITE_ADDRESS
+        for value in _BI_TAPE_INPUT_DATA:
+            self.storage.write_indirect_bank(write_location, value)
+            write_location += 1
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7304)
+        self.storage.write_relative_bank(G_ADDRESS, write_location)
+        self.storage.unpack_instruction()
+        self.input_output.external_function(0o3700)
+        self.storage.s_register = READ_AND_WRITE_ADDRESS
+        assert self.input_output.write_delay() == 4
+        assert Microinstructions.output_from_memory(self.hardware) == 40
+
     def __prepare_for_jump(self) -> None:
         self.storage.p_register = INSTRUCTION_ADDRESS
         self.storage.s_register = JUMP_ADDRESS
