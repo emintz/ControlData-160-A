@@ -557,7 +557,7 @@ OUTPUT_FROM_MEMORY = """
           EXC 3700    Select the HyperLoopQuantumGravityBiTape
           CIL         External functions lock out interrupts
           OUT 3 211   Write data from indirect memory bank. Start at address
-          REM         found at * + 4 up to but not including 211 
+          REM         found at * + 3 up to but not including 211 
           HLT         Success!
           OCT 200     Write from address 200.
           REM Initialize the output buffer.
