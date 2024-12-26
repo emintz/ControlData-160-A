@@ -55,6 +55,7 @@ class TestBufferedOutputPump(TestCase):
                 case PumpStatus.FAILURE:
                     self.fail("Unexpected device failure")
         assert words_moved == len(self._OUTPUT_DATA)
+        assert elapsed_cycles == 40
         assert (self.__storage.buffer_entrance_register ==
                 self._BUFFER_LAST_WORD_ADDRESS_PLUS_ONE)
         assert (self.__storage.buffer_exit_register ==
