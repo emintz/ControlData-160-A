@@ -117,6 +117,10 @@ class InputOutput:
         values; in particular, the caller must ensure that
         [BER] is strictly less than [BXR].
 
+        Note that the device on the normal channel is always
+        deselected, even if buffering is in progress
+        TODO(emintz): is this proper behavior?
+
         :return: InitiationStatus.ALREADY_RUNNING if a device
                  is buffering; InitiationStatus.STARTED
                  otherwise. When the call returns
@@ -124,13 +128,13 @@ class InputOutput:
                  but completion is not guaranteed.
         """
         status = InitiationStatus.ALREADY_RUNNING
+        device_to_buffer = self.__device_on_normal_channel
+        self.__device_on_normal_channel = None
         if self.__buffer_pump is None:
             status = InitiationStatus.STARTED
-            if self.__device_on_normal_channel is None:
+            if device_to_buffer is None:
                 self.__buffer_pump = NullBufferPump()
             else:
-                device_to_buffer = self.__device_on_normal_channel
-                self.__device_on_normal_channel = None
                 use_real_device = (
                         device_to_buffer.can_read()
                         and device_to_buffer.io_channel_support() ==

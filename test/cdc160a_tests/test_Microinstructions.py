@@ -1,12 +1,13 @@
 import unittest
 from unittest import TestCase
 
+from cdc160a import Microinstructions
 from cdc160a.Hardware import Hardware
 from cdc160a.InputOutput import InputOutput
+from cdc160a.NullDevice import NullDevice
 from cdc160a.PaperTapeReader import PaperTapeReader
 from cdc160a.Storage import InterruptLock
 from cdc160a.Storage import MCS_MODE_IND
-from cdc160a import Microinstructions
 from cdc160a.Storage import Storage
 from test_support.HyperLoopQuantumGravityBiTape import HyperLoopQuantumGravityBiTape
 from typing import Final
@@ -344,6 +345,48 @@ class Test(TestCase):
         Microinstructions.half_write_indirect(self.hardware)
         assert self.storage.read_indirect_bank(0o2300) == 0o1234
         assert self.storage.storage_cycle == MCS_MODE_IND
+
+    def test_initiate_buffer_io_running(self) -> None:
+        # IBI
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7200)
+        self.storage.write_relative_bank(G_ADDRESS, 0o200)
+        self.storage.unpack_instruction()
+        # Throw the buffer channel into an endless loop by starting
+        # buffered I/O with no device selected.
+        assert Microinstructions.initiate_buffer_input(self.hardware) == 1
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_DOUBLE_WORD_INSTRUCTION_ADDRESS)
+        assert self.input_output.device_on_normal_channel() is None
+        assert isinstance(
+            self.input_output.device_on_buffer_channel(),
+            NullDevice)
+
+        # Start buffered input from the BiTape
+        self.storage.p_register = INSTRUCTION_ADDRESS
+        self.input_output.external_function(0o3700)  # Select BiTape
+        self.storage.clear_interrupt_lock()
+        assert Microinstructions.initiate_buffer_input(self.hardware) == 2
+        self.storage.advance_to_next_instruction()
+        assert self.storage.get_program_counter() == 0o200
+        assert self.input_output.device_on_normal_channel() is None
+        assert isinstance(
+            self.input_output.device_on_buffer_channel(),
+            NullDevice)
+
+    def test_initiate_buffer_no_io_running(self) -> None:
+        # IBI
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7200)
+        self.storage.write_relative_bank(G_ADDRESS, 0o200)
+        self.storage.unpack_instruction()
+        self.input_output.external_function(0o3700)  # Select BiTape
+        self.storage.clear_interrupt_lock()
+        assert Microinstructions.initiate_buffer_input(self.hardware) == 1
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_DOUBLE_WORD_INSTRUCTION_ADDRESS)
+        assert self.input_output.device_on_normal_channel() is None
+        assert self.input_output.device_on_buffer_channel() == self.bi_tape
 
     def test_indirect_complement_to_a(self) -> None:
         self.storage.write_indirect_bank(READ_AND_WRITE_ADDRESS, 0o7654)

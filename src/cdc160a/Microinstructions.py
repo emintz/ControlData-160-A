@@ -18,7 +18,10 @@
 
     The full specification has the form [<register>](<bank>), as in
     [S](r)
+
+    TODO(emintz): compatibility with refactoring Instructions, if come.
 """
+from cdc160a.InputOutput import InitiationStatus
 from cdc160a.Hardware import Hardware
 from cdc160a.Storage import Storage
 
@@ -249,7 +252,35 @@ def halt(hardware: Hardware) -> None:
     """
     hardware.storage.stop()
 
+def initiate_buffer_input(hardware: Hardware) -> int:
+    """
+    Start buffered input and set the address of the next
+    instruction to be run. If buffered I/O was already running,
+    set the address of the next instruction to [G]. Otherwise,
+    set the address of the next instruction to [P] + 2.
+
+    :param hardware: emulator hardware, including I/O and
+                     storage
+    :return: elapsed cycles
+    """
+    elapsed_cycles = 1  # Assume no jump for now
+    storage = hardware.storage
+    match hardware.input_output.initiate_buffer_input(storage):
+        case InitiationStatus.STARTED:
+            storage.next_after_two_word_instruction()
+        case InitiationStatus.ALREADY_RUNNING:
+            storage.g_to_next_address()
+            elapsed_cycles = 2
+    return elapsed_cycles
+
 def input_to_a(hardware: Hardware) -> int:
+    """
+    Read one word from the normal input channel to the accumulator.
+
+    :param hardware: the emulated hardware, including storage
+                     and I/O
+    :return: elapsed cycles
+    """
     status, value = hardware.input_output.read_normal()
     if status:
         hardware.storage.a_register = value
@@ -266,7 +297,7 @@ def input_to_memory(hardware: Hardware) -> int:
 
     :param hardware: the emulated hardware, including storage
                      and I/O
-    :return: the number of cycles used in reading.
+    :return: elapsed cycles
     """
     hardware.storage.normal_input_active()
     elapsed_cycles = 0
