@@ -42,15 +42,15 @@ class RunLoop:
         """
         self.__console.before_instruction_fetch(self.__storage, self.__input_output)
         self.__storage.service_pending_interrupts()
-        # TODO(emintz): service pending buffer requests
         self.__storage.unpack_instruction()
         decoder = InstructionDecoder.decoder_at(self.__storage.f_instruction)
         current_instruction = decoder.decode(self.__storage.f_e)
         current_instruction.determine_effective_address(self.__storage)
         self.__console.before_instruction_logic(self.__storage, self.__input_output)
-        current_instruction.perform_logic(self.__hardware)
+        elapsed_cycles = current_instruction.perform_logic(self.__hardware)
         # TODO(emintz): Scaling delay, 6.4 microseconds/cycle
         current_instruction.post_process(self.__hardware)
+        self.__input_output.buffer(self.__storage, elapsed_cycles)
         if not self.__console.before_advance(self.__storage, self.__input_output):
             return False
         self.__storage.advance_to_next_instruction()

@@ -176,6 +176,50 @@ BUFFER_ENTRANCE_TO_A = """
           HLT
           END    
 """
+BUFFER_IN_FROM_BI_TAPE = """
+          REM Buffer in from the HyperLoopQuantumGravityBiTape
+          REM
+          REM Bank settings:
+          REM Bank          Selected
+          REM ------------- --------
+          REM Buffer               0
+          REM Direct               2
+          REM Indirect             1
+          REM Relative             3
+          REM
+          BNK 3
+          ORG 20       Interrupt 20 handler
+          OCT 0        Return address goes here
+          JFI 1
+          OCT 400      Interrupt handler location
+          ORG 100
+          LDC 200      200 -> A
+          ATE 301      [A] -> BER, FWA == 200
+          LDC 212      212 -> A
+          ATX 302      [A] -> BXR, LWA + 1 = 212
+          EXC 3700     Select the BiTape
+          CIL          External functions lock interrupts
+          REM          We will buffer 10 words of input
+          IBI 300
+          LDN 0        The interrupt handler will set A nonzero
+          REM
+          REM          Buffer wait loop
+          REM
+          NOP          Probably not needed, but why not?
+          ZJB 1        Interrupt 20 handler will set A positive
+          REM
+          HLT          Success halt at buffer loop exit.
+          ORG 300
+          HLT          IBI error halt
+          HLT          ATE error halt
+          HLT          ATX error halt.
+          ORG 400      Interrupt handler
+          LDN 1        Nonzero A causes the buffer wait loop to
+          REM          exit.
+          CIL
+          JPI 20       Back to the buffer wait loop
+          END
+"""
 CLEAR_INTERRUPT_LOCKOUT = """
           REM Test interrupt lockout. The test must lock interrupts
           REM before running this.

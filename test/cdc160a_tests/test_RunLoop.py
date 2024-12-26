@@ -42,6 +42,9 @@ class TestRunLoop(TestCase):
     def load_test_program(self, source: str) -> None:
         assembler_from_string(source, self.__storage).run()
 
+    # Advanced test scripts
+    # ---------------------
+
     def test_run_hlt(self) -> None:
         self.load_test_program(Programs.HALT)
         self.__run_loop.run()
@@ -66,6 +69,24 @@ class TestRunLoop(TestCase):
         assert self.__storage.p_register == 0o0103
         assert not self.__storage.err_status
         assert not self.__storage.run_stop_status
+
+    def test_buffered_input(self) -> None:
+        self.__bi_tape.set_online_status(True)
+        self.load_test_program(Programs.BUFFER_IN_FROM_BI_TAPE)
+        self.__run_loop.run()
+        assert self.__storage.get_program_counter() == 0o120
+        assert self.__storage.read_buffer_bank(0o177) == 0 # FWA - 1
+        assert self.__storage.read_buffer_bank(0o212) == 0 # LWA + 1
+        input_location = 0o200
+        for expected_value in _BI_TAPE_INPUT_DATA:
+            assert (self.__storage.read_buffer_bank(input_location) ==
+                    expected_value)
+            input_location += 1
+        assert self.__input_output.device_on_buffer_channel() is None
+        assert self.__input_output.device_on_normal_channel() is None
+
+    # Single instruction test scripts
+    # -------------------------------
 
     def test_acj(self) -> None:
         self.load_test_program(
