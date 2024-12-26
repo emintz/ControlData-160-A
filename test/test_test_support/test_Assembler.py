@@ -354,6 +354,9 @@ class TestAssembler(TestCase):
     def test_jpi(self) -> None:
         self.__single_instruction_test("JPI 24", [0o7024])
 
+    def test_ibi(self) -> None:
+        self.__single_instruction_test("IBI 300", [0o7200, 0o300])
+
     def test_ina(self) -> None:
         self.__single_instruction_test("INA", [0o7600])
 

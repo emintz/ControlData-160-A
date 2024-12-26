@@ -3,9 +3,10 @@ from unittest import TestCase
 import os
 from tempfile import NamedTemporaryFile
 
-from PaperTapeReader import PaperTapeReader
 from cdc160a.InputOutput import InputOutput
 from cdc160a.RunLoop import RunLoop
+from cdc160a.NullDevice import NullDevice
+from cdc160a.PaperTapeReader import PaperTapeReader
 from cdc160a.Storage import InterruptLock, Storage
 from test_support.Assembler import assembler_from_string
 from test_support.HyperLoopQuantumGravityBiTape import HyperLoopQuantumGravityBiTape
@@ -284,6 +285,24 @@ class TestRunLoop(TestCase):
         self.load_test_program(Programs.HALF_WRITE_INDIRECT)
         self.__run_loop.run()
         assert self.__storage.read_indirect_bank(0o2100) == 0o4321
+
+    def test_ibi_channel_busy(self) -> None:
+        self.load_test_program(Programs.INITIATE_BUFFER_INPUT_CHANNEL_BUSY)
+        self.__run_loop.run()
+        assert self.__storage.get_program_counter() == 0o300
+        assert self.__input_output.device_on_normal_channel() is None
+        assert isinstance(
+            self.__input_output.device_on_buffer_channel(),
+            NullDevice)
+
+    def test_ibi_channel_free(self) -> None:
+        self.load_test_program(Programs.INITIATE_BUFFER_INPUT_CHANNEL_FREE)
+        self.__run_loop.run()
+        assert self.__storage.get_program_counter() == 0o105
+        assert (self.__input_output.device_on_normal_channel()
+                is  None)
+        assert (self.__input_output.device_on_buffer_channel() ==
+                self.__bi_tape)
 
     def test_ina(self) -> None:
         self.__bi_tape.set_online_status(True)

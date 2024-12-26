@@ -240,6 +240,36 @@ HALT = """
           HLT
           END
 """
+INITIATE_BUFFER_INPUT_CHANNEL_BUSY = """
+          REM Initiate buffer input from the BiTape with
+          REM the buffer channel busy
+          BNK 3
+          ORG 100
+          IBI 200        Start buffered input, branch to 200 if failure
+          REM            Throws the buffer channel into an endless loop.
+          EXC 3700       Select the BiTape
+          CIL            External functions lock interrupts
+          IBI 300        Start buffered input, branch to 300 if failure
+          HLT            Error halt for second IBI instruction
+          ORG 200
+          HLT            Error halt for first IBI instruction
+          ORG 300
+          HLT            Success halt
+          END
+"""
+INITIATE_BUFFER_INPUT_CHANNEL_FREE = """
+          REM Initiate buffer input from the BiTape with
+          REM the buffer channel free
+          BNK 3
+          ORG 100
+          EXC 3700       Select the BiTape
+          CIL            External functions lock interrupts
+          IBI 300        Start buffered input, branch to 300 if failure
+          HLT            Success halt
+          ORG 300
+          HLT            Error halt
+          END
+"""
 INPUT_TO_A = """
           REM Reads one word from the HyperLoopQuantumGravityBiTape
           REM to A. Device must be on and have one or more words

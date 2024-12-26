@@ -352,6 +352,8 @@ HLT = __single_advance_instruction("HLT", EffectiveAddress.no_address, Microinst
                                    __vacuous_post_processor, 1)
 HWI = __single_advance_instruction("HWI", EffectiveAddress.via_direct_at_e, Microinstructions.half_write_indirect,
                                    __vacuous_post_processor, 4)
+IBI = VariableTimingInstruction("IBI", EffectiveAddress.no_address, Microinstructions.initiate_buffer_input,
+                                __vacuous_post_processor, __no_advance)
 INP = VariableTimingInstruction("INP", EffectiveAddress.forward_indirect, Microinstructions.input_to_memory,
                                 __finish_normal_input, __double_advance)
 IRJ = __no_advance_instruction("IRJ", EffectiveAddress.no_address, Microinstructions.set_ind_rel_bank_from_e_and_jump,

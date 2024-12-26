@@ -265,7 +265,7 @@ __DECODERS = [
     Singleton(Instructions.NJB, 0o67),                   # 67
     Singleton(Instructions.JPI, 0o70),                   # 70
     Bimodal(Instructions.JPR, Instructions.JFI, 0o71),   # 71
-    Singleton(Instructions.INP, 0o72),                   # 72
+    Bimodal(Instructions.IBI, Instructions.INP, 0o72),   # 72
     Singleton(Instructions.OUT, 0o73),                   # 73
     Singleton(Instructions.OTN, 0o74),                   # 74
     Bimodal(Instructions.EXC, Instructions.EXF, 0o75),   # 75
