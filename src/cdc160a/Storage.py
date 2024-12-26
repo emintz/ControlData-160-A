@@ -402,7 +402,6 @@ class Storage:
         :return: True if the buffer contains more data to be read; False
                  if the call read the last word in the buffer.
         """
-        assert self.buffering
         assert self.buffer_entrance_register < self.buffer_exit_register
         self.buffer_data_register =self.memory[
             self.buffer_storage_bank, self.buffer_entrance_register]
