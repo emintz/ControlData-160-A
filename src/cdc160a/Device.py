@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from enum import Enum
+from enum import Enum, unique
 
 class IllegalInvocation(Exception):
     """
@@ -18,19 +18,20 @@ class IOChannelSupport(Enum):
         normal channel, but a device on the buffer channel may be read
         and written on either the normal or the buffer channel.
     """
-    NORMAL_ONLY = 1,
-    NORMAL_AND_BUFFERED = 2,
+    NORMAL_ONLY = 1
+    NORMAL_AND_BUFFERED = 2
 
+@unique
 class ExternalFunctionAction(Enum):
     """
     Responses to an external function a request emanating
     from an EXC or EXF instruction.
     """
-    ERROR = 1,          # Handle an invalid operation.
-    BUFFER_SELECT = 2,  # Select on the buffer and normal channels.
-    NORMAL_SELECT = 3,  # Select on the normal channel.
-    STATUS_CHECK = 4,   # Return a status code.
-    NONE = 5,           # No action required.
+    ERROR = 1           # Handle an invalid operation.
+    BUFFER_SELECT = 2   # Select on the buffer and normal channels.
+    NORMAL_SELECT = 3   # Select on the normal channel.
+    STATUS_CHECK = 4    # Return a status code.
+    NONE = 5            # No action required.
 
 class Device(ABC):
     """
@@ -99,6 +100,12 @@ class Device(ABC):
         """
         raise NotImplemented
 
+    def can_read(self) -> bool:
+        return self.__can_read
+
+    def can_write(self) -> bool:
+        return self.__can_write
+
     def initial_read_delay(self) -> int:
         """
         Provides the initial delay, the number of cycles required for
@@ -114,6 +121,9 @@ class Device(ABC):
                  devices).
         """
         raise NotImplemented
+
+    def io_channel_support(self) -> IOChannelSupport:
+        return self.__io_channel_support
 
     def initial_write_delay(self) -> int:
         """

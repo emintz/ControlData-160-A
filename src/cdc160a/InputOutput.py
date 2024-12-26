@@ -1,6 +1,30 @@
-from operator import ifloordiv
+from cdc160a.BufferedInputPump import BufferedInputPump
+from cdc160a.BufferPump import PumpStatus
+from cdc160a.Device import IOChannelSupport
+from cdc160a.NullBufferPump import NullBufferPump
+from cdc160a.BufferPump import BufferPump
+from cdc160a.Device import Device
+from cdc160a.Storage import Storage
+from enum import Enum, unique
+from typing import Optional
 
-from cdc160a import Device
+@unique
+class BufferStatus(Enum):
+    """
+    Status of a buffered data transfer.
+    """
+    INACTIVE = 1   # No active buffering, buffer is not running
+    RUNNING = 2    # Buffer is active and running well. Note that
+                   # this code does not indicate if data was transferred.
+    FINISHED = 3   # Buffer just completed, the I/O system has
+                   # requested interrupt 20
+    FAILURE = 4    # I/O failed. Caller should respond accordingly
+                   # TODO(emintz): what should happen here?
+
+@unique
+class InitiationStatus(Enum):
+    ALREADY_RUNNING = 1  # Buffer already running, cannot initiate
+    STARTED = 2          # Buffer started. Completion is not guaranteed.
 
 class InputOutput:
     def __init__(self, devices: [Device]):
@@ -10,20 +34,48 @@ class InputOutput:
         :param devices: a list of I/O devices attached to this
                         160-A
         """
-        self.__devices = devices
-        self.__device_on_buffer_channel = None
-        self.__device_on_normal_channel = None
+        self.__buffer_pump: Optional[BufferPump] = None
+        self.__devices: [Device] = devices
+        self.__device_on_normal_channel: Optional[Device] = None
+
+    def buffer(self, storage, cycles: int) -> BufferStatus:
+        """
+        If buffering is active, try to move one word. Otherwise, do
+        nothing.
+
+        :param storage: emulator storage: memory and register file.
+        :param cycles: the number of memory cycles elapsed since the
+               prior call
+        :return: the buffer status specified in the foregoing
+                 BufferStatus enumeration
+        """
+        status: BufferStatus = BufferStatus.INACTIVE
+        if self.__buffer_pump is not None:
+            match self.__buffer_pump.pump(cycles):
+                case PumpStatus.NO_DATA_MOVED:
+                    status = BufferStatus.RUNNING
+                case PumpStatus.ONE_WORD_MOVED:
+                    status = BufferStatus.RUNNING
+                case PumpStatus.COMPLETED:
+                    self.__buffer_pump = None
+                    status = BufferStatus.FINISHED
+                    storage.request_interrupt(0o20)
+                case PumpStatus.FAILURE:
+                    status = BufferStatus.FAILURE
+            return status
 
     def clear(self) -> None:
         """
         Stop normal and buffered I/O and clear all selected devices
         :return: None
         """
-        self.__device_on_buffer_channel = None
+        self.__buffer_pump = None
         self.__device_on_normal_channel = None
 
     def device_on_buffer_channel(self) -> Device:
-        return self.__device_on_buffer_channel
+        return self.__buffer_pump.device() \
+            if self.__buffer_pump is not None \
+            else None
 
     def device_on_normal_channel(self) -> Device:
         return self.__device_on_normal_channel
@@ -57,6 +109,37 @@ class InputOutput:
                 self.__device_on_normal_channel = device
 
         return response, status
+
+    def initiate_buffer_input(self, storage: Storage) -> InitiationStatus:
+        """
+        Start buffered input. The caller must have set the
+        buffer entrance and buffer exit registers to valid
+        values; in particular, the caller must ensure that
+        [BER] is strictly less than [BXR].
+
+        :return: InitiationStatus.ALREADY_RUNNING if a device
+                 is buffering; InitiationStatus.STARTED
+                 otherwise. When the call returns
+                 InitiationStatus.STARTED, a buffer is running,
+                 but completion is not guaranteed.
+        """
+        status = InitiationStatus.ALREADY_RUNNING
+        if self.__buffer_pump is None:
+            status = InitiationStatus.STARTED
+            if self.__device_on_normal_channel is None:
+                self.__buffer_pump = NullBufferPump()
+            else:
+                device_to_buffer = self.__device_on_normal_channel
+                self.__device_on_normal_channel = None
+                use_real_device = (
+                        device_to_buffer.can_read()
+                        and device_to_buffer.io_channel_support() ==
+                            IOChannelSupport.NORMAL_AND_BUFFERED)
+                self.__buffer_pump = BufferedInputPump(
+                    device_to_buffer, storage) if use_real_device \
+                        else NullBufferPump()
+
+        return status
 
     def read_delay(self) -> int:
         """

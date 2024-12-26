@@ -14,7 +14,7 @@
 
     TODO(emintz): move method descriptions to doc strings.
 """
-from enum import Enum
+from enum import Enum, unique
 import numpy as np
 from typing import Final
 from cdc160a import Arithmetic
@@ -28,6 +28,7 @@ MCS_MODE_DIR: Final[int] = 1
 MCS_MODE_IND: Final[int] = 2
 MCS_MODE_REL: Final[int] = 3
 
+@unique
 class InterruptLock(Enum):
     FREE = 0
     LOCKED = 1
@@ -247,7 +248,6 @@ class Storage:
                  transferred into the buffer); False if  the invocation
                  filled the buffer.
         """
-        assert self.buffering
         assert self.buffer_entrance_register < self.buffer_exit_register
         self.memory[self.buffer_storage_bank, self.buffer_entrance_register] =\
             self.buffer_data_register

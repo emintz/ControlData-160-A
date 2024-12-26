@@ -15,9 +15,24 @@ Buffer pumps only move data. They do not manage other machine state.
 Note that the BufferPump class does not reference the Storage class
 to sidestep circular references in subclasses. If the BufferPump
 bound a Storage instance, circular references would occur.
+
+Buffer pumps are intended for single use, to be created at the start
+of a buffered read or write and discarded when the operation has
+completed.
 """
 
 from abc import ABC, abstractmethod
+from cdc160a.Device import Device
+from enum import Enum, unique
+
+@unique
+class PumpStatus(Enum):
+    NO_DATA_MOVED = 1,   # The device is not ready to consume or provide data.
+    ONE_WORD_MOVED = 2,  # The device consumed or provided one word.
+    COMPLETED = 3,       # Buffered input or output successfully completed.
+                         # The last required word has been moved to or from
+                         # memory.
+    FAILURE = 4,         # Buffering has failed.
 
 class BufferPump(ABC):
     """
@@ -25,7 +40,11 @@ class BufferPump(ABC):
     """
 
     @abstractmethod
-    def pump(self, elapsed_cycles: int) -> bool:
+    def device(self) -> Device:
+        pass
+
+    @abstractmethod
+    def pump(self, elapsed_cycles: int) -> PumpStatus:
         """
         Pump one word into or out of memory if the buffer is not
         currently moving data. If the buffer is currently processing
@@ -34,6 +53,7 @@ class BufferPump(ABC):
         :param elapsed_cycles: the number of cycles that have elapsed
                since the prior pump invocation. Pumps can use this
                to simulate I/O latency
-        :return: True if data remains to be buffered, False otherwise.
+        :return: operation status as defined in the BufferStatus enumeration
+                 above.
         """
-        return False
+        pass

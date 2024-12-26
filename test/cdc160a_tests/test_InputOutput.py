@@ -2,13 +2,19 @@ from unittest import TestCase
 import os
 from tempfile import NamedTemporaryFile
 
-from cdc160a.InputOutput import InputOutput
+from cdc160a.InputOutput import BufferStatus, InitiationStatus, InputOutput
+from cdc160a.NullDevice import NullDevice
 from cdc160a.PaperTapeReader import PaperTapeReader
+from cdc160a.Storage import Storage
 from test_support.HyperLoopQuantumGravityBiTape import HyperLoopQuantumGravityBiTape
 
 _BI_TAPE_INPUT_DATA = [
     0o7777, 0o0001, 0o0200, 0o0210, 0o1111,
     0o4001, 0o4011, 0o4111, 0o4112, 0o4122]
+_BUFFER_FIRST_WORD_ADDRESS = 0o200
+_BUFFER_LAST_WORD_ADDRESS_PLUS_ONE = (
+        _BUFFER_FIRST_WORD_ADDRESS + len(_BI_TAPE_INPUT_DATA))
+
 
 class TestInputOutput(TestCase):
     def setUp(self) -> None:
@@ -16,6 +22,57 @@ class TestInputOutput(TestCase):
         self.__paper_tape_reader = PaperTapeReader()
         self.__input_output = InputOutput(
             [self.__paper_tape_reader, self.__bi_tape])
+        self.__storage = Storage()
+
+    def test_buffer_input_no_device_and_buffer_idle(self) -> None:
+        self.__bi_tape.set_online_status(True)
+        assert self.__input_output.device_on_normal_channel() is None
+        assert self.__input_output.device_on_buffer_channel() is None
+        self.__init_buffer_registers()
+        assert (self.__input_output.initiate_buffer_input(self.__storage) ==
+                InitiationStatus.STARTED)
+        buffering_device = self.__input_output.device_on_buffer_channel()
+        assert self.__input_output.device_on_normal_channel() is None
+        assert isinstance(buffering_device, NullDevice)
+
+    def test_buffer_input_happy_path(self) -> None:
+        self.__bi_tape.set_online_status(True)
+        self.__init_buffer_registers()
+
+        device_status, op_status = (
+            self.__input_output.external_function(0o3700))
+        assert op_status
+        assert device_status == 0o0001
+        assert isinstance(
+            self.__input_output.device_on_normal_channel(),
+            HyperLoopQuantumGravityBiTape)
+
+        assert (self.__input_output.initiate_buffer_input(self.__storage) ==
+                InitiationStatus.STARTED)
+        buffering_device = self.__input_output.device_on_buffer_channel()
+        assert self.__input_output.device_on_normal_channel() is None
+        assert isinstance(buffering_device, HyperLoopQuantumGravityBiTape)
+        assert (self.__storage.interrupt_requests ==
+                [False, False, False, False])
+
+        elapsed_cycles = 0
+        while True:
+            elapsed_cycles += 1
+            match self.__input_output.buffer(self.__storage, 1):
+                case BufferStatus.RUNNING:
+                    pass
+                case BufferStatus.FINISHED:
+                    break
+                case BufferStatus.FAILURE:
+                    self.fail("Unexpected device failure.")
+        assert elapsed_cycles == 33
+        assert self.__storage.interrupt_requests == [False, True, False, False]
+
+        data_location = _BUFFER_FIRST_WORD_ADDRESS
+        for expected_value in _BI_TAPE_INPUT_DATA:
+            assert (self.__storage.read_buffer_bank(data_location) ==
+                    expected_value)
+            data_location += 1
 
     def test_select_no_device_accepts_code(self):
         assert self.__input_output.device_on_buffer_channel() is None
@@ -115,3 +172,9 @@ class TestInputOutput(TestCase):
 
         assert self.__input_output.write_normal(0o4040)
         assert self.__bi_tape.output_data() == [0o4040]
+
+    def __init_buffer_registers(self) -> None:
+        self.__storage.buffer_entrance_register = (
+            _BUFFER_FIRST_WORD_ADDRESS)
+        self.__storage.buffer_exit_register = (
+            _BUFFER_LAST_WORD_ADDRESS_PLUS_ONE)

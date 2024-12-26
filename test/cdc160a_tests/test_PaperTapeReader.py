@@ -1,8 +1,9 @@
 from unittest import TestCase
 import os
 
+from cdc160a.Device import IOChannelSupport
+from cdc160a.PaperTapeReader import PaperTapeReader
 from tempfile import NamedTemporaryFile
-from PaperTapeReader import PaperTapeReader
 
 class TestPaperTapeReader(TestCase):
 
@@ -24,6 +25,12 @@ class TestPaperTapeReader(TestCase):
         assert not self.__paper_tape_reader.is_open()
         self.__paper_tape_reader.close()
         assert not self.__paper_tape_reader.is_open()
+
+    def test_configuration(self) -> None:
+        assert self.__paper_tape_reader.can_read()
+        assert not self.__paper_tape_reader.can_write()
+        io_channel_support = self.__paper_tape_reader.io_channel_support()
+        assert io_channel_support == IOChannelSupport.NORMAL_ONLY
 
     def test_open_invalid_input_close(self) -> None:
         temp_file = NamedTemporaryFile("w+", delete=False)

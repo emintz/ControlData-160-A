@@ -1,5 +1,4 @@
-from Device import IOChannelSupport
-from cdc160a.Device import Device
+from cdc160a.Device import Device, IOChannelSupport
 
 class HyperLoopQuantumGravityBiTape(Device):
     """
@@ -61,6 +60,12 @@ class HyperLoopQuantumGravityBiTape(Device):
     def accepts(self, function_code: int) -> bool:
         return 0o3700 <= function_code <= 0o3702
 
+    def initial_read_delay(self) -> int:
+        return 6
+
+    def initial_write_delay(self) -> int:
+        return 8
+
     def online_status(self) -> bool:
         return self.__online
 
@@ -81,7 +86,7 @@ class HyperLoopQuantumGravityBiTape(Device):
     def set_online_status(self, status: bool) -> None:
         self.__online = status
 
-    def write(self, value) -> bool:
+    def write(self, value: int) -> bool:
         if self.__online:
             self.__output_data.append(value)
         return self.__online

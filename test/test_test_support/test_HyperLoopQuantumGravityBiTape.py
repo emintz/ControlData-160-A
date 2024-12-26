@@ -1,4 +1,5 @@
 from unittest import TestCase
+from cdc160a.Device import IOChannelSupport
 from test_support.HyperLoopQuantumGravityBiTape import HyperLoopQuantumGravityBiTape
 
 class TestHyperLoopQuantumGravityBiTape(TestCase):
@@ -9,6 +10,13 @@ class TestHyperLoopQuantumGravityBiTape(TestCase):
     def setUp(self):
         self.__bi_tape = HyperLoopQuantumGravityBiTape(
             self._INPUT_DATA.copy())
+
+    def test_configuration(self) -> None:
+        assert self.__bi_tape.can_read()
+        assert self.__bi_tape.can_write()
+        io_channel_support: IOChannelSupport = \
+            self.__bi_tape.io_channel_support()
+        assert io_channel_support is IOChannelSupport.NORMAL_AND_BUFFERED
 
     def test_online_status(self) -> None:
         request_validity, status =\
