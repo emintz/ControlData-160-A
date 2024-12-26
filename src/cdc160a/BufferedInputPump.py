@@ -30,6 +30,7 @@ class BufferedInputPump(BufferPump):
                     PumpStatus.COMPLETED
             else:
                 buffer_status = PumpStatus.FAILURE
+                # TODO(emintz): should we hang here?
         return buffer_status
 
     def cycles_remaining(self) -> int:
