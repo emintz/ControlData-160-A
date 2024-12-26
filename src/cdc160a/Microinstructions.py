@@ -32,7 +32,6 @@ def a_to_buffer_entrance(hardware: Hardware) -> int:
     :param hardware: emulator hardware including storage and I/O
     :return: the number of cycles the instruction used.
     """
-    # cycles_used = 0
     storage = hardware.storage
     if storage.buffering:
         storage.g_to_next_address()
@@ -50,7 +49,6 @@ def a_to_buffer_exit(hardware: Hardware) -> int:
     :param hardware: emulator hardware including storage and I/O
     :return: the number of cycles that the instruction used
     """
-    # cycles_used = 0
     storage = hardware.storage
     if storage.buffering:
         storage.g_to_next_address()
