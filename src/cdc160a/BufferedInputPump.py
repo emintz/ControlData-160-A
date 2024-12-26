@@ -3,6 +3,10 @@ from cdc160a.Device import Device
 from cdc160a.Storage import Storage
 
 class BufferedInputPump(BufferPump):
+    """
+    Buffers data from an input device to the emulators buffer storage
+    bank.
+    """
 
     def __init__(self, device: Device, storage: Storage):
         self.__device = device
