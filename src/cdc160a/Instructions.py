@@ -16,6 +16,9 @@ The design supports the following run loop:
 3. Run the instruction.
 4. Halt if the instruction halted the machine
 
+TODO(emintz): consider replacing the cobbled-together instruction
+              class with dynamically generated classes. See
+              https://www.pythontutorial.net/python-oop/python-type-class
 """
 from abc import abstractmethod, ABCMeta
 from cdc160a import EffectiveAddress
