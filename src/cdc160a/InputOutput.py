@@ -198,22 +198,6 @@ class InputOutput:
                  InitiationStatus.STARTED, a buffer is running,
                  but completion is not guaranteed.
         """
-        # status = InitiationStatus.ALREADY_RUNNING
-        # device_to_buffer = self.__device_on_normal_channel
-        # self.__device_on_normal_channel = None
-        # if self.__buffer_pump is None:
-        #     if device_to_buffer is None:
-        #         self.__buffer_pump = NullBufferPump()
-        #     else:
-        #         use_real_device = (
-        #             device_to_buffer.can_write()
-        #             and device_to_buffer.io_channel_support() ==
-        #                 IOChannelSupport.NORMAL_AND_BUFFERED)
-        #         self.__buffer_pump = (
-        #             BufferedOutputPump(device_to_buffer, storage)
-        #             if use_real_device
-        #             else NullBufferPump())
-        # return status
         return self._initiate_buffered_io(storage, _output_pump)
 
     def read_delay(self) -> int:

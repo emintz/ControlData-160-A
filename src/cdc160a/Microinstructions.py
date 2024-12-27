@@ -271,6 +271,17 @@ def initiate_buffer_input(hardware: Hardware) -> int:
             elapsed_cycles = 2
     return elapsed_cycles
 
+def initiate_buffer_output(hardware: Hardware) -> int:
+    elapsed_cycles = 1
+    storage = hardware.storage
+    match hardware.input_output.initiate_buffer_output(storage):
+        case InitiationStatus.STARTED:
+            storage.next_after_two_word_instruction()
+        case InitiationStatus.ALREADY_RUNNING:
+            storage.g_to_next_address()
+            elapsed_cycles = 2
+    return elapsed_cycles
+
 def input_to_a(hardware: Hardware) -> int:
     """
     Read one word from the normal input channel to the accumulator.

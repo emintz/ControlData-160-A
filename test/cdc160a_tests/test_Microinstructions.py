@@ -3,7 +3,7 @@ from unittest import TestCase
 
 from cdc160a import Microinstructions
 from cdc160a.Hardware import Hardware
-from cdc160a.InputOutput import InputOutput
+from cdc160a.InputOutput import BufferStatus, InputOutput
 from cdc160a.NullDevice import NullDevice
 from cdc160a.PaperTapeReader import PaperTapeReader
 from cdc160a.Storage import InterruptLock
@@ -27,6 +27,12 @@ _BI_TAPE_INPUT_DATA = [
     0o0000, 0o0001, 0o0200, 0o0210, 0o1111,
     0o4001, 0o4011, 0o4111, 0o4112, 0o4122]
 
+_BI_TAPE_OUTPUT_DATA = [
+    0o10, 0o06, 0o04, 0o02, 0o00, 0o01, 0o03, 0o05, 0o07]
+
+_BUFFERED_ENTRANCE = 0o200
+_INPUT_BUFFER_EXIT = _BUFFERED_ENTRANCE + len(_BI_TAPE_INPUT_DATA)
+_OUTPUT_BUFFER_EXIT = _BUFFERED_ENTRANCE + len(_BI_TAPE_OUTPUT_DATA)
 
 class Test(TestCase):
 
@@ -346,7 +352,7 @@ class Test(TestCase):
         assert self.storage.read_indirect_bank(0o2300) == 0o1234
         assert self.storage.storage_cycle == MCS_MODE_IND
 
-    def test_initiate_buffer_io_running(self) -> None:
+    def test_initiate_buffer_input_io_running(self) -> None:
         # IBI
         self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7200)
         self.storage.write_relative_bank(G_ADDRESS, 0o200)
@@ -374,11 +380,14 @@ class Test(TestCase):
             self.input_output.device_on_buffer_channel(),
             NullDevice)
 
-    def test_initiate_buffer_no_io_running(self) -> None:
+    def test_initiate_buffer_input_no_io_running(self) -> None:
         # IBI
         self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7200)
         self.storage.write_relative_bank(G_ADDRESS, 0o200)
         self.storage.unpack_instruction()
+        self.bi_tape.set_online_status(True)
+        self.storage.buffer_entrance_register = _BUFFERED_ENTRANCE
+        self.storage.buffer_exit_register = _INPUT_BUFFER_EXIT
         self.input_output.external_function(0o3700)  # Select BiTape
         self.storage.clear_interrupt_lock()
         assert Microinstructions.initiate_buffer_input(self.hardware) == 1
@@ -387,6 +396,83 @@ class Test(TestCase):
                 AFTER_DOUBLE_WORD_INSTRUCTION_ADDRESS)
         assert self.input_output.device_on_normal_channel() is None
         assert self.input_output.device_on_buffer_channel() == self.bi_tape
+
+        while True:
+            match self.input_output.buffer(self.storage, 1):
+                case BufferStatus.RUNNING:
+                    pass
+                case BufferStatus.FINISHED:
+                    break
+                case BufferStatus.FAILURE:
+                    self.fail("Unexpected device failure.")
+
+        buffer_memory_address = _BUFFERED_ENTRANCE
+        for value in _BI_TAPE_INPUT_DATA:
+            assert self.storage.read_buffer_bank(
+                buffer_memory_address) == value
+            buffer_memory_address += 1
+
+    def test_initiate_buffer_output_io_running(self) -> None:
+        # IBO
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7300)
+        self.storage.write_relative_bank(G_ADDRESS, 0o200)
+        self.storage.unpack_instruction()
+        # Throw the buffer channel into an endless loop by starting
+        # buffered I/O with no device selected.
+        assert Microinstructions.initiate_buffer_output(self.hardware) == 1
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_DOUBLE_WORD_INSTRUCTION_ADDRESS)
+        assert self.input_output.device_on_normal_channel() is None
+        assert isinstance(
+            self.input_output.device_on_buffer_channel(),
+            NullDevice)
+
+        # Start buffered output from the BiTape
+        self.storage.p_register = INSTRUCTION_ADDRESS
+        self.input_output.external_function(0o3700)  # Select BiTape
+        self.storage.clear_interrupt_lock()
+        assert Microinstructions.initiate_buffer_output(self.hardware) == 2
+        self.storage.advance_to_next_instruction()
+        assert self.storage.get_program_counter() == 0o200
+        assert self.input_output.device_on_normal_channel() is None
+        assert isinstance(
+            self.input_output.device_on_buffer_channel(),
+            NullDevice)
+
+    def test_initiate_buffer_output_no_io_running(self) -> None:
+        # IBO
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7300)
+        self.storage.write_relative_bank(G_ADDRESS, 0o200)
+        self.storage.unpack_instruction()
+
+        self.bi_tape.set_online_status(True)
+        write_address = _BUFFERED_ENTRANCE
+        for value in _BI_TAPE_OUTPUT_DATA:
+            self.storage.write_buffer_bank(write_address, value)
+            write_address += 1
+        self.storage.buffer_entrance_register = _BUFFERED_ENTRANCE
+        self.storage.buffer_exit_register = _OUTPUT_BUFFER_EXIT
+
+        self.input_output.external_function(0o3700)  # Select BiTape
+        self.storage.clear_interrupt_lock()
+        assert Microinstructions.initiate_buffer_output(self.hardware) == 1
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_DOUBLE_WORD_INSTRUCTION_ADDRESS)
+        assert self.input_output.device_on_normal_channel() is None
+        assert self.input_output.device_on_buffer_channel() == self.bi_tape
+
+        while True:
+            match self.input_output.buffer(self.storage, 1):
+                case BufferStatus.RUNNING:
+                    pass
+                case BufferStatus.FINISHED:
+                    break
+                case BufferStatus.FAILURE:
+                    self.fail("Unexpected device failure.")
+
+        assert self.bi_tape.output_data() == _BI_TAPE_OUTPUT_DATA
 
     def test_indirect_complement_to_a(self) -> None:
         self.storage.write_indirect_bank(READ_AND_WRITE_ADDRESS, 0o7654)
