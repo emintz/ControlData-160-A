@@ -12,9 +12,12 @@ _BI_TAPE_INPUT_DATA = [
     0o7777, 0o0001, 0o0200, 0o0210, 0o1111,
     0o4001, 0o4011, 0o4111, 0o4112, 0o4122]
 _BUFFER_FIRST_WORD_ADDRESS = 0o200
-_BUFFER_LAST_WORD_ADDRESS_PLUS_ONE = (
+_INPUT_BUFFER_LAST_WORD_ADDRESS_PLUS_ONE = (
         _BUFFER_FIRST_WORD_ADDRESS + len(_BI_TAPE_INPUT_DATA))
-
+_BI_TAPE_OUTPUT_DATA = [
+    0o10, 0o06, 0o04, 0o02, 0o00, 0o01, 0o03, 0o05, 0o07]
+_OUTPUT_BUFFER_LAST_WORD_ADDRESS_PLUS_ONE = (
+        _BUFFER_FIRST_WORD_ADDRESS + len(_BI_TAPE_OUTPUT_DATA))
 
 class TestInputOutput(TestCase):
     def setUp(self) -> None:
@@ -23,6 +26,20 @@ class TestInputOutput(TestCase):
         self.__input_output = InputOutput(
             [self.__paper_tape_reader, self.__bi_tape])
         self.__storage = Storage()
+
+    def test_buffer_input_when_busy(self) -> None:
+        self.__bi_tape.set_online_status(True)
+        assert self.__input_output.device_on_normal_channel() is None
+        assert self.__input_output.device_on_buffer_channel() is None
+
+        # Throw the buffer into an endless loop.
+        self.__init_buffer_registers()
+        assert (self.__input_output.initiate_buffer_input(self.__storage) ==
+                InitiationStatus.STARTED)
+        buffering_device = self.__input_output.device_on_buffer_channel()
+        assert self.__input_output.device_on_normal_channel() is None
+        assert isinstance(buffering_device, NullDevice)
+
 
     def test_buffer_input_no_device_and_buffer_idle(self) -> None:
         self.__bi_tape.set_online_status(True)
@@ -34,6 +51,22 @@ class TestInputOutput(TestCase):
         buffering_device = self.__input_output.device_on_buffer_channel()
         assert self.__input_output.device_on_normal_channel() is None
         assert isinstance(buffering_device, NullDevice)
+
+        device_status, op_status = (
+            self.__input_output.external_function(0o3700))
+        assert op_status
+        assert device_status == 0o0001
+        assert isinstance(
+            self.__input_output.device_on_normal_channel(),
+            HyperLoopQuantumGravityBiTape)
+
+        # Try to select the BiTape. Selection should fail.
+        assert (self.__input_output.initiate_buffer_input(self.__storage) ==
+                InitiationStatus.ALREADY_RUNNING)
+        buffering_device = self.__input_output.device_on_buffer_channel()
+        assert isinstance(buffering_device, NullDevice)
+        assert self.__input_output.device_on_normal_channel() is None
+
 
     def test_buffer_input_happy_path(self) -> None:
         self.__bi_tape.set_online_status(True)
@@ -73,6 +106,49 @@ class TestInputOutput(TestCase):
             assert (self.__storage.read_buffer_bank(data_location) ==
                     expected_value)
             data_location += 1
+
+    def test_buffered_output_happy_path(self) -> None:
+        self.__bi_tape.set_online_status(True)
+        self.__init_buffer_registers()
+
+        device_status, op_status = (
+            self.__input_output.external_function(0o3700))
+        assert op_status
+        assert device_status == 0o0001
+        assert isinstance(
+            self.__input_output.device_on_normal_channel(),
+            HyperLoopQuantumGravityBiTape)
+        self.__storage.clear_interrupt_lock()
+
+        write_location = _BUFFER_FIRST_WORD_ADDRESS
+        for value in _BI_TAPE_OUTPUT_DATA:
+            self.__storage.write_buffer_bank(write_location, value)
+            write_location += 1
+
+        self.__storage.buffer_entrance_register = _BUFFER_FIRST_WORD_ADDRESS
+        self.__storage.buffer_exit_register = (
+            _OUTPUT_BUFFER_LAST_WORD_ADDRESS_PLUS_ONE)
+
+        assert (self.__input_output.initiate_buffer_output(self.__storage) ==
+                InitiationStatus.STARTED)
+        buffering_device = self.__input_output.device_on_buffer_channel()
+        assert self.__input_output.device_on_normal_channel() is None
+        assert isinstance(buffering_device, HyperLoopQuantumGravityBiTape)
+        assert (self.__storage.interrupt_requests ==
+                [False, False, False, False])
+
+        elapsed_cycles = 0
+        while True:
+            elapsed_cycles += 1
+            match self.__input_output.buffer(self.__storage, 1):
+                case BufferStatus.RUNNING:
+                    pass
+                case BufferStatus.FINISHED:
+                    break
+                case BufferStatus.FAILURE:
+                    self.fail("Unexpected device failure.")
+        assert elapsed_cycles == 40
+        assert self.__bi_tape.output_data() == _BI_TAPE_OUTPUT_DATA
 
     def test_select_no_device_accepts_code(self):
         assert self.__input_output.device_on_buffer_channel() is None
@@ -177,4 +253,4 @@ class TestInputOutput(TestCase):
         self.__storage.buffer_entrance_register = (
             _BUFFER_FIRST_WORD_ADDRESS)
         self.__storage.buffer_exit_register = (
-            _BUFFER_LAST_WORD_ADDRESS_PLUS_ONE)
+            _INPUT_BUFFER_LAST_WORD_ADDRESS_PLUS_ONE)

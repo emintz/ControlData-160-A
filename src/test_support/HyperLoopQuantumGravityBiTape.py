@@ -21,12 +21,7 @@ class HyperLoopQuantumGravityBiTape(Device):
     """
 
     def __init__(self, input_data: [int]):
-        super().__init__(
-        "HyperLoop Quantum Gravity BiTape",
-            True,
-            True,
-            5,
-            IOChannelSupport.NORMAL_AND_BUFFERED)
+        super().__init__("HyperLoop Quantum Gravity BiTape", True, True, IOChannelSupport.NORMAL_AND_BUFFERED)
         self.__input_data: [int] = input_data
         self.__input_position: int = 0
         self.__output_data: [int] = []

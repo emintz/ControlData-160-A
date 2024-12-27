@@ -1,12 +1,12 @@
 from cdc160a.BufferedInputPump import BufferedInputPump
-from cdc160a.BufferPump import PumpStatus
+from cdc160a.BufferedOutputPump import BufferedOutputPump
+from cdc160a.BufferPump import BufferPump, PumpStatus
 from cdc160a.Device import IOChannelSupport
 from cdc160a.NullBufferPump import NullBufferPump
-from cdc160a.BufferPump import BufferPump
 from cdc160a.Device import Device
 from cdc160a.Storage import Storage
 from enum import Enum, unique
-from typing import Optional
+from typing import Callable, Optional
 
 @unique
 class BufferStatus(Enum):
@@ -25,6 +25,12 @@ class BufferStatus(Enum):
 class InitiationStatus(Enum):
     ALREADY_RUNNING = 1  # Buffer already running, cannot initiate
     STARTED = 2          # Buffer started. Completion is not guaranteed.
+
+def _input_pump(device: Device, storage: Storage) -> BufferPump:
+    return BufferedInputPump(device, storage)
+
+def _output_pump(device: Device, storage: Storage) -> BufferPump:
+    return BufferedOutputPump(device, storage)
 
 class InputOutput:
     def __init__(self, devices: [Device]):
@@ -84,7 +90,7 @@ class InputOutput:
         """
         Perform an external function, select or query a device.
 
-        :param operand:
+        :param operand: 12 bit function code
         :return: a tuple whose first member is the device response, an
                  integer if the device response or None if it does not,
                  the second a boolean that is True if the request was
@@ -110,16 +116,16 @@ class InputOutput:
 
         return response, status
 
-    def initiate_buffer_input(self, storage: Storage) -> InitiationStatus:
+    def _initiate_buffered_io(
+            self,
+            storage: Storage,
+            pump_factory: Callable[[Device, Storage], BufferPump]) -> InitiationStatus:
         """
-        Start buffered input. The caller must have set the
-        buffer entrance and buffer exit registers to valid
-        values; in particular, the caller must ensure that
-        [BER] is strictly less than [BXR].
+        Initiate buffered I/O. The provided buffer pump factory function
+        determines direction (i.e. input or output)
 
-        Note that the device on the normal channel is always
-        deselected, even if buffering is in progress
-        TODO(emintz): is this proper behavior?
+        :param storage: emulator memory and register file
+        :param pump_factory: function that provides the required buffer pump
 
         :return: InitiationStatus.ALREADY_RUNNING if a device
                  is buffering; InitiationStatus.STARTED
@@ -139,11 +145,76 @@ class InputOutput:
                         device_to_buffer.can_read()
                         and device_to_buffer.io_channel_support() ==
                             IOChannelSupport.NORMAL_AND_BUFFERED)
-                self.__buffer_pump = BufferedInputPump(
+                self.__buffer_pump = pump_factory(
                     device_to_buffer, storage) if use_real_device \
                         else NullBufferPump()
 
         return status
+
+
+    def initiate_buffer_input(self, storage: Storage) -> InitiationStatus:
+        """
+        Start buffered input. The caller must have set the
+        buffer entrance and buffer exit registers to valid
+        values; in particular, the caller must ensure that
+        [BER] is strictly less than [BXR]. Behavior is
+        unspecified if this preconditiion is violated.
+
+        Note that the device on the normal channel is always
+        deselected, even if buffering is in progress
+        TODO(emintz): is this proper behavior?
+        TODO(emintz): maybe refactor most of the logic into
+                      a utility routine shared with
+                      initiate_buffer_output?
+
+        :param storage: emulator memory and register file
+        :return: InitiationStatus.ALREADY_RUNNING if a device
+                 is buffering; InitiationStatus.STARTED
+                 otherwise. When the call returns
+                 InitiationStatus.STARTED, a buffer is running,
+                 but completion is not guaranteed.
+        """
+        return self._initiate_buffered_io(storage, _input_pump)
+
+    def initiate_buffer_output(self, storage: Storage) -> InitiationStatus:
+        """
+        Start buffered output. The caller must have set the
+        buffer entrance and buffer exit registers to valid
+        values; in particular, the caller must ensure that
+        [BER] is strictly less than [BXR]. Behavior is
+        unspecified if this preconditiion is violated.
+
+        Note that the device on the normal channel is always
+        deselected, even if buffering is in progress
+        TODO(emintz): is this proper behavior?
+        TODO(emintz): maybe refactor most of the logic into
+                      a utility routine shared with
+                      initiate_buffer_input?
+
+        :param storage: emulator memory and register file
+        :return: InitiationStatus.ALREADY_RUNNING if a device
+                 is buffering; InitiationStatus.STARTED
+                 otherwise. When the call returns
+                 InitiationStatus.STARTED, a buffer is running,
+                 but completion is not guaranteed.
+        """
+        # status = InitiationStatus.ALREADY_RUNNING
+        # device_to_buffer = self.__device_on_normal_channel
+        # self.__device_on_normal_channel = None
+        # if self.__buffer_pump is None:
+        #     if device_to_buffer is None:
+        #         self.__buffer_pump = NullBufferPump()
+        #     else:
+        #         use_real_device = (
+        #             device_to_buffer.can_write()
+        #             and device_to_buffer.io_channel_support() ==
+        #                 IOChannelSupport.NORMAL_AND_BUFFERED)
+        #         self.__buffer_pump = (
+        #             BufferedOutputPump(device_to_buffer, storage)
+        #             if use_real_device
+        #             else NullBufferPump())
+        # return status
+        return self._initiate_buffered_io(storage, _output_pump)
 
     def read_delay(self) -> int:
         """

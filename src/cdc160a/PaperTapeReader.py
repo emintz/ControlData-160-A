@@ -31,12 +31,7 @@ class PaperTapeReader(Device):
     __octal_pattern = re.compile("^[0-7]+$")
 
     def __init__(self):
-        super().__init__(
-            "Paper Tape Reader",
-            True,
-            False,
-            446,
-            IOChannelSupport.NORMAL_ONLY)
+        super().__init__("Paper Tape Reader", True, False, IOChannelSupport.NORMAL_ONLY)
         self.__input_file = None
         self.__input_path_name = None
 

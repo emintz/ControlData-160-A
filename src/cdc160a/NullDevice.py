@@ -7,12 +7,7 @@ class NullDevice(Device):
     """
 
     def __init__(self):
-        super().__init__(
-            "Null Device",
-            True,
-            True,
-            1,
-            IOChannelSupport.NORMAL_AND_BUFFERED)
+        super().__init__("Null Device", True, True, IOChannelSupport.NORMAL_AND_BUFFERED)
         pass
 
     def external_function(self, external_function_code) -> (bool, int | None):

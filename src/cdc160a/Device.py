@@ -38,13 +38,7 @@ class Device(ABC):
     Base class for all I/O devices.
 
     """
-    def __init__(
-            self,
-            name: str,
-            can_read: bool,
-            can_write: bool,
-            cycles_per_transfer: int,
-            io_channel_support: IOChannelSupport) -> None:
+    def __init__(self, name: str, can_read: bool, can_write: bool, io_channel_support: IOChannelSupport) -> None:
         """
         Constructor. Note that a device must be able to read, write, or
         both.
@@ -52,8 +46,6 @@ class Device(ABC):
         :param name: device name, e.g. "Paper Tape Reader"; for display only.
         :param can_read: True if the device can read, False otherwise
         :param can_write: True if the device can write, False otherwise.
-        :param cycles_per_transfer: number of machine cycles required to
-                                    transfer one word to or from the device
         :param io_channel_support: I/O channels to which the device connects.
                                    Some devices only connect to the normal
                                    channel and can only perform synchronous,
@@ -66,7 +58,6 @@ class Device(ABC):
         self.__name = name
         self.__can_read = can_read
         self.__can_write = can_write
-        self.__cycles_per_transfer = cycles_per_transfer
         self.__io_channel_support = io_channel_support
 
     @abstractmethod
