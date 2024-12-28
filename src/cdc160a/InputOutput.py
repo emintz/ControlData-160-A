@@ -32,6 +32,10 @@ def _input_pump(device: Device, storage: Storage) -> BufferPump:
 def _output_pump(device: Device, storage: Storage) -> BufferPump:
     return BufferedOutputPump(device, storage)
 
+def _stop_device(device: Optional[Device]) -> None:
+    if device is not None:
+        device.stop()
+
 class InputOutput:
     def __init__(self, devices: [Device]):
         """
@@ -72,11 +76,19 @@ class InputOutput:
 
     def clear(self) -> None:
         """
-        Stop normal and buffered I/O and clear all selected devices
+        Stop normal and buffered I/O and clear all selected devices. This
+        supports master clear.
+
         :return: None
         """
+        _stop_device(self.device_on_normal_channel())
+        _stop_device(self.device_on_buffer_channel())
         self.__buffer_pump = None
         self.__device_on_normal_channel = None
+
+    def clear_buffer_controls(self) -> None:
+        _stop_device(self.device_on_buffer_channel())
+        self.__buffer_pump = None
 
     def device_on_buffer_channel(self) -> Device:
         return self.__buffer_pump.device() \
