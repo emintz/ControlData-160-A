@@ -3,7 +3,7 @@ from unittest import TestCase
 import os
 from tempfile import NamedTemporaryFile
 
-from cdc160a.InputOutput import InputOutput
+from cdc160a.InputOutput import InitiationStatus, InputOutput
 from cdc160a.RunLoop import RunLoop
 from cdc160a.NullDevice import NullDevice
 from cdc160a.PaperTapeReader import PaperTapeReader
@@ -17,6 +17,10 @@ from test_support import Programs
 _BI_TAPE_INPUT_DATA = [
     0o7777, 0o0001, 0o0200, 0o0210, 0o1111,
     0o4001, 0o4011, 0o4111, 0o4112, 0o4122]
+_FIRST_WORD_ADDRESS = 0o200
+_INPUT_LAST_WORD_ADDRESS_PLUS_ONE = (
+        _FIRST_WORD_ADDRESS + len(_BI_TAPE_INPUT_DATA))
+
 
 class TestRunLoop(TestCase):
 
@@ -90,7 +94,6 @@ class TestRunLoop(TestCase):
         self.load_test_program(Programs.BUFFER_OUT_TO_BI_TAPE)
         self.__run_loop.run()
         assert self.__storage.get_program_counter() == 0o120
-
 
     # Single instruction test scripts
     # -------------------------------
@@ -242,6 +245,32 @@ class TestRunLoop(TestCase):
             assert self.__storage.read_buffer_bank(loc) == 0o0000
         assert self.__storage.get_program_counter() == 0o114
         assert not self.__storage.buffering
+
+    def test_cbc(self) -> None:
+        self.__bi_tape.set_online_status(True)
+        self.__storage.buffer_entrance_register = (
+            _FIRST_WORD_ADDRESS)
+        self.__storage.buffer_exit_register = (
+            _INPUT_LAST_WORD_ADDRESS_PLUS_ONE)
+        status, valid_operation = self.__input_output.external_function(0o3700)
+        assert valid_operation
+        assert status == 0o0001
+        assert self.__input_output.device_on_buffer_channel() is None
+        assert (self.__input_output.device_on_normal_channel() ==
+                self.__bi_tape)
+        assert (self.__input_output.initiate_buffer_input(self.__storage) ==
+                InitiationStatus.STARTED)
+        assert self.__input_output.device_on_buffer_channel() == self.__bi_tape
+        assert self.__input_output.device_on_normal_channel() is None
+        self.load_test_program(Programs.CLEAR_BUFFER_CONTROLS)
+        self.__run_loop.run()
+        assert self.__input_output.device_on_buffer_channel() is None
+        assert self.__input_output.device_on_normal_channel() is None
+        assert (self.__storage.buffer_entrance_register ==
+                _FIRST_WORD_ADDRESS)
+        assert (self.__storage.buffer_exit_register ==
+                _INPUT_LAST_WORD_ADDRESS_PLUS_ONE)
+
 
     def test_cta(self) -> None:
         self.load_test_program(Programs.BANK_CONTROLS_TO_A)

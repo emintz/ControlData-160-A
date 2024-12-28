@@ -1,14 +1,16 @@
 import unittest
 from unittest import TestCase
+import os
 
 from cdc160a import Microinstructions
 from cdc160a.Hardware import Hardware
-from cdc160a.InputOutput import BufferStatus, InputOutput
+from cdc160a.InputOutput import BufferStatus, InitiationStatus, InputOutput
 from cdc160a.NullDevice import NullDevice
 from cdc160a.PaperTapeReader import PaperTapeReader
 from cdc160a.Storage import InterruptLock
 from cdc160a.Storage import MCS_MODE_IND
 from cdc160a.Storage import Storage
+from tempfile import NamedTemporaryFile
 from test_support.HyperLoopQuantumGravityBiTape import HyperLoopQuantumGravityBiTape
 from typing import Final
 
@@ -60,6 +62,14 @@ class Test(TestCase):
 
     def tearDown(self) -> None:
         self.storage = None
+
+    @staticmethod
+    def _create_temp_file(contents: str) -> str:
+        with NamedTemporaryFile("w+", delete=False) as temp_file:
+            file_name = temp_file.name
+            print("Temporary file: {0},".format(temp_file.name))
+            temp_file.write(contents)
+        return file_name
 
     def test_a_to_buffer(self) -> None:
         self.storage.set_buffer_storage_bank(1)
@@ -316,6 +326,39 @@ class Test(TestCase):
         Microinstructions.buffer_exit_to_a(self.hardware)
         assert self.storage.a_register == 0o2000
 
+    def test_clear_buffer_controls(self) -> None:
+        self.bi_tape.set_online_status(True)
+        temp_file_name = self._create_temp_file("000\n")
+        assert self.paper_tape_reader.open(temp_file_name)
+        status, valid_request = self.input_output.external_function(
+            0o3700)
+        assert status == 0o0001
+        assert valid_request
+        assert self.input_output.device_on_normal_channel() == self.bi_tape
+        self.storage.buffer_entrance_register = _BUFFERED_ENTRANCE
+        self.storage.buffer_exit_register = _INPUT_BUFFER_EXIT
+        assert (self.input_output.initiate_buffer_input(self.storage) ==
+                InitiationStatus.STARTED)
+        assert (self.input_output.device_on_buffer_channel() ==
+                self.bi_tape)
+        assert self.input_output.device_on_normal_channel() is None
+
+        status, valid_request = self.input_output.external_function(0o4102)
+        assert valid_request
+        assert (self.input_output.device_on_buffer_channel() ==
+                self.bi_tape)
+        assert (self.input_output.device_on_normal_channel() ==
+                self.paper_tape_reader)
+
+        self.input_output.clear_buffer_controls()
+        assert self.input_output.device_on_buffer_channel() is None
+        assert (self.input_output.device_on_normal_channel() ==
+                self.paper_tape_reader)
+
+        self.paper_tape_reader.close()
+        os.unlink(temp_file_name)
+        assert not os.path.exists(temp_file_name)
+
     def test_clear_interrupt_lock(self) -> None:
         self.storage.interrupt_lock = InterruptLock.LOCKED
         Microinstructions.clear_interrupt_lock(self.hardware)
@@ -489,7 +532,7 @@ class Test(TestCase):
         assert self.storage.machine_hung
 
     def test_input_device_offline(self) -> None:
-        status , valid_request = self.input_output.external_function(
+        status, valid_request = self.input_output.external_function(
             0o3700)
         assert valid_request
         assert status == 0o4000

@@ -335,6 +335,8 @@ ATX = VariableTimingInstruction("ATX", EffectiveAddress.no_address, Microinstruc
                                 __vacuous_post_processor, __no_advance)
 BLS = VariableTimingInstruction("BLS", EffectiveAddress.no_address, Microinstructions.block_store,
                                 __vacuous_post_processor, __no_advance)
+CBC = __single_advance_instruction("CBC", EffectiveAddress.no_address, Microinstructions.clear_buffer_controls,
+                                   __vacuous_post_processor, 1)
 CIL = __single_advance_instruction("CIL", EffectiveAddress.no_address, Microinstructions.clear_interrupt_lock,
                                    __vacuous_post_processor, 1)
 CTA = __single_advance_instruction("CTA", EffectiveAddress.no_address, Microinstructions.bank_controls_to_a,

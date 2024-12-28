@@ -78,6 +78,8 @@ class Test(TestCase):
                         assert instruction_name == "LS1"
                     case 0o03:
                         assert instruction_name == "LS2"
+                    case 0o04:
+                        assert instruction_name == "CBC"
                     case 0o05:
                         assert instruction_name == "ATE"
                     case 0o06:

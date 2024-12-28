@@ -4,7 +4,7 @@ import os
 from tempfile import NamedTemporaryFile
 
 from cdc160a.Hardware import Hardware
-from cdc160a.InputOutput import InputOutput
+from cdc160a.InputOutput import InitiationStatus, InputOutput
 from cdc160a import Instructions
 from cdc160a.NullDevice import NullDevice
 from cdc160a.PaperTapeReader import PaperTapeReader
@@ -426,6 +426,27 @@ class Test(TestCase):
             assert self.storage.read_buffer_bank(address) == 0o7654
         self.storage.advance_to_next_instruction()
         assert self.storage.get_program_counter() == 0o102
+
+    def test_cbc(self) -> None:
+        assert Instructions.CBC.name() == "CBC"
+        self.bi_tape.set_online_status(True)
+        self.storage.buffer_entrance_register = FIRST_WORD_ADDRESS
+        self.storage.buffer_exit_register = LAST_WORD_ADDRESS_PLUS_ONE
+        status, valid_request = self.input_output.external_function(0o3700)
+        assert valid_request
+        assert status == 0o0001
+        assert (self.input_output.initiate_buffer_input(self.storage) ==
+                InitiationStatus.STARTED)
+        assert self.input_output.device_on_buffer_channel() == self.bi_tape
+        assert self.input_output.device_on_normal_channel() is None
+        Instructions.CBC.determine_effective_address(self.storage)
+        assert self.storage.get_program_counter() == INSTRUCTION_ADDRESS
+        assert Instructions.CBC.perform_logic(self.hardware) == 1
+        assert self.input_output.device_on_buffer_channel() is None
+        assert self.input_output.device_on_normal_channel() is None
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_SINGLE_WORD_INSTRUCTION_ADDRESS)
 
     def test_cil(self) -> None:
         assert Instructions.CIL.name() == "CIL"

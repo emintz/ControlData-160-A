@@ -126,6 +126,7 @@ class OpCode01(InstructionDecoder):
         0o01: Instructions.PTA,
         0o02: Instructions.LS1,
         0o03: Instructions.LS2,
+        0o04: Instructions.CBC,
         0o05: Instructions.ATE,
         0o06: Instructions.ATX,
         0o07: Instructions.ETA,

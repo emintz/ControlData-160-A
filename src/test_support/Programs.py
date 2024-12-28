@@ -282,6 +282,15 @@ BUFFER_OUT_TO_BI_TAPE = """
           END
 
 """
+CLEAR_BUFFER_CONTROLS = """
+          REM Test clear buffer controls. The test must start
+          REM buffering before running this program.
+          BNK 3
+          ORG 100
+          CBC        Stop buffering and deselect the peripheral
+          HLT
+          END
+"""
 CLEAR_INTERRUPT_LOCKOUT = """
           REM Test interrupt lockout. The test must lock interrupts
           REM before running this.

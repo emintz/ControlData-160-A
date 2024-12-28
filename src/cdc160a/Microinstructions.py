@@ -158,6 +158,14 @@ def buffer_entrance_to_direct_and_set_from_a(
 def buffer_exit_to_a(hardware: Hardware) -> None:
     hardware.storage.buffer_exit_to_a()
 
+def clear_buffer_controls(hardware: Hardware) -> None:
+    """
+    Clear the buffer status.
+    :param hardware:
+    :return:
+    """
+    hardware.input_output.clear_buffer_controls()
+
 def clear_interrupt_lock(hardware: Hardware) -> None:
     """
     Clear the interrupt lock if locked and no unlock is pending
