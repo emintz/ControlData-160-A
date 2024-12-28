@@ -124,7 +124,7 @@ class Interpreter:
             self.__jump_switches.switch_state_name(0),
             self.__jump_switches.switch_state_name(1),
             self.__jump_switches.switch_state_name(2)))
-        print("stop Switches: 1 {0}, 2 {1}, 3 {2}".format(
+        print("Stop Switches: 1 {0}, 2 {1}, 3 {2}".format(
             self.__stop_switches.switch_state_name(0),
             self.__stop_switches.switch_state_name(1),
             self.__stop_switches.switch_state_name(2)))
