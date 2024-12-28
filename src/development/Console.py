@@ -125,10 +125,11 @@ def main() -> None:
     """
     console = create_console()
     storage = Storage()
+    input_output = InputOutput([])
     while True:
-        console.before_instruction_fetch(storage)
-        console.before_instruction_logic(storage)
-        console.before_advance(storage)
+        console.before_instruction_fetch(storage, input_output)
+        console.before_instruction_logic(storage, input_output)
+        console.before_advance(storage, input_output)
 
 if __name__ == "__main__":
     main()
