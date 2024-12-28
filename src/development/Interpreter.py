@@ -48,13 +48,13 @@ class Runner(ABC):
         return True
 
     @staticmethod
-    def _to_int(min: int, max: int, value: str) -> int:
+    def _to_int(min_value: int, max_value: int, value: str) -> int:
         """
         Converts a string that represents an octal value into an integer
         having the represented value, then validates the result.
 
-        :param min: lowest allowable value, typically 0
-        :param max: largest allowable value.
+        :param min_value: lowest allowable value, typically 0
+        :param max_value: largest allowable value.
         :param value: the string that represents the value. Note that
                values are 12 bit integers that are treated as non-negative
                values in [0, 0o7777
@@ -64,12 +64,12 @@ class Runner(ABC):
         result = -1
         if is_octal(value):
             maybe_result = int(value, 8)
-            if min <= maybe_result <= max:
+            if min_value <= maybe_result <= max_value:
                 result = maybe_result
             else:
                 print(
                     "Value must be between {0} and {1} inclusive, found {2}.",
-                    oct(min)[2:], oct(max)[2:], value)
+                    oct(min_value)[2:], oct(max_value)[2:], value)
         else:
             print("Octal value required, found: {0}.".format(value))
         return result
