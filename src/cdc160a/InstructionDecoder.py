@@ -139,6 +139,8 @@ class OpCode01(InstructionDecoder):
         0o13: Instructions.MUH,
         0o14: Instructions.RS1,
         0o15: Instructions.RS2,
+        0o16: Instructions.NOP,
+        0o17: Instructions.NOP,
     }
 
 
@@ -175,7 +177,7 @@ class OpCode01(InstructionDecoder):
             case 6:
                 decoded_instruction = Instructions.STE
             case 7:
-                pass
+                decoded_instruction = Instructions.NOP
 
         return decoded_instruction
 

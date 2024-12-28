@@ -68,6 +68,8 @@ class Test(TestCase):
                 assert instruction_name == "STP"
             elif 0o60 <= e < 0o70:
                 assert instruction_name == "STE"
+            elif 0o70 <= e < 0o100:
+                assert instruction_name == "NOP"
             else:
                 match e:
                     case 0o00:
@@ -98,6 +100,12 @@ class Test(TestCase):
                         assert instruction_name == "RS1"
                     case 0o15:
                         assert instruction_name == "RS2"
+                    case 0o15:
+                        assert instruction_name == "NOP"
+                    case 0o16:
+                        assert instruction_name == "NOP"
+                    case 0o17:
+                        assert instruction_name == "NOP"
                     case 0o20:
                         assert instruction_name == "CIL"
                     case 0o30:
