@@ -159,6 +159,16 @@ class Device(ABC):
         """
         raise NotImplemented
 
+    def stop(self) -> None:
+        """
+        Stop the device. Devices that need to take special actions
+        before stopping, e.g. a card reader must finish reading the
+        current card, must override this method.
+
+        :return: None
+        """
+        pass
+
     def write(self, value: int) -> bool:
         """
         Write a single word to the device.
