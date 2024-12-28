@@ -473,7 +473,8 @@ class Test(TestCase):
     def test_decode_73(self) -> None:
         decoder = InstructionDecoder.decoder_at(0o73)
         assert decoder.opcode == 0o73
-        for e in range(0o00, 0o100):
+        assert decoder.decode(0o00).name() == "IBO"
+        for e in range(0o01, 0o100):
             assert decoder.decode(e).name() == "OUT"
 
     def test_decode_74(self) -> None:

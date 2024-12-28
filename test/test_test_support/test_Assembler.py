@@ -357,6 +357,9 @@ class TestAssembler(TestCase):
     def test_ibi(self) -> None:
         self.__single_instruction_test("IBI 300", [0o7200, 0o300])
 
+    def test_ibo(self) -> None:
+        self.__single_instruction_test("IBO 300", [0o7300, 0o300])
+
     def test_ina(self) -> None:
         self.__single_instruction_test("INA", [0o7600])
 

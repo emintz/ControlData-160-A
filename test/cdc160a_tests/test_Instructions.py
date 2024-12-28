@@ -617,6 +617,53 @@ class Test(TestCase):
         assert (self.storage.get_program_counter() ==
                 AFTER_DOUBLE_WORD_INSTRUCTION_ADDRESS)
 
+    def test_ibo_channel_busy(self) -> None:
+        assert Instructions.IBO.name() == "IBO"
+
+        # Throw the buffer channel into indefinite busy
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7300)
+        self.storage.write_relative_bank(G_ADDRESS, 0o300)
+        self.storage.unpack_instruction()
+        Instructions.IBO.determine_effective_address(self.storage)
+        assert self.storage.s_register == INSTRUCTION_ADDRESS
+        assert Instructions.IBO.perform_logic(self.hardware) == 1
+        assert self.input_output.device_on_normal_channel() is None
+        assert isinstance(
+            self.input_output.device_on_buffer_channel(),
+            NullDevice)
+
+        # Now try to read the BiTape
+        self.input_output.external_function(0o3700)  # Select BiTape
+        self.storage.clear_interrupt_lock()
+        self.storage.p_register = INSTRUCTION_ADDRESS
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7200)
+        self.storage.write_relative_bank(G_ADDRESS, 0o300)
+        self.storage.unpack_instruction()
+        Instructions.IBO.determine_effective_address(self.storage)
+        assert self.storage.s_register == INSTRUCTION_ADDRESS
+        assert Instructions.IBO.perform_logic(self.hardware) == 2
+        assert self.input_output.device_on_normal_channel() is None
+        assert isinstance(
+            self.input_output.device_on_buffer_channel(),
+            NullDevice)
+        self.storage.advance_to_next_instruction()
+        assert self.storage.get_program_counter() == 0o300
+
+    def test_ibo_channel_free(self) -> None:
+        assert Instructions.IBO.name() == "IBO"
+        self.input_output.external_function(0o3700)  # Select BiTape
+        self.storage.clear_interrupt_lock()
+        self.storage.write_relative_bank(INSTRUCTION_ADDRESS, 0o7300)
+        self.storage.write_relative_bank(G_ADDRESS, 0o300)
+        self.storage.unpack_instruction()
+        Instructions.IBO.determine_effective_address(self.storage)
+        assert self.storage.s_register == INSTRUCTION_ADDRESS
+        assert Instructions.IBO.perform_logic(self.hardware) == 1
+        assert self.input_output.device_on_normal_channel() is None
+        assert self.input_output.device_on_buffer_channel() == self.bi_tape
+        self.storage.advance_to_next_instruction()
+        assert (self.storage.get_program_counter() ==
+                AFTER_DOUBLE_WORD_INSTRUCTION_ADDRESS)
     def test_inp(self) -> None:
         assert Instructions.INP.name() == "INP"
 

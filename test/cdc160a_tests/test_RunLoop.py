@@ -85,6 +85,13 @@ class TestRunLoop(TestCase):
         assert self.__input_output.device_on_buffer_channel() is None
         assert self.__input_output.device_on_normal_channel() is None
 
+    def test_buffered_output(self) -> None:
+        self.__bi_tape.set_online_status(True)
+        self.load_test_program(Programs.BUFFER_OUT_TO_BI_TAPE)
+        self.__run_loop.run()
+        assert self.__storage.get_program_counter() == 0o120
+
+
     # Single instruction test scripts
     # -------------------------------
 
