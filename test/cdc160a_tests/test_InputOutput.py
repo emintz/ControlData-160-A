@@ -150,6 +150,30 @@ class TestInputOutput(TestCase):
         assert elapsed_cycles == 40
         assert self.__bi_tape.output_data() == _BI_TAPE_OUTPUT_DATA
 
+    def test_clear(self) -> None:
+        with NamedTemporaryFile("w+", delete=False) as temp_file:
+            temp_file_name = temp_file.name
+            print("Temporary file: {0},".format(temp_file.name))
+            temp_file.write("0\n7\n007\n456\n")
+        assert self.__paper_tape_reader.open(temp_file_name)
+        self.__bi_tape.set_online_status(True)
+        self.__input_output.external_function(0o3700)
+        self.__input_output.initiate_buffer_input(self.__storage)
+        self.__input_output.external_function(0o4102)
+        assert (self.__input_output.device_on_buffer_channel() ==
+                self.__bi_tape)
+        assert (self.__input_output.device_on_normal_channel() ==
+                self.__paper_tape_reader)
+
+        self.__input_output.clear()
+        assert self.__input_output.device_on_buffer_channel() is None
+        assert self.__input_output.device_on_normal_channel() is None
+        self.__paper_tape_reader.close()
+
+        os.unlink(temp_file_name)
+        assert not os.path.exists(temp_file_name)
+
+
     def test_select_no_device_accepts_code(self):
         assert self.__input_output.device_on_buffer_channel() is None
         assert self.__input_output.device_on_normal_channel() is None
