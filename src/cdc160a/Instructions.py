@@ -445,14 +445,14 @@ NZB = __no_advance_instruction("NZB", EffectiveAddress.relative_backward, Microi
                                __vacuous_post_processor, 1)
 NZF = __no_advance_instruction("NZF", EffectiveAddress.relative_forward, Microinstructions.jump_if_a_nonzero,
                                __vacuous_post_processor, 1)
-PJB = __no_advance_instruction("PJB", EffectiveAddress.relative_backward, Microinstructions.jump_if_a_positive,
-                               __vacuous_post_processor, 1)
 OTA = VariableTimingInstruction("OTA", EffectiveAddress.no_address, Microinstructions.output_from_a,
                                 __finish_normal_output, __single_advance)
 OTN = VariableTimingInstruction("OTN", EffectiveAddress.no_address, Microinstructions.output_no_address,
                                 __finish_normal_output, __single_advance)
 OUT = VariableTimingInstruction("OUT", EffectiveAddress.forward_indirect, Microinstructions.output_from_memory,
                                 __finish_normal_output, __double_advance)
+PJB = __no_advance_instruction("PJB", EffectiveAddress.relative_backward, Microinstructions.jump_if_a_positive,
+                               __vacuous_post_processor, 1)
 PJF = __no_advance_instruction("PJF", EffectiveAddress.relative_forward, Microinstructions.jump_if_a_positive,
                                __vacuous_post_processor, 1)
 PTA = __single_advance_instruction("PTA", EffectiveAddress.no_address, Microinstructions.p_to_a,
