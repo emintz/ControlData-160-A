@@ -1,11 +1,13 @@
 import unittest
 from unittest import TestCase
 import os
-from tempfile import NamedTemporaryFile
+from pathlib import PurePath, PurePosixPath
+from tempfile import gettempdir, NamedTemporaryFile
 
 from cdc160a.InputOutput import InitiationStatus, InputOutput
 from cdc160a.RunLoop import RunLoop
 from cdc160a.NullDevice import NullDevice
+from cdc160a.PaperTapePunch import PaperTapePunch
 from cdc160a.PaperTapeReader import PaperTapeReader
 from cdc160a.Storage import InterruptLock, Storage
 from test_support.Assembler import assembler_from_string
@@ -21,16 +23,42 @@ _FIRST_WORD_ADDRESS = 0o200
 _INPUT_LAST_WORD_ADDRESS_PLUS_ONE = (
         _FIRST_WORD_ADDRESS + len(_BI_TAPE_INPUT_DATA))
 
-
+# The following must match the data written to the
+# paper tape by Programs.PUNCH_PAPER_TAPE, which
+# must be kept in sync.
 class TestRunLoop(TestCase):
+    __EXPECTED_PAPER_TAPE_OUTPUT: [str] = [
+        "200",
+        "100",
+        "040",
+        "020",
+        "010",
+        "004",
+        "002",
+        "001",
+        "000",
+        "037",
+        "077",
+        "177",
+        "377",
+        "010",
+        "377",
+    ]
+
+    # Output file path. Should be os-independent. This is
+    __TEST_PAPER_TAPE_PUNCH_FILE: PurePosixPath = PurePath(
+        gettempdir(), "PaperTapeOutput.tmp.txt")
 
     def setUp(self) -> None:
         self.__bi_tape = HyperLoopQuantumGravityBiTape(_BI_TAPE_INPUT_DATA)
         self.__console = PyConsole()
         self.__storage = Storage()
+        self.__paper_tape_punch = PaperTapePunch()
         self.__paper_tape_reader = PaperTapeReader()
-        self.__input_output = InputOutput(
-            [self.__paper_tape_reader, self.__bi_tape])
+        self.__input_output = InputOutput([
+            self.__bi_tape,
+            self.__paper_tape_punch,
+            self.__paper_tape_reader,])
         self.__run_loop = RunLoop(
             self.__console, self.__storage, self.__input_output)
         self.__storage.set_buffer_storage_bank(0o0)
@@ -73,6 +101,29 @@ class TestRunLoop(TestCase):
         assert self.__storage.p_register == 0o0103
         assert not self.__storage.err_status
         assert not self.__storage.run_stop_status
+
+    def test_paper_tape_punch(self) -> None:
+        try:
+            os.unlink(self.__TEST_PAPER_TAPE_PUNCH_FILE)
+        except FileNotFoundError:
+            pass
+        output_file_name = str(self.__TEST_PAPER_TAPE_PUNCH_FILE)
+        assert self.__paper_tape_punch.open(output_file_name)
+        assert self.__paper_tape_punch.is_open()
+        self.load_test_program(Programs.PUNCH_PAPER_TAPE)
+        self.__run_loop.run()
+        self.__paper_tape_punch.close()
+        assert not self.__paper_tape_punch.is_open()
+        index: int = 0
+        with open(output_file_name, "rt") as paper_tape_output:
+            for formatted_character in paper_tape_output:
+                stripped_output = formatted_character.rstrip()
+                expected_output = self.__EXPECTED_PAPER_TAPE_OUTPUT[index]
+                assert stripped_output == expected_output
+                index += 1
+
+        assert index == 15
+        os.unlink(output_file_name)
 
     def test_buffered_input(self) -> None:
         self.__bi_tape.set_online_status(True)

@@ -1,6 +1,9 @@
 """
 Programs for testing the emulator. All runnable programs
-start at 0100(3)
+start at 0100(3).
+
+Note: the following programs must be kept consistent with
+the tests in test_RunLoop.py. Caveat coder!
 """
 
 # Assembler sanity checks.
@@ -775,6 +778,50 @@ POSITIVE_JUMP_FORWARD_ZERO_A = """
           PJF 2    # +0
           HLT      # +1
           HLT      # +2
+          END
+"""
+PUNCH_PAPER_TAPE = """
+          REM Punch a paper tape. The test must open the punch
+          REM before running this script
+          REM
+          REM Storage banks are initialized as follows:
+          REM
+          REM   Bank             Setting
+          REM   ---------------- -------
+          REM   Buffer                 0
+          REM   Direct                 2
+          REM   Indirect               1
+          REM   Relative               3
+          REM
+          BNK 3
+          ORG 100
+          EXC 4104     Select the paper tape punch
+          OUT 03 0217  Output LWA + 1
+          HLT
+          REM
+          REM          Output data. Note that 150-A normal
+          REM          output writes from the indirect bank.
+          REM
+          OCT 0200     Output FWA
+          REM
+          REM Data to punch -- indirect bank
+          BNK 1
+          ORG 200
+          OCT 0200
+          OCT 0100
+          OCT 0040
+          OCT 0020
+          OCT 0010
+          OCT 0004
+          OCT 0002
+          OCT 0001
+          OCT 0000
+          OCT 0037
+          OCT 0077
+          OCT 0177
+          OCT 0377
+          OCT 0410
+          OCT 0777
           END
 """
 REPLACE_ADD_BACKWARD = """
