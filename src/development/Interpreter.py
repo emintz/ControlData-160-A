@@ -28,10 +28,9 @@ class Runner(ABC):
     @abstractmethod
     def apply(
             self,
-            interpreter,
-            storage: Storage,
-            input_output: InputOutput,
-            setting: str) -> bool:
+            interpreter, storage:
+            Storage, input_output:
+            InputOutput, settings: [str]) -> bool:
         """
         Runs the command. Subclasses must override this method
 
@@ -40,7 +39,7 @@ class Runner(ABC):
                manipulate the console.
         :param storage: the interpreter's memory and register file
         :param input_output: I/O subsystem
-        :param setting: command's parameter
+        :param settings: command's parameters
         :return: True if the console should keep interpreting commands,
                  False if the interpreter should exit and let the emulator
                  get on with it.
@@ -68,8 +67,10 @@ class Runner(ABC):
                 result = maybe_result
             else:
                 print(
-                    "Value must be between {0} and {1} inclusive, found {2}.",
-                    oct(min_value)[2:], oct(max_value)[2:], value)
+                    "Value must be between {0} and {1} inclusive, "
+                    "found {2}.".format(
+                        oct(min_value)[2:],
+                        oct(max_value)[2:], value))
         else:
             print("Octal value required, found: {0}.".format(value))
         return result
@@ -152,21 +153,21 @@ class Interpreter:
             storage: Storage,
             input_output: InputOutput,
             name: str,
-            arg: str) -> bool:
+            args: [str]) -> bool:
         """
         Runs a single console command
 
         :param storage: emulator memory and register file
         :param input_output: I/O subsystem
         :param name: command name (e.g. halt)
-        :param arg: command argument, an octal value
+        :param args: command arguments.
         :return: True if the interpreter should keep running, False if it
                  should return and let the emulator get on with it.
         """
         result = True
         if name in self.__commands:
             result = self.__commands[name].apply(
-                self, storage, input_output, arg)
+                self, storage, input_output, args)
         else:
             print("Unknown command:", name)
         return result
@@ -189,13 +190,17 @@ class Interpreter:
         if len(tokens) == 0:
             print("Blank like ignored.")
         elif len(tokens) == 1:
-            result = self.run_command(storage, input_output, tokens[0], "")
+            result = self.run_command(
+                storage, input_output, tokens[0], [])
         else:
-            result = self.run_command(storage, input_output, tokens[0], tokens[1])
+            result = self.run_command(
+                storage, input_output, tokens[0], tokens[1:])
         return result
 
     def read_and_run_command(
-            self, storage: Storage, input_output: InputOutput) -> bool:
+            self, storage:
+            Storage, input_output:
+            InputOutput) -> bool:
         """
         Read a command from the input and run it.
 

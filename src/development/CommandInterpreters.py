@@ -17,41 +17,35 @@ def is_octal(string: str) -> bool:
             break
     return result
 
+def _check_setting(settings: [str], error_message: str) -> bool:
+    result = len(settings) > 0
+    if not result:
+        print(error_message)
+    return result
+
 class AssembleAndRunIfErrorFree(Runner):
     """
     Assemble source from a specified text file. If the assembly produces no
     errors, run the assembled program.
     """
-    def apply(
-            self,
-            interpreter: Interpreter,
-            storage: Storage, input_output: InputOutput,
-            setting: str) -> bool:
-        assembler = assembler_from_file(setting, storage)
-        if assembler is not None:
-            assembler.run()
-        else:
-            print("Error: file {0} not found.".format(setting))
+    def apply(self, interpreter: Interpreter, storage: Storage, input_output: InputOutput, settings: [str]) -> bool:
+        if _check_setting(settings, "Please provide a file name."):
+            assembler = assembler_from_file(settings[0], storage)
+            if assembler is not None:
+                assembler.run()
+            else:
+                print("Error: file {0} not found.".format(settings[0]))
         return True
 
 class Clear(Runner):
-    def apply(
-            self,
-            interpreter: Interpreter,
-            storage: Storage,
-            input_output: InputOutput,
-            setting: str) -> bool:
+    def apply(self, interpreter: Interpreter, storage: Storage, input_output: InputOutput, settings: [str]) -> bool:
         storage.clear()
         input_output.clear()
         return True
 
 class Exit(Runner):
 
-    def apply(
-            self,
-            interpreter: Interpreter,
-            storage: Storage, input_output:
-            InputOutput, setting: str) -> bool:
+    def apply(self, interpreter: Interpreter, storage: Storage, input_output: InputOutput, settings: [str]) -> bool:
         really_exit = input("Do you really want to quit the emulator (y/N)? ")
         if really_exit.strip() == "y":
             print("Goodbye.")
@@ -69,24 +63,32 @@ class JumpSwitch(Runner):
     def __init__(self, switch_number: int):
         self.__switch_number = switch_number
 
-    def apply(
-            self,
-            interpreter: Interpreter,
-            storage: Storage,
-            input_output: InputOutput,
-            setting: str) -> bool:
-        match setting:
-            case "center":
-                interpreter.jump_switch_off(self.__switch_number)
-            case "down":
-                interpreter.jump_switch_down(self.__switch_number)
-            case "up":
-                interpreter.jump_switch_up(self.__switch_number)
-            case _:
-                message = "Switch can be set up, down, or sender, found: {0}.".format(setting)
-                print(message)
-        mask = interpreter.jump_set_mask()
-        storage.set_jump_switch_mask(mask)
+    def apply(self, interpreter: Interpreter, storage: Storage, input_output: InputOutput, settings: [str]) -> bool:
+        if _check_setting(settings, "Please provide a switch setting."):
+            match settings[0]:
+                case "center":
+                    interpreter.jump_switch_off(self.__switch_number)
+                case "down":
+                    interpreter.jump_switch_down(self.__switch_number)
+                case "up":
+                    interpreter.jump_switch_up(self.__switch_number)
+                case _:
+                    message = "Switch can be set up, down, or sender, found: {0}.".format(settings[0])
+                    print(message)
+            mask = interpreter.jump_set_mask()
+            storage.set_jump_switch_mask(mask)
+        return True
+
+class ListDevices(Runner):
+
+    def apply(self, interpreter: Interpreter, storage: Storage, input_output: InputOutput, settings: [str]) -> bool:
+        for device in input_output.devices():
+            device_status = (
+                "open on {0}".format(device.file_name())) \
+                if device.is_open() \
+                else "closed"
+            print("{0}: {1}.".format(device.name(), device_status))
+
         return True
 
 class Resume(Runner):
@@ -94,12 +96,7 @@ class Resume(Runner):
     Resumes execution.
     """
 
-    def apply(
-            self,
-            interpreter: Interpreter,
-            storage: Storage,
-            input_output: InputOutput,
-            setting: str) -> bool:
+    def apply(self, interpreter: Interpreter, storage: Storage, input_output: InputOutput, settings: [str]) -> bool:
         storage.run()
         return False
 
@@ -107,101 +104,73 @@ class SetA(Runner):
     """
     Sets the accumulator (i.e. A register)
     """
-    def apply(
-            self,
-            interpreter: Interpreter,
-            storage: Storage,
-            input_output: InputOutput,
-            setting: str) -> bool:
-        value = self._to_int(0o0, 0o7777, setting)
-        if 0 <= value:
-            storage.a_register = value
+    def apply(self, interpreter: Interpreter, storage: Storage, input_output: InputOutput, settings: [str]) -> bool:
+        if _check_setting(settings, "Please provide a value."):
+            value = self._to_int(0o0, 0o7777, settings[0])
+            if 0 <= value:
+                storage.a_register = value
         return True
 
 class SetB(Runner):
     """
     Set the buffer control bank number
     """
-    def apply(
-            self,
-            interpreter: Interpreter,
-            storage: Storage,
-            input_output: InputOutput,
-            setting: str) -> bool:
-        value = self._to_int(0, 0o7, setting)
-        if 0 <= value:
-            storage.buffer_storage_bank = value
+    def apply(self, interpreter: Interpreter, storage: Storage, input_output: InputOutput, settings: [str]) -> bool:
+        if _check_setting(settings, "Please provide a bank number."):
+            value = self._to_int(0, 0o7, settings[0])
+            if 0 <= value:
+                storage.buffer_storage_bank = value
         return True
 
 class SetD(Runner):
     """
     Set the direct storage bank number
     """
-    def apply(
-            self,
-            interpreter: Interpreter,
-            storage: Storage,
-            input_output: InputOutput,
-            setting: str) -> bool:
-        value = self._to_int(0o0, 0o7, setting)
-        if 0 <= value:
-            storage.direct_storage_bank = value
+    def apply(self, interpreter: Interpreter, storage: Storage, input_output: InputOutput, settings: [str]) -> bool:
+        if _check_setting(settings, "Please provide a bank number."):
+            value = self._to_int(0o0, 0o7, settings[0])
+            if 0 <= value:
+                storage.direct_storage_bank = value
         return True
 
 class SetI(Runner):
     """
     Set the indirect storage bank number
     """
-    def apply(
-            self,
-            interpreter: Interpreter,
-            storage: Storage,
-            input_output: InputOutput,
-            setting: str) -> bool:
-        value = self._to_int(0o0, 0o7, setting)
-        if 0 <= value:
-            storage.indirect_storage_bank = value
+    def apply(self, interpreter: Interpreter, storage: Storage, input_output: InputOutput, settings: [str]) -> bool:
+        if _check_setting(settings, "Please provide a bank number."):
+            value = self._to_int(0o0, 0o7, settings[0])
+            if 0 <= value:
+                storage.indirect_storage_bank = value
         return True
 
 class SetP(Runner):
     """
     Set the program address (i.e. P register)
     """
-    def apply(
-            self,
-            interpreter: Interpreter,
-            storage: Storage,
-            input_output: InputOutput,
-            setting: str) -> bool:
-        value = self._to_int(0o0, 0o7777, setting)
-        if 0 <= value:
-            storage.p_register = value
+    def apply(self, interpreter: Interpreter, storage: Storage, input_output: InputOutput, settings: [str]) -> bool:
+        if _check_setting(settings, "Please provide an address."):
+            value = self._to_int(0o0, 0o7777, settings[0])
+            if 0 <= value:
+                storage.p_register = value
         return True
 
 class SetR(Runner):
     """
     Set the relative bank number
     """
-    def apply(
-            self,
-            interpreter: Interpreter,
-            storage: Storage,
-            input_output: InputOutput,
-            setting: str) -> bool:
-        value = self._to_int(0o0, 0o7, setting)
-        if 0 <= value:
-            storage.relative_storage_bank = value
+    def apply(self, interpreter: Interpreter, storage: Storage, input_output: InputOutput, settings: [str]) -> bool:
+        if _check_setting(settings, "Please provide a bank number."):
+            value = self._to_int(0o0, 0o7, settings[0])
+            if 0 <= value:
+                storage.relative_storage_bank = value
         return True
 
 class Step(Runner):
     """
     Run the next instruction.
     """
-    def apply(
-            self,
-            interpreter: Interpreter,
-            storage: Storage, input_output: InputOutput,
-            setting: str) -> bool:
+    def apply(self, interpreter: Interpreter, storage: Storage, input_output: InputOutput, settings: [str]) -> bool:
         storage.stop()
         return False
 
@@ -212,21 +181,17 @@ class StopSwitch(Runner):
     def __init__(self, switch_number: int):
         self.__switch_number = switch_number
 
-    def apply(
-            self,
-            interpreter: Interpreter,
-            storage: Storage,
-            input_output: InputOutput,
-            setting: str) -> bool:
-        match setting:
-            case "center":
-                interpreter.stop_switch_off(self.__switch_number)
-            case "down":
-                interpreter.stop_switch_down(self.__switch_number)
-            case "up":
-                interpreter.stop_switch_up(self.__switch_number)
-            case _:
-                print("Switch can be set center, down, or up, found {0}.".format(setting))
+    def apply(self, interpreter: Interpreter, storage: Storage, input_output: InputOutput, settings: [str]) -> bool:
+        if _check_setting(settings, "Please provide a switch setting."):
+            match settings[0]:
+                case "center":
+                    interpreter.stop_switch_off(self.__switch_number)
+                case "down":
+                    interpreter.stop_switch_down(self.__switch_number)
+                case "up":
+                    interpreter.stop_switch_up(self.__switch_number)
+                case _:
+                    print("Switch can be set center, down, or up, found {0}.".format(settings[0]))
         mask = interpreter.stop_set_mask()
         storage.set_stop_switch_mask(mask)
         return True
@@ -235,6 +200,7 @@ class StopSwitch(Runner):
 COMMANDS: {str: Runner} = {
     "assemble": AssembleAndRunIfErrorFree(),
     "clear": Clear(),
+    "devices": ListDevices(),
     "exit": Exit(),
     "halt": Step(),
     "jump1": JumpSwitch(0),

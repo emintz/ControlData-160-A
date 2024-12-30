@@ -42,11 +42,7 @@ class TestCommandInterpreters(TestCase):
                 self.__device)
         assert self.__input_output.device_on_buffer_channel() is None
 
-        assert CommandInterpreters.Clear().apply(
-            self.__interpreter,
-            self.__storage,
-            self.__input_output,
-            "")
+        assert CommandInterpreters.Clear().apply(self.__interpreter, self.__storage, self.__input_output, [])
 
         assert self.__storage.a_register == 0
         assert self.__storage.z_register == 0
@@ -63,11 +59,7 @@ class TestCommandInterpreters(TestCase):
     def test_halt(self) -> None:
         halt_runner = CommandInterpreters.Step()
         self.__storage.run()
-        assert not halt_runner.apply(
-            self.__interpreter,
-            self.__storage,
-            self.__input_output,
-            "")
+        assert not halt_runner.apply(self.__interpreter, self.__storage, self.__input_output, [])
         assert not self.__storage.run_stop_status
 
     def test_jump_switch(self) -> None:
@@ -75,194 +67,94 @@ class TestCommandInterpreters(TestCase):
         assert self.__interpreter.jump_set_mask() == 0
         assert self.__interpreter.jump_down_mask() == 0
         assert self.__storage.get_jump_switch_mask() == 0
-        assert jump_switch_runner.apply(
-            self.__interpreter,
-            self.__storage,
-            self.__input_output,
-            "sideways")
+        assert jump_switch_runner.apply(self.__interpreter, self.__storage, self.__input_output, ["sideways"])
         assert self.__interpreter.jump_set_mask() == 0
         assert self.__interpreter.jump_down_mask() == 0
-        assert jump_switch_runner.apply(
-            self.__interpreter,
-            self.__storage,
-            self.__input_output,
-            "down")
+        assert jump_switch_runner.apply(self.__interpreter, self.__storage, self.__input_output, ["down"])
         assert self.__interpreter.jump_down_mask() == 0o02
         assert self.__interpreter.jump_set_mask() == 0o02
-        assert jump_switch_runner.apply(
-            self.__interpreter,
-            self.__storage,
-            self.__input_output,
-            "center")
+        assert jump_switch_runner.apply(self.__interpreter, self.__storage, self.__input_output, ["center"])
         assert self.__interpreter.jump_set_mask() == 0
         assert self.__interpreter.jump_down_mask() == 0
-        assert jump_switch_runner.apply(
-            self.__interpreter,
-            self.__storage,
-            self.__input_output,
-            "up")
+        assert jump_switch_runner.apply(self.__interpreter, self.__storage, self.__input_output, ["up"])
         assert self.__interpreter.jump_down_mask() == 0o0
         assert self.__interpreter.jump_set_mask() == 0o02
 
     def test_resume(self) -> None:
         restarter = CommandInterpreters.Resume()
         self.__storage.stop()
-        assert not restarter.apply(
-            self.__interpreter,
-            self.__storage,
-            self.__input_output,
-            "")
+        assert not restarter.apply(self.__interpreter, self.__storage, self.__input_output, [])
         assert self.__storage.run_stop_status
 
     def test_seta(self) -> None:
         setter = CommandInterpreters.SetA()
         assert self.__storage.a_register == 0
-        assert setter.apply(
-            self.__interpreter,
-            self.__storage,
-            self.__input_output,
-            "A")
+        assert setter.apply(self.__interpreter, self.__storage, self.__input_output, ["A"])
         assert self.__storage.a_register == 0
-        assert setter.apply(
-            self.__interpreter,
-            self.__storage,
-            self.__input_output,
-            "10000")
+        assert setter.apply(self.__interpreter, self.__storage, self.__input_output, ["10000"])
         assert self.__storage.a_register == 0
-        assert setter.apply(
-            self.__interpreter,
-            self.__storage,
-            self.__input_output,
-            "1234")
+        assert setter.apply(self.__interpreter, self.__storage, self.__input_output, ["1234"])
         assert self.__storage.a_register == 0o1234
 
     def test_setb(self) -> None:
         setter = CommandInterpreters.SetB()
         assert self.__storage.buffer_storage_bank == 0
-        assert setter.apply(
-            self.__interpreter,
-            self.__storage,
-            self.__input_output,
-            "UP")
+        assert setter.apply(self.__interpreter, self.__storage, self.__input_output, ["UP"])
         assert self.__storage.buffer_storage_bank == 0
-        assert setter.apply(
-            self.__interpreter,
-            self.__storage,
-            self.__input_output,
-            "10")
+        assert setter.apply(self.__interpreter, self.__storage, self.__input_output, ["10"])
         assert self.__storage.buffer_storage_bank == 0
-        assert setter.apply(
-            self.__interpreter,
-            self.__storage,
-            self.__input_output,
-            "3")
+        assert setter.apply(self.__interpreter, self.__storage, self.__input_output, ["3"])
         assert self.__storage.buffer_storage_bank == 3
 
     def test_setd(self) -> None:
         setter = CommandInterpreters.SetD()
         assert self.__storage.direct_storage_bank == 0
-        assert setter.apply(
-            self.__interpreter,
-            self.__storage,
-            self.__input_output,
-            "UP")
+        assert setter.apply(self.__interpreter, self.__storage, self.__input_output, ["UP"])
         assert self.__storage.direct_storage_bank == 0
-        assert setter.apply(
-            self.__interpreter,
-            self.__storage,
-            self.__input_output,
-            "10")
+        assert setter.apply(self.__interpreter, self.__storage, self.__input_output, ["10"])
         assert self.__storage.direct_storage_bank == 0
-        assert setter.apply(
-            self.__interpreter,
-            self.__storage,
-            self.__input_output,
-            "3")
+        assert setter.apply(self.__interpreter, self.__storage, self.__input_output, ["3"])
         assert self.__storage.direct_storage_bank == 3
 
     def test_seti(self) -> None:
         setter = CommandInterpreters.SetI()
         assert self.__storage.indirect_storage_bank == 0
-        assert setter.apply(
-            self.__interpreter,
-            self.__storage,
-            self.__input_output,
-            "UP")
+        assert setter.apply(self.__interpreter, self.__storage, self.__input_output, ["UP"])
         assert self.__storage.indirect_storage_bank == 0
-        assert (setter.apply
-                (self.__interpreter,
-                 self.__storage,
-                 self.__input_output,
-                 "10"))
+        assert (setter.apply(self.__interpreter, self.__storage, self.__input_output, ["10"]))
         assert self.__storage.indirect_storage_bank == 0
-        assert setter.apply(
-            self.__interpreter,
-            self.__storage,
-            self.__input_output,
-            "3")
+        assert setter.apply(self.__interpreter, self.__storage, self.__input_output, ["3"])
         assert self.__storage.indirect_storage_bank == 3
 
     def test_setr(self) -> None:
         setter = CommandInterpreters.SetR()
         assert self.__storage.relative_storage_bank == 0
-        assert setter.apply(
-            self.__interpreter,
-            self.__storage,
-            self.__input_output,
-            "UP")
+        assert setter.apply(self.__interpreter, self.__storage, self.__input_output, ["UP"])
         assert self.__storage.relative_storage_bank == 0
-        assert setter.apply(
-            self.__interpreter,
-            self.__storage,
-            self.__input_output,
-            "10")
+        assert setter.apply(self.__interpreter, self.__storage, self.__input_output, ["10"])
         assert self.__storage.relative_storage_bank == 0
-        assert setter.apply(
-            self.__interpreter,
-            self.__storage,
-            self.__input_output,
-            "3")
+        assert setter.apply(self.__interpreter, self.__storage, self.__input_output, ["3"])
         assert self.__storage.relative_storage_bank == 3
 
     def test_step(self):
         step = CommandInterpreters.Step()
         self.__storage.stop()
-        assert not step.apply(
-            self.__interpreter,
-            self.__storage,
-            self.__input_output,
-            "")
+        assert not step.apply(self.__interpreter, self.__storage, self.__input_output, [])
         assert not self.__storage.run_stop_status
 
     def test_stop_switch(self) -> None:
         stop_switch_runner = CommandInterpreters.StopSwitch(1)
         assert self.__interpreter.stop_set_mask() == 0
         assert self.__interpreter.stop_down_mask() == 0
-        assert stop_switch_runner.apply(
-            self.__interpreter,
-            self.__storage,
-            self.__input_output,
-            "sideways")
+        assert stop_switch_runner.apply(self.__interpreter, self.__storage, self.__input_output, ["sideways"])
         assert self.__interpreter.stop_set_mask() == 0
         assert self.__interpreter.stop_down_mask() == 0
-        assert stop_switch_runner.apply(
-            self.__interpreter,
-            self.__storage,
-            self.__input_output,
-            "down")
+        assert stop_switch_runner.apply(self.__interpreter, self.__storage, self.__input_output, ["down"])
         assert self.__interpreter.stop_down_mask() == 0o02
         assert self.__interpreter.stop_set_mask() == 0o02
-        assert stop_switch_runner.apply(
-            self.__interpreter,
-            self.__storage,
-            self.__input_output,
-            "center")
+        assert stop_switch_runner.apply(self.__interpreter, self.__storage, self.__input_output, ["center"])
         assert self.__interpreter.stop_set_mask() == 0
         assert self.__interpreter.stop_down_mask() == 0
-        assert stop_switch_runner.apply(
-            self.__interpreter,
-            self.__storage,
-            self.__input_output,
-            "up")
+        assert stop_switch_runner.apply(self.__interpreter, self.__storage, self.__input_output, ["up"])
         assert self.__interpreter.stop_down_mask() == 0o0
         assert self.__interpreter.stop_set_mask() == 0o02
