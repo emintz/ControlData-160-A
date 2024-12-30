@@ -1,6 +1,7 @@
 from unittest import TestCase
 from cdc160a.InputOutput import InputOutput
 from cdc160a.Storage import InterruptLock
+from cdc160a.NullDevice import NullDevice
 from cdc160a.Storage import Storage
 from test_support.HyperLoopQuantumGravityBiTape import HyperLoopQuantumGravityBiTape
 from development import CommandInterpreters
@@ -21,8 +22,11 @@ class TestCommandInterpreters(TestCase):
 
     def setUp(self):
         self.__command_reader = TestCommandReader()
-        self.__device = HyperLoopQuantumGravityBiTape(self._INPUT_DATA)
-        self.__input_output = InputOutput([self.__device])
+        self.__bi_tape = HyperLoopQuantumGravityBiTape(self._INPUT_DATA)
+        self.__null_device = NullDevice()
+        self.__input_output = InputOutput([
+            self.__bi_tape,
+            self.__null_device])
         self.__interpreter = Interpreter(
             [CommandInterpreters.COMMANDS], self.__command_reader)
         self.__storage = Storage()
@@ -39,7 +43,7 @@ class TestCommandInterpreters(TestCase):
         self.__storage.machine_hung = True
         self.__input_output.external_function(0o3700)
         assert (self.__input_output.device_on_normal_channel() ==
-                self.__device)
+                self.__bi_tape)
         assert self.__input_output.device_on_buffer_channel() is None
 
         assert CommandInterpreters.Clear().apply(self.__interpreter, self.__storage, self.__input_output, [])
@@ -55,6 +59,21 @@ class TestCommandInterpreters(TestCase):
         assert not self.__storage.machine_hung
         assert self.__input_output.device_on_normal_channel() is None
         assert self.__input_output.device_on_buffer_channel() is None
+
+    def test_close(self) -> None:
+        close_command = CommandInterpreters.Close()
+        assert self.__input_output.device("nul") == self.__null_device
+        assert not self.__null_device.is_open()
+        assert close_command.apply(self.__interpreter, self.__storage, self.__input_output, ["nul"])
+        assert not self.__null_device.is_open()
+        self.__null_device.open("ipcress")
+        assert self.__null_device.is_open()
+        assert close_command.apply(self.__interpreter, self.__storage, self.__input_output, [])
+        assert self.__null_device.is_open()
+        assert close_command.apply(self.__interpreter, self.__storage, self.__input_output, ["bi_tape"])
+        assert self.__null_device.is_open()
+        assert close_command.apply(self.__interpreter, self.__storage, self.__input_output, ["nul"])
+        assert not self.__null_device.is_open()
 
     def test_halt(self) -> None:
         halt_runner = CommandInterpreters.Step()
@@ -79,6 +98,14 @@ class TestCommandInterpreters(TestCase):
         assert jump_switch_runner.apply(self.__interpreter, self.__storage, self.__input_output, ["up"])
         assert self.__interpreter.jump_down_mask() == 0o0
         assert self.__interpreter.jump_set_mask() == 0o02
+
+    def test_open_device(self) -> None:
+        device_opener = CommandInterpreters.OpenDevice()
+        assert not self.__null_device.is_open()
+        assert device_opener.apply(
+            self.__interpreter, self.__storage, self.__input_output, ["nul", "double_cut.txt"])
+        assert self.__null_device.is_open()
+        assert self.__null_device.file_name() == "double_cut.txt"
 
     def test_resume(self) -> None:
         restarter = CommandInterpreters.Resume()

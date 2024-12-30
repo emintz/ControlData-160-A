@@ -50,6 +50,20 @@ class Clear(Runner):
         input_output.clear()
         return True
 
+class Close(Runner):
+    def __init__(self):
+        super().__init__("Closes the specified device")
+
+    def apply(self, interpreter: Interpreter, storage: Storage, input_output: InputOutput, settings: [str]) -> bool:
+        if _check_setting(settings, "Please provide a device name"):
+            device_key = settings[0]
+            device = input_output.device(device_key)
+            if device is None:
+                print(f"Device {device_key} does not exist.")
+            else:
+                device.close()
+        return True
+
 class Exit(Runner):
 
     def __init__(self):
@@ -110,8 +124,31 @@ class ListDevices(Runner):
                 "open on {0}".format(device.file_name())) \
                 if device.is_open() \
                 else "closed"
-            print("{0}: {1}.".format(device.name(), device_status))
+            print("{0} ({1}): {2}.".format(
+                device.name(), device.key(), device_status))
 
+        return True
+
+class OpenDevice(Runner):
+
+    def __init__(self):
+        super().__init__("Opens the specified device by attaching it to "
+                         "the specified file")
+
+    def apply(self, interpreter: Interpreter, storage: Storage, input_output: InputOutput, settings: [str]) -> bool:
+        match len(settings):
+            case 0:
+                print("Please provide a device name and a file path.")
+            case 1:
+                print("Please provide a file path")
+            case _:
+                assert len(settings) >= 2
+                device_name = settings[0]
+                device = input_output.device(device_name)
+                if device is None:
+                    print(f"Device {device_name} not found")
+                else:
+                    device.open(settings[1])
         return True
 
 class Resume(Runner):
@@ -255,6 +292,7 @@ class StopSwitch(Runner):
 COMMANDS = {
     "assemble": AssembleAndRunIfErrorFree(),
     "clear": Clear(),
+    "close": Close(),
     "devices": ListDevices(),
     "exit": Exit(),
     "halt": Step(),
@@ -262,6 +300,7 @@ COMMANDS = {
     "jump1": JumpSwitch(0),
     "jump2": JumpSwitch(1),
     "jump3": JumpSwitch(2),
+    "open": OpenDevice(),
     "quit": Exit(),
     "run": Resume(),
     "seta": SetA(),
