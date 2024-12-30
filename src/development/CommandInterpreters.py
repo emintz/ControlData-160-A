@@ -28,6 +28,9 @@ class AssembleAndRunIfErrorFree(Runner):
     Assemble source from a specified text file. If the assembly produces no
     errors, run the assembled program.
     """
+    def __init__(self):
+        super().__init__("Assembles directly to memory")
+
     def apply(self, interpreter: Interpreter, storage: Storage, input_output: InputOutput, settings: [str]) -> bool:
         if _check_setting(settings, "Please provide a file name."):
             assembler = assembler_from_file(settings[0], storage)
@@ -38,12 +41,19 @@ class AssembleAndRunIfErrorFree(Runner):
         return True
 
 class Clear(Runner):
+
+    def __init__(self):
+        super().__init__("Halts the machine, stops I/O, etc.")
+
     def apply(self, interpreter: Interpreter, storage: Storage, input_output: InputOutput, settings: [str]) -> bool:
         storage.clear()
         input_output.clear()
         return True
 
 class Exit(Runner):
+
+    def __init__(self):
+        super().__init__("Exits the interpreter")
 
     def apply(self, interpreter: Interpreter, storage: Storage, input_output: InputOutput, settings: [str]) -> bool:
         really_exit = input("Do you really want to quit the emulator (y/N)? ")
@@ -54,6 +64,15 @@ class Exit(Runner):
             print("Excellent!")
         return True
 
+class Help(Runner):
+    def __init__(self):
+        super().__init__("Lists commands with descriptions")
+
+    def apply(self, interpreter: Interpreter, storage: Storage, input_output: InputOutput, settings: [str]) -> bool:
+        for command_name, command in interpreter.commands().items():
+            print(f"{command_name}: {command.help()}")
+        return True
+
 class JumpSwitch(Runner):
     """
     Interprets commands that set jump switches.  Switches can be set up, down,
@@ -61,6 +80,7 @@ class JumpSwitch(Runner):
     """
 
     def __init__(self, switch_number: int):
+        super().__init__(f"Sets jump switch {switch_number}")
         self.__switch_number = switch_number
 
     def apply(self, interpreter: Interpreter, storage: Storage, input_output: InputOutput, settings: [str]) -> bool:
@@ -81,6 +101,9 @@ class JumpSwitch(Runner):
 
 class ListDevices(Runner):
 
+    def __init__(self):
+        super().__init__("Lists peripheral devices, including status")
+
     def apply(self, interpreter: Interpreter, storage: Storage, input_output: InputOutput, settings: [str]) -> bool:
         for device in input_output.devices():
             device_status = (
@@ -96,6 +119,9 @@ class Resume(Runner):
     Resumes execution.
     """
 
+    def __init__(self):
+        super().__init__("Resumes execution")
+
     def apply(self, interpreter: Interpreter, storage: Storage, input_output: InputOutput, settings: [str]) -> bool:
         storage.run()
         return False
@@ -104,6 +130,9 @@ class SetA(Runner):
     """
     Sets the accumulator (i.e. A register)
     """
+    def __init__(self):
+        super().__init__("Sets A register value")
+
     def apply(self, interpreter: Interpreter, storage: Storage, input_output: InputOutput, settings: [str]) -> bool:
         if _check_setting(settings, "Please provide a value."):
             value = self._to_int(0o0, 0o7777, settings[0])
@@ -115,6 +144,10 @@ class SetB(Runner):
     """
     Set the buffer control bank number
     """
+
+    def __init__(self):
+        super().__init__("Sets the buffer storage bank")
+
     def apply(self, interpreter: Interpreter, storage: Storage, input_output: InputOutput, settings: [str]) -> bool:
         if _check_setting(settings, "Please provide a bank number."):
             value = self._to_int(0, 0o7, settings[0])
@@ -126,6 +159,10 @@ class SetD(Runner):
     """
     Set the direct storage bank number
     """
+
+    def __init__(self):
+        super().__init__("Sets the direct storage bank")
+
     def apply(self, interpreter: Interpreter, storage: Storage, input_output: InputOutput, settings: [str]) -> bool:
         if _check_setting(settings, "Please provide a bank number."):
             value = self._to_int(0o0, 0o7, settings[0])
@@ -137,6 +174,10 @@ class SetI(Runner):
     """
     Set the indirect storage bank number
     """
+
+    def __init__(self):
+        super().__init__("Sets the indirect storage bank")
+
     def apply(self, interpreter: Interpreter, storage: Storage, input_output: InputOutput, settings: [str]) -> bool:
         if _check_setting(settings, "Please provide a bank number."):
             value = self._to_int(0o0, 0o7, settings[0])
@@ -148,6 +189,11 @@ class SetP(Runner):
     """
     Set the program address (i.e. P register)
     """
+
+    def __init__(self):
+        super().__init__("Sets the P register, the address of the "
+                         "next instruction")
+
     def apply(self, interpreter: Interpreter, storage: Storage, input_output: InputOutput, settings: [str]) -> bool:
         if _check_setting(settings, "Please provide an address."):
             value = self._to_int(0o0, 0o7777, settings[0])
@@ -159,6 +205,10 @@ class SetR(Runner):
     """
     Set the relative bank number
     """
+
+    def __init__(self):
+        super().__init__("Sets the relative storage bank")
+
     def apply(self, interpreter: Interpreter, storage: Storage, input_output: InputOutput, settings: [str]) -> bool:
         if _check_setting(settings, "Please provide a bank number."):
             value = self._to_int(0o0, 0o7, settings[0])
@@ -170,6 +220,10 @@ class Step(Runner):
     """
     Run the next instruction.
     """
+
+    def __init__(self):
+        super().__init__("Runs a single instruction (single-steps)")
+
     def apply(self, interpreter: Interpreter, storage: Storage, input_output: InputOutput, settings: [str]) -> bool:
         storage.stop()
         return False
@@ -179,6 +233,7 @@ class StopSwitch(Runner):
     Set stop switches. Stop switches can be set up, down, or center (i.e. off)
     """
     def __init__(self, switch_number: int):
+        super().__init__(f"Sets stop switch {switch_number}")
         self.__switch_number = switch_number
 
     def apply(self, interpreter: Interpreter, storage: Storage, input_output: InputOutput, settings: [str]) -> bool:
@@ -197,12 +252,13 @@ class StopSwitch(Runner):
         return True
 
 # Available commands
-COMMANDS: {str: Runner} = {
+COMMANDS = {
     "assemble": AssembleAndRunIfErrorFree(),
     "clear": Clear(),
     "devices": ListDevices(),
     "exit": Exit(),
     "halt": Step(),
+    "help": Help(),
     "jump1": JumpSwitch(0),
     "jump2": JumpSwitch(1),
     "jump3": JumpSwitch(2),

@@ -25,6 +25,10 @@ class Runner(ABC):
     """
     Base class for all command runners.
     """
+
+    def __init__(self, help_string):
+        self.__help_string = help_string
+
     @abstractmethod
     def apply(
             self,
@@ -45,6 +49,9 @@ class Runner(ABC):
                  get on with it.
         """
         return True
+
+    def help(self) -> str:
+        return self.__help_string
 
     @staticmethod
     def _to_int(min_value: int, max_value: int, value: str) -> int:
@@ -147,6 +154,9 @@ class Interpreter:
         self.__print_device(
             "Normal I/O device",
             input_output.device_on_normal_channel())
+
+    def commands(self) -> {str: Runner}:
+        return self.__commands
 
     def run_command(
             self,
