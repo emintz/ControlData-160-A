@@ -14,23 +14,26 @@ class TestHyperLoopQuantumGravityBiTape(TestCase):
     def test_configuration(self) -> None:
         assert self.__bi_tape.can_read()
         assert self.__bi_tape.can_write()
-        io_channel_support: IOChannelSupport = \
-            self.__bi_tape.io_channel_support()
+        io_channel_support: IOChannelSupport = (
+            self.__bi_tape.io_channel_support())
         assert io_channel_support is IOChannelSupport.NORMAL_AND_BUFFERED
+        assert self.__bi_tape.key() == "bi_tape"
+        assert self.__bi_tape.file_name() == ""
+        assert self.__bi_tape.is_open()
 
     def test_online_status(self) -> None:
-        request_validity, status =\
-            self.__bi_tape.external_function(0o3700)
+        request_validity, status = (
+            self.__bi_tape.external_function(0o3700))
         assert request_validity
         assert status == 0o4000
         self.__bi_tape.set_online_status(True)
-        request_validity, status =\
-            self.__bi_tape.external_function(0o3700)
+        request_validity, status = (
+            self.__bi_tape.external_function(0o3700))
         assert request_validity
         assert status == 0o0001
         self.__bi_tape.set_online_status(False)
-        request_validity, status =\
-            self.__bi_tape.external_function(0o3700)
+        request_validity, status = (
+            self.__bi_tape.external_function(0o3700))
         assert request_validity
         assert status == 0o4000
 
@@ -38,16 +41,16 @@ class TestHyperLoopQuantumGravityBiTape(TestCase):
         self.__bi_tape.set_online_status(True)
 
         for expected_input in self._INPUT_DATA:
-            request_validity, status =\
-                self.__bi_tape.external_function(0o3700)
+            request_validity, status = (
+                self.__bi_tape.external_function(0o3700))
             assert request_validity
             assert status == 0o0001
             read_validity, read_value = self.__bi_tape.read()
             assert read_validity
             assert read_value == expected_input
 
-        request_validity, status =\
-            self.__bi_tape.external_function(0o3700)
+        request_validity, status = (
+            self.__bi_tape.external_function(0o3700))
         assert request_validity
         assert status == 0o0000
 
@@ -71,8 +74,8 @@ class TestHyperLoopQuantumGravityBiTape(TestCase):
         expected_output: [int] = []
 
         for expected_input in self._INPUT_DATA:
-            request_validity, status =\
-                self.__bi_tape.external_function(0o3700)
+            request_validity, status = (
+                self.__bi_tape.external_function(0o3700))
             assert request_validity
             assert status == 0o0001
             read_validity, read_value = self.__bi_tape.read()
@@ -91,16 +94,16 @@ class TestHyperLoopQuantumGravityBiTape(TestCase):
         assert status == 0o0001
 
         for expected_input in self._INPUT_DATA:
-            request_validity, status =\
-                self.__bi_tape.external_function(0o3700)
+            request_validity, status = (
+                self.__bi_tape.external_function(0o3700))
             assert request_validity
             assert status == 0o0001
             read_validity, read_value = self.__bi_tape.read()
             assert read_validity
             assert read_value == expected_input
 
-        request_validity, status =\
-            self.__bi_tape.external_function(0o3700)
+        request_validity, status = (
+            self.__bi_tape.external_function(0o3700))
         assert request_validity
         assert status == 0o0000
 

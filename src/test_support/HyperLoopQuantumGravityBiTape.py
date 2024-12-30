@@ -1,3 +1,4 @@
+from typing import Optional
 from cdc160a.Device import Device, IOChannelSupport
 
 class HyperLoopQuantumGravityBiTape(Device):
@@ -21,7 +22,8 @@ class HyperLoopQuantumGravityBiTape(Device):
     """
 
     def __init__(self, input_data: [int]):
-        super().__init__("HyperLoop Quantum Gravity BiTape", True, True, IOChannelSupport.NORMAL_AND_BUFFERED)
+        super().__init__("HyperLoop Quantum Gravity BiTape", "bi_tape", True, True,
+                         IOChannelSupport.NORMAL_AND_BUFFERED)
         self.__input_data: [int] = input_data
         self.__input_position: int = 0
         self.__output_data: [int] = []
@@ -29,6 +31,12 @@ class HyperLoopQuantumGravityBiTape(Device):
 
     def __has_input(self) -> bool:
         return self.__input_position < len(self.__input_data)
+
+    def accepts(self, function_code: int) -> bool:
+        return 0o3700 <= function_code <= 0o3702
+
+    def close(self) -> None:
+        pass
 
     def external_function(self, external_function_code) -> (bool, int | None):
         status = self.accepts(external_function_code)
@@ -52,8 +60,8 @@ class HyperLoopQuantumGravityBiTape(Device):
 
         return status, value
 
-    def accepts(self, function_code: int) -> bool:
-        return 0o3700 <= function_code <= 0o3702
+    def file_name(self) -> Optional[str]:
+        return ""
 
     def initial_read_delay(self) -> int:
         return 6
@@ -61,8 +69,14 @@ class HyperLoopQuantumGravityBiTape(Device):
     def initial_write_delay(self) -> int:
         return 8
 
+    def is_open(self) -> bool:
+        return True
+
     def online_status(self) -> bool:
         return self.__online
+
+    def open(self, _: str) -> bool:
+        return True
 
     def output_data(self) -> [int]:
         return self.__output_data.copy()

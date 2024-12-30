@@ -19,9 +19,9 @@ class PaperTapePunch(Device):
         """
         super().__init__(
             "Paper Tape Punch",
+            "pt_pun",
             False,
-            True,
-            IOChannelSupport.NORMAL_ONLY)
+            True, IOChannelSupport.NORMAL_ONLY)
         self.__output_file: Optional[TextIOWrapper] = None
         self.__file_name: Optional[str] = None
 
@@ -48,6 +48,9 @@ class PaperTapePunch(Device):
 
     def external_function(self, external_function_code) -> (bool, int | None):
         return external_function_code == 0o4104, None
+
+    def file_name(self) -> Optional[str]:
+        return self.__file_name
 
     def initial_write_delay(self) -> int:
         return self.write_delay()

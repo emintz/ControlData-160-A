@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from enum import Enum, unique
+from typing import Optional
 
 class IllegalInvocation(Exception):
     """
@@ -38,12 +39,18 @@ class Device(ABC):
     Base class for all I/O devices.
 
     """
-    def __init__(self, name: str, can_read: bool, can_write: bool, io_channel_support: IOChannelSupport) -> None:
+    def __init__(self,
+                 name: str,
+                 key: str,
+                 can_read: bool,
+                 can_write: bool,
+                 io_channel_support: IOChannelSupport) -> None:
         """
         Constructor. Note that a device must be able to read, write, or
         both.
 
         :param name: device name, e.g. "Paper Tape Reader"; for display only.
+        :param key: internal device key used to retrieve the device.
         :param can_read: True if the device can read, False otherwise
         :param can_write: True if the device can write, False otherwise.
         :param io_channel_support: I/O channels to which the device connects.
@@ -56,6 +63,7 @@ class Device(ABC):
         """
         assert can_read or can_write
         self.__name = name
+        self.__key = key
         self.__can_read = can_read
         self.__can_write = can_write
         self.__io_channel_support = io_channel_support
@@ -73,6 +81,14 @@ class Device(ABC):
                  tape reader can respond to 4102, select reader.
         """
         return False
+
+    @abstractmethod
+    def close(self) -> None:
+        """
+        Close the file associated with this device, if any. If no file
+        is associated with this device, do nothing.
+        """
+        pass
 
     @abstractmethod
     def external_function(
@@ -97,6 +113,10 @@ class Device(ABC):
     def can_write(self) -> bool:
         return self.__can_write
 
+    @abstractmethod
+    def file_name(self) -> Optional[str]:
+        raise NotImplemented
+
     def initial_read_delay(self) -> int:
         """
         Provides the initial delay, the number of cycles required for
@@ -116,6 +136,16 @@ class Device(ABC):
     def io_channel_support(self) -> IOChannelSupport:
         return self.__io_channel_support
 
+    @abstractmethod
+    def is_open(self) -> bool:
+        """
+        Query the device to see if it is open, i.e. attached
+        to a disk file.
+
+        :return: True if the device open, False otherwise.
+        """
+        raise NotImplemented
+
     def initial_write_delay(self) -> int:
         """
         Provides the initial delay, the number of cycles required for
@@ -131,8 +161,25 @@ class Device(ABC):
         """
         raise NotImplemented
 
+    def key(self) -> str:
+        return self.__key
+
     def name(self) -> str:
         return self.__name
+
+    @abstractmethod
+    def open(self, path_name: str) -> bool:
+        """
+        Attach the device to a file. The device is responsible for
+        open the file in the appropriate mode.
+
+        :param path_name: file path to open. Note that the path
+                          format is system-dependent.
+        :return: True if the operation succeeded, False otherwise.
+                 The behavior when a file is already open is
+                 device-dependent.
+        """
+        raise NotImplemented
 
     def read(self) -> (bool, int):
         """

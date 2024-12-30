@@ -2,6 +2,7 @@ from unittest import TestCase
 import os
 from tempfile import NamedTemporaryFile
 
+from cdc160a.Device import Device
 from cdc160a.InputOutput import BufferStatus, InitiationStatus, InputOutput
 from cdc160a.NullDevice import NullDevice
 from cdc160a.PaperTapeReader import PaperTapeReader
@@ -173,6 +174,18 @@ class TestInputOutput(TestCase):
         os.unlink(temp_file_name)
         assert not os.path.exists(temp_file_name)
 
+    def test_device_retrieval(self) -> None:
+        assert self.__input_output.device("10K-Foobies") is None
+        device = self.__input_output.device("bi_tape")
+        assert device is not None
+        assert isinstance(device, HyperLoopQuantumGravityBiTape)
+        device = self.__input_output.device("pt_rdr")
+        assert device is not None
+        assert isinstance(device, PaperTapeReader)
+
+    def test_devices(self) -> None:
+        devices: [Device] = self.__input_output.devices()
+        assert len(devices) == 2
 
     def test_select_no_device_accepts_code(self):
         assert self.__input_output.device_on_buffer_channel() is None

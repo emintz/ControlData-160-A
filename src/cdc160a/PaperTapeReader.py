@@ -1,4 +1,5 @@
 from cdc160a.Device import Device, ExternalFunctionAction, IOChannelSupport
+from typing import Optional
 import re
 
 class PaperTapeReader(Device):
@@ -31,7 +32,7 @@ class PaperTapeReader(Device):
     __octal_pattern = re.compile("^[0-7]+$")
 
     def __init__(self):
-        super().__init__("Paper Tape Reader", True, False, IOChannelSupport.NORMAL_ONLY)
+        super().__init__("Paper Tape Reader", "pt_rdr", True, False, IOChannelSupport.NORMAL_ONLY)
         self.__input_file = None
         self.__input_path_name = None
 
@@ -54,11 +55,11 @@ class PaperTapeReader(Device):
             self.__input_file is not None and external_function_code == 0o4102,
             None)
 
+    def file_name(self) -> Optional[str]:
+        return self.__input_path_name
+
     def is_open(self) -> bool:
         return self.__input_file is not None
-
-    def name(self) -> str:
-        return self.__input_path_name
 
     def open(self, path_name: str) -> bool:
         result = False

@@ -45,8 +45,10 @@ class InputOutput:
                         160-A
         """
         self.__buffer_pump: Optional[BufferPump] = None
-        self.__devices: [Device] = devices
+        self.__device_dict = {}
         self.__device_on_normal_channel: Optional[Device] = None
+        for device in devices:
+            self.__device_dict[device.key()] = device
 
     def buffer(self, storage, cycles: int) -> BufferStatus:
         """
@@ -90,6 +92,12 @@ class InputOutput:
         _stop_device(self.device_on_buffer_channel())
         self.__buffer_pump = None
 
+    def device(self, key: str) -> Optional[Device]:
+        return self.__device_dict.get(key)
+
+    def devices(self) -> [Device]:
+        return self.__device_dict.values()
+
     def device_on_buffer_channel(self) -> Device:
         return self.__buffer_pump.device() \
             if self.__buffer_pump is not None \
@@ -116,7 +124,8 @@ class InputOutput:
         self.__device_on_normal_channel = None  # Deselect any active device.
 
         device = None
-        for current_device in self.__devices:
+
+        for current_device in self.__device_dict.values():
             if current_device.accepts(operand):
                 device = current_device
                 break

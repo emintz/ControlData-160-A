@@ -45,7 +45,7 @@ class TestPaperTapeReader(TestCase):
         assert not self.__paper_tape_reader.is_open()
         self.__paper_tape_reader.open(temp_file_name)
         assert self.__paper_tape_reader.is_open()
-        assert (self.__paper_tape_reader.name() ==
+        assert (self.__paper_tape_reader.file_name() ==
                 temp_file_name)
         read_status, data = self.__paper_tape_reader.read()
         assert read_status
@@ -72,7 +72,7 @@ class TestPaperTapeReader(TestCase):
         assert not self.__paper_tape_reader.is_open()
         self.__paper_tape_reader.open(temp_file_name)
         assert self.__paper_tape_reader.is_open()
-        assert self.__paper_tape_reader.name() == temp_file_name
+        assert self.__paper_tape_reader.file_name() == temp_file_name
         read_status, data = self.__paper_tape_reader.read()
         assert read_status
         assert data == 0
