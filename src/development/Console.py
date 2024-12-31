@@ -2,6 +2,7 @@ from cdc160a.BaseConsole import BaseConsole
 from cdc160a.InputOutput import InputOutput
 from cdc160a.IOStatus import IOStatus
 from cdc160a.Storage import Storage
+from development.CommandReader import CommandReader
 from system_specific import Factory
 from typing import Callable
 
@@ -89,13 +90,6 @@ class Console(BaseConsole):
     def normal_io_status(self) -> IOStatus:
         return self.__normal_io_status
 
-class CommandReader:
-    """
-    Reads commands from the keyboard
-    """
-    def read_command(self) -> [str]:
-        command = input("> ")
-        return command.split()
 
 def create_interpreter() -> Interpreter:
     """

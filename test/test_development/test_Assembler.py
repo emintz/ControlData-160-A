@@ -1,9 +1,9 @@
 from unittest import TestCase
 
-from test_support import Programs
 from cdc160a.Storage import Storage
 from development.Assembler import Assembler, two_digit_octal, four_digit_octal, OneWordRangeE, assembler_from_string
 from development.Assembler import one_digit_octal
+from test_support import Programs
 
 SINGLE_INSTRUCTION_TEMPLATE = """
           BNK 3
@@ -771,6 +771,37 @@ class TestAssembler(TestCase):
         self.__single_instruction_test(
             "ZJF 40", [0o6040])
         self.__single_instruction_test("ZJF 0", [0o6000])
+
+    # Memory use tests
+    def test_single_bank_use(self) -> None:
+        assembler = self.__assemble_and_run(Programs.BUFFER_IN_FROM_BI_TAPE)
+        memory_used = assembler.memory_use()
+        assert memory_used.memory_use(0o0).is_empty()
+        assert memory_used.memory_use(0o1).is_empty()
+        assert memory_used.memory_use(0o2).is_empty()
+        assert not memory_used.memory_use(0o3).is_empty()
+        assert memory_used.memory_use(0o03).first_word_address() == 0o20
+        assert memory_used.memory_use(0o3).last_word_address_plus_one() == 0o403
+        assert memory_used.memory_use(0o4).is_empty()
+        assert memory_used.memory_use(0o5).is_empty()
+        assert memory_used.memory_use(0o6).is_empty()
+        assert memory_used.memory_use(0o7).is_empty()
+
+    def test_two_bank_use(self) -> None:
+        assembler = self.__assemble_and_run(Programs.OUTPUT_FROM_MEMORY)
+        memory_used = assembler.memory_use()
+        assert memory_used.memory_use(0o0).is_empty()
+        assert not memory_used.memory_use(0o1).is_empty()
+        assert memory_used.memory_use(0o01).first_word_address() == 0o200
+        assert memory_used.memory_use(0o1).last_word_address_plus_one() == 0o211
+        assert memory_used.memory_use(0o2).is_empty()
+        assert not memory_used.memory_use(0o3).is_empty()
+        assert memory_used.memory_use(0o03).first_word_address() == 0o100
+        assert memory_used.memory_use(0o3).last_word_address_plus_one() == 0o107
+        assert memory_used.memory_use(0o4).is_empty()
+        assert memory_used.memory_use(0o5).is_empty()
+        assert memory_used.memory_use(0o6).is_empty()
+        assert memory_used.memory_use(0o7).is_empty()
 
     def __assemble_and_run(self, instruction: str) -> Assembler:
         assembler = self.assembler(

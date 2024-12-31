@@ -3,7 +3,9 @@ Programs for testing the emulator. All runnable programs
 start at 0100(3).
 
 Note: the following programs must be kept consistent with
-the tests in test_RunLoop.py. Caveat coder!
+the tests in test_RunLoop.py and elsewhere. Change with care.
+
+Caveat coder!
 """
 
 # Assembler sanity checks.
@@ -16,13 +18,11 @@ SET_STORAGE_BANK = """
           REM  Set the storage bank to 3
           BNK  3
           END
-
 """
 SET_ADDRESS = """
           REM  Set the address to 1234
           ORG  1234
           END
-
 """
 
 # Individual instructions

@@ -25,8 +25,9 @@ def _check_setting(settings: [str], error_message: str) -> bool:
 
 class AssembleAndRunIfErrorFree(Runner):
     """
-    Assemble source from a specified text file. If the assembly produces no
-    errors, run the assembled program.
+    Creates an assembler from the specified source file and, if all
+    went well, assembles the source into memory. Note that this
+    command does NOT run the assembled code. Use 'run' to run it.
     """
     def __init__(self):
         super().__init__("Assembles directly to memory")
@@ -36,12 +37,16 @@ class AssembleAndRunIfErrorFree(Runner):
             assembler = assembler_from_file(settings[0], storage)
             if assembler is not None:
                 assembler.run()
+                interpreter.set_memory_use(assembler.memory_use())
             else:
                 print("Error: file {0} not found.".format(settings[0]))
         return True
 
 class Clear(Runner):
-
+    """
+    Master clears the emulator, stopping all I/O and resetting
+    selected registers
+    """
     def __init__(self):
         super().__init__("Halts the machine, stops I/O, etc.")
 
@@ -65,6 +70,9 @@ class Close(Runner):
         return True
 
 class Exit(Runner):
+    """
+    Leaves the emulator.
+    """
 
     def __init__(self):
         super().__init__("Exits the interpreter")
@@ -79,6 +87,10 @@ class Exit(Runner):
         return True
 
 class Help(Runner):
+    """
+    Lists each command and a short description
+    """
+
     def __init__(self):
         super().__init__("Lists commands with descriptions")
 
@@ -114,6 +126,9 @@ class JumpSwitch(Runner):
         return True
 
 class ListDevices(Runner):
+    """
+    Lists all available peripheral devices and their current status
+    """
 
     def __init__(self):
         super().__init__("Lists peripheral devices, including status")
@@ -129,7 +144,26 @@ class ListDevices(Runner):
 
         return True
 
+class MemoryUse(Runner):
+    """
+    Prints memory use statistics
+    """
+
+    def __init__(self):
+        super().__init__("Prints memory use statistics")
+
+    def apply(self, interpreter: Interpreter, storage: Storage, input_output: InputOutput, settings: [str]) -> bool:
+        memory_use = interpreter.memory_use()
+        print("Memory used:")
+        for bank in range(0o0, 0o10):
+            print(f"   Bank {bank}: {str(memory_use.memory_use(bank))}")
+        return True
+
 class OpenDevice(Runner):
+    """
+    Opens the specified device. Usually that means attaching the
+    device to a user-specified disk file.
+    """
 
     def __init__(self):
         super().__init__("Opens the specified device by attaching it to "
@@ -167,6 +201,7 @@ class SetA(Runner):
     """
     Sets the accumulator (i.e. A register)
     """
+
     def __init__(self):
         super().__init__("Sets A register value")
 
@@ -255,11 +290,11 @@ class SetR(Runner):
 
 class Step(Runner):
     """
-    Run the next instruction.
+    Run (i.e. "single steps") the next instruction.
     """
 
     def __init__(self):
-        super().__init__("Runs a single instruction (single-steps)")
+        super().__init__("Runs a single instruction (single steps)")
 
     def apply(self, interpreter: Interpreter, storage: Storage, input_output: InputOutput, settings: [str]) -> bool:
         storage.stop()
@@ -267,8 +302,9 @@ class Step(Runner):
 
 class StopSwitch(Runner):
     """
-    Set stop switches. Stop switches can be set up, down, or center (i.e. off)
+    Sets stop switches. Stop switches can be set up, down, or center (i.e. off)
     """
+
     def __init__(self, switch_number: int):
         super().__init__(f"Sets stop switch {switch_number}")
         self.__switch_number = switch_number
@@ -300,6 +336,7 @@ COMMANDS = {
     "jump1": JumpSwitch(0),
     "jump2": JumpSwitch(1),
     "jump3": JumpSwitch(2),
+    "memory": MemoryUse(),
     "open": OpenDevice(),
     "quit": Exit(),
     "run": Resume(),

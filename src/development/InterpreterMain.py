@@ -1,7 +1,7 @@
 from development.CommandInterpreters import COMMANDS
 from cdc160a.InputOutput import InputOutput
 from cdc160a.Storage import Storage
-from development.Console import CommandReader
+from development.CommandReader import CommandReader
 from development.Interpreter import Interpreter
 
 """

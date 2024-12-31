@@ -10,6 +10,8 @@ from abc import ABC, abstractmethod
 from cdc160a.Device import Device
 from cdc160a.InputOutput import InputOutput
 from cdc160a.Storage import Storage
+from development.CommandReader import CommandReader
+from development.MemoryUse import MemoryUse
 from development.SwitchBank import SwitchBank
 
 def is_octal(string: str) -> bool:
@@ -63,7 +65,7 @@ class Runner(ABC):
         :param max_value: largest allowable value.
         :param value: the string that represents the value. Note that
                values are 12 bit integers that are treated as non-negative
-               values in [0, 0o7777
+               values in [0 .. 0o7777]
         :return: the converted value if valid, -1 otherwise. The caller
                  must check the result.
         """
@@ -87,11 +89,13 @@ class Interpreter:
     """
     Command interpreter
     """
-    def __init__(self, commands: {str, Runner},  command_reader):
-        self.__commands = commands
-        self.__command_reader = command_reader
-        self.__jump_switches = SwitchBank()
-        self.__stop_switches = SwitchBank()
+    def __init__(
+            self, commands: {str, Runner},  command_reader: CommandReader):
+        self.__commands: {str, Runner} = commands
+        self.__command_reader: CommandReader = command_reader
+        self.__jump_switches: SwitchBank = SwitchBank()
+        self.__memory_use: MemoryUse = MemoryUse()
+        self.__stop_switches: SwitchBank = SwitchBank()
 
     @staticmethod
     def __print_device(description: str, device: Device | None) -> None:
@@ -182,6 +186,9 @@ class Interpreter:
             print("Unknown command:", name)
         return result
 
+    def memory_use(self) -> MemoryUse:
+        return self.__memory_use
+
     def next_command(
             self,
             storage: Storage,
@@ -208,9 +215,8 @@ class Interpreter:
         return result
 
     def read_and_run_command(
-            self, storage:
-            Storage, input_output:
-            InputOutput) -> bool:
+            self, storage: Storage,
+            input_output: InputOutput) -> bool:
         """
         Read a command from the input and run it.
 
@@ -285,6 +291,9 @@ class Interpreter:
         """
         self.__jump_switches.release_down_switches()
         self.__stop_switches.release_down_switches()
+
+    def set_memory_use(self, memory_use: MemoryUse) -> None:
+        self.__memory_use = memory_use
 
     def stop_down_mask(self) -> int:
         """

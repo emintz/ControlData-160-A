@@ -106,6 +106,7 @@ the second one prevails.
 from __future__ import annotations
 
 from cdc160a import Storage
+from development.MemoryUse import MemoryUse
 from os import path
 import re
 import sys
@@ -681,10 +682,11 @@ class Assembler:
         self.__bank = 0
         self.__current_source_line = ""
         self.__line_count = 0
-        self.__running = True
         self.__errors = 0
         self.__error_or_warning = None
         self.__formatted_instruction = None
+        self.__memory_use = MemoryUse()
+        self.__running = True
         self.__source_lines = source
         self.__storage = storage
         self.__warnings = 0
@@ -850,6 +852,7 @@ class Assembler:
 
     def __store_and_advance(self, value: int) -> None:
         self.__storage.write_absolute(self.__bank, self.__address, value)
+        self.__memory_use.mark_used(self.__bank, self.__address)
         self.__address = (self.__address + 1) & 0o7777
         self.__words_written += 1
 
@@ -897,6 +900,9 @@ class Assembler:
 
     def line_count(self) -> int:
         return self.__line_count
+
+    def memory_use(self) -> MemoryUse:
+        return self.__memory_use
 
     def print_current_line(self, instr: str) -> None:
         print(
