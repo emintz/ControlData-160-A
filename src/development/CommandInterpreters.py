@@ -4,7 +4,7 @@ Command interpreter for the character mode console.
 """
 from cdc160a.InputOutput import InputOutput
 from cdc160a.Storage import Storage
-from test_support.Assembler import assembler_from_file
+from development.Assembler import assembler_from_file
 from development.Interpreter import Interpreter
 from development.Interpreter import Runner
 

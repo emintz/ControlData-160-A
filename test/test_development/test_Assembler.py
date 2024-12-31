@@ -2,8 +2,8 @@ from unittest import TestCase
 
 from test_support import Programs
 from cdc160a.Storage import Storage
-from test_support.Assembler import Assembler, two_digit_octal, four_digit_octal, OneWordRangeE, assembler_from_string
-from test_support.Assembler import one_digit_octal
+from development.Assembler import Assembler, two_digit_octal, four_digit_octal, OneWordRangeE, assembler_from_string
+from development.Assembler import one_digit_octal
 
 SINGLE_INSTRUCTION_TEMPLATE = """
           BNK 3

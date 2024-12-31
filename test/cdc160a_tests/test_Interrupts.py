@@ -4,7 +4,7 @@ from cdc160a.InputOutput import InputOutput
 from cdc160a.Storage import InterruptLock
 from cdc160a.RunLoop import RunLoop
 from cdc160a.Storage import Storage
-from test_support.Assembler import assembler_from_string
+from development.Assembler import assembler_from_string
 from test_support.PyunitConsole import PyConsole
 from test_support import Programs
 

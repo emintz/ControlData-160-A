@@ -10,7 +10,7 @@ from cdc160a.NullDevice import NullDevice
 from cdc160a.PaperTapePunch import PaperTapePunch
 from cdc160a.PaperTapeReader import PaperTapeReader
 from cdc160a.Storage import InterruptLock, Storage
-from test_support.Assembler import assembler_from_string
+from development.Assembler import assembler_from_string
 from test_support.HyperLoopQuantumGravityBiTape import HyperLoopQuantumGravityBiTape
 from test_support.PyunitConsole import PyConsole
 from test_support import Programs
