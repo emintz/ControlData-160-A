@@ -2,11 +2,14 @@
 """
 Command interpreter for the character mode console.
 """
+from cdc160a.Device import Device
 from cdc160a.InputOutput import InputOutput
 from cdc160a.Storage import Storage
 from development.Assembler import assembler_from_file
 from development.Interpreter import Interpreter
 from development.Interpreter import Runner
+from development.MemoryUse import MemoryUsedInBank
+from typing import Optional
 
 
 def is_octal(string: str) -> bool:
@@ -15,6 +18,13 @@ def is_octal(string: str) -> bool:
         result = result and '0' <= c <= '7'
         if not result:
             break
+    return result
+
+def is_octal_in_range(string: str, min_value: int, max_value: int) -> bool:
+    result = is_octal(string)
+    if result:
+        value = int(string, 8)
+        result = min_value <= value <= max_value
     return result
 
 def _check_setting(settings: [str], error_message: str) -> bool:
@@ -324,6 +334,99 @@ class StopSwitch(Runner):
         storage.set_stop_switch_mask(mask)
         return True
 
+class WriteBootTape(Runner):
+    """
+    Writes the contents of a specified memory bank to the
+    paper tape punch in boot format. Take start and end
+    addresses from the most recent assembly's memory
+    statistics.
+
+    The command writes data to the attached paper tape
+    punch, which means:
+
+    1. The emulator must be equipped with an emulated
+       paper tape punch.
+    2. The punch must be open, i.e. attached to an output
+       file.
+    3. The attached file must be empty.
+
+    The command takes one argument: a bank number in [0o0 .. 0o7]
+
+    Operating instructions:
+
+    1. Assemble the desired program. DO NOT RUN IT!
+    2. Print memory and verify memory use.
+    3. Open 'pt_pun', the paper tape punch.
+    4. Write the desired bank to the punch. Note
+       that the boot image might not be completely
+       written to disk when output completes.
+    5. Close the paper tape punch. This should
+       flush the remaining boot image to the
+       disk file.
+    6. Enjoy the fruits of your labor.
+    """
+    def __init__(self):
+        super().__init__("Writes memory to the paper tape in boot format")
+
+    @staticmethod
+    def __memory_use(interpreter: Interpreter,
+            bank: int) -> Optional[MemoryUsedInBank]:
+        memory_use: Optional[MemoryUsedInBank] = None
+        maybe_memory_use = interpreter.memory_use().memory_use(bank)
+        if maybe_memory_use is not None:
+            memory_use = maybe_memory_use
+        return memory_use
+
+    @staticmethod
+    def __paper_tape(input_output: InputOutput) -> Optional[Device]:
+        punch = None
+        maybe_punch: Optional[Device] = input_output.device("pt_pun")
+        if maybe_punch is not None and maybe_punch.is_open():
+            punch = maybe_punch
+        return punch
+
+    @staticmethod
+    def __write_bank_to_boot(bank: int,
+            storage: Storage,
+            memory_used_in_bank: MemoryUsedInBank,
+            punch: Device) -> None:
+        # Write leader, 4 words of 0
+        for i in range(0, 8):
+            punch.write(0)
+
+        # Write the memory image
+        for location in range(
+                memory_used_in_bank.first_word_address(),
+                memory_used_in_bank.last_word_address_plus_one()):
+            value = storage.read_absolute(bank, location)
+            most_significant = ((value >> 6) & 0o77) | 0o100
+            punch.write(most_significant)
+            least_significant = value & 0o77
+            punch.write(least_significant)
+
+        # Write trailer, 4 words of 0
+        for i in range(0, 8):
+            punch.write(0)
+
+    def apply(self, interpreter: Interpreter, storage: Storage, input_output: InputOutput, settings: [str]) -> bool:
+        if len(settings) < 1:
+            print(
+                "Please provide the desired bank number.")
+        elif not is_octal_in_range(settings[0], 0o0, 0o7):
+            print(f"Expected a bank number between 0 and 7 inclusive but "
+                  f"found {settings[0]}.")
+        else:
+            bank = int(settings[0], 8)
+            paper_tape_punch: Optional[Device] = self.__paper_tape(input_output)
+            memory_used_in_bank = self.__memory_use(interpreter, bank)
+            if paper_tape_punch is not None and memory_used_in_bank is not None:
+                self.__write_bank_to_boot(
+                    bank,
+                    storage,
+                    memory_used_in_bank,
+                    paper_tape_punch)
+        return True
+
 # Available commands
 COMMANDS = {
     "assemble": AssembleAndRunIfErrorFree(),
@@ -350,4 +453,5 @@ COMMANDS = {
     "stop1": StopSwitch(0),
     "stop2": StopSwitch(1),
     "stop3": StopSwitch(2),
+    "write_boot_tape": WriteBootTape(),
 }
