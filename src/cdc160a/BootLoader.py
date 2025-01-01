@@ -6,13 +6,12 @@ class BootLoader:
     """
     Loads a boot tape into memory. To use:
 
-    1. Open a boot image on the paper tape reader.
-    2. Master clear. This sets the A (accumulator), P (program counter),
+    1. Master clear. This sets the A (accumulator), P (program counter),
        and Relative Bank registers to 0, halts any active I/O buffering,
        and disconnects all selected devices from the I/O bus.
-    3. Enter the start address, the address to receive the first
+    2. Enter the start address, the address to receive the first
        word in the boot record, into P.
-    4. Run the boot load.
+    3. Load a boot image.
 
     When the loader finishes reading the boot image:
 

@@ -2,6 +2,7 @@
 """
 Command interpreter for the character mode console.
 """
+from cdc160a.BootLoader import BootLoader
 from cdc160a.Device import Device
 from cdc160a.InputOutput import InputOutput
 from cdc160a.Storage import Storage
@@ -63,6 +64,28 @@ class Clear(Runner):
     def apply(self, interpreter: Interpreter, storage: Storage, input_output: InputOutput, settings: [str]) -> bool:
         storage.clear()
         input_output.clear()
+        return True
+
+class Boot(Runner):
+    def __init__(self):
+        super().__init__("Boot from the paper tape reader")
+
+    def apply(self, interpreter: Interpreter, storage: Storage, input_output: InputOutput, settings: [str]) -> bool:
+        device: Device = input_output.device("pt_rdr")
+        if len(settings) < 1:
+            print("Error: please specify a boot image.")
+        elif device is None:
+            print("Error, the emulator has no paper tape reader. "
+                  "Please add one.")
+        elif device.is_open():
+            print("Error: paper tape reader is in use. Please close it.")
+        elif device.open(settings[0]):
+            boot_loader = BootLoader(device, storage)
+            boot_status: BootLoader.Status  = boot_loader.load()
+            print(
+                "Boot successful"
+                if boot_status == BootLoader.Status.SUCCEEDED else
+                "Boot failed")
         return True
 
 class Close(Runner):
@@ -430,6 +453,7 @@ class WriteBootTape(Runner):
 # Available commands
 COMMANDS = {
     "assemble": AssembleAndRunIfErrorFree(),
+    "boot": Boot(),
     "clear": Clear(),
     "close": Close(),
     "devices": ListDevices(),
