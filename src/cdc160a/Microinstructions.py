@@ -1,25 +1,44 @@
 """
-   Low level CDC 160A operations that can be composed into instructions and
-   other functionality.
+CDC 160A operations that used in instruction CPU instruction
+emulation.
 
-   Micro-instructions are low level operations, typically, but not
-   necessarily data movement, that can be assembled into instructions
-   and non-instruction operations like interrupt and buffered I/O handlers.
-   Note that the operand address and bank must be selected before
-   a micro-instruction can be run.
+Copyright © 2025 The System Source Museum, the authors and maintainers,
+and others
 
-   Note that [ ... ] means "address specified by the contents of", so
-   [S] indicates the address contained in the S register. Registers
-    are specified by capital letters.
+This file is part of the System Source Museum Control Data 160-A Emulator.
 
-    A full address specification requires both an address and a bank. Banks
-    are represented by lower case letters, b for Buffer, d for Direct,
-    i for Indirect, and r for relative.
+The System Source Museum Control Data 160-A Emulator is free software: you
+can redistribute it and/or modify it under the terms of the GNU General
+Public License as published by the Free Software Foundation, either version
+3 of the License, or (at your option) any later version.
 
-    The full specification has the form [<register>](<bank>), as in
-    [S](r)
+The System Source Museum Control Data 160-A Emulator is distributed in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even the
+implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+See the GNU General Public License for more details.
 
-    TODO(emintz): compatibility with refactoring Instructions, if come.
+You should have received a copy of the GNU General Public License along
+with the System Source Museum Control Data 160-A Emulator. If not, see
+<https://www.gnu.org/licenses/.
+
+Micro-instructions are low level operations, typically, but not
+necessarily data movement, that can be assembled into instructions
+and non-instruction operations like interrupt and buffered I/O handlers.
+Note that the operand address and bank must be selected before
+a micro-instruction can be run.
+
+Note that [ ... ] means "address specified by the contents of", so
+[S] indicates the address contained in the S register. Registers
+are specified by capital letters.
+
+A full address specification requires both an address and a bank. Banks
+are represented by lower case letters, b for Buffer, d for Direct,
+i for Indirect, and r for relative.
+
+The full specification has the form [<register>](<bank>), as in
+[S](r)
+
+TODO(emintz): compatibility with Instructions.py refactoring, if come.
 """
 from cdc160a.InputOutput import InitiationStatus
 from cdc160a.Hardware import Hardware

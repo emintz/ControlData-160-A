@@ -1,18 +1,37 @@
 """
-    Supports CDC 160A Addressing Modes
+CDC 160A Addressing Mode Support
 
-    The following functions calculate a decoded instructions effective address
-    and places it in the S register. This serves two purposes:
-        1. Should the machine halt, the S register will contain the
-           next address to be accessed. The reference manual appears to
-           indicate that this is the desired behavior, though this could
-           be open to interpretation.
-        2. It relieves the instruction from the burden of determining its
-           effective address, thus simplifying the logic and reusing
-           code in this module.
+Copyright © 2025 The System Source Museum, the authors and maintainers,
+and others
 
-    Note that the instruction must be moved to the F and E registers
-    before any of the following are invoked.
+This file is part of the System Source Museum Control Data 160-A Emulator.
+
+The System Source Museum Control Data 160-A Emulator is free software: you
+can redistribute it and/or modify it under the terms of the GNU General
+Public License as published by the Free Software Foundation, either version
+3 of the License, or (at your option) any later version.
+
+The System Source Museum Control Data 160-A Emulator is distributed in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even the
+implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along
+with the System Source Museum Control Data 160-A Emulator. If not, see
+<https://www.gnu.org/licenses/.
+
+The following functions calculate a decoded instructions effective address
+and places it in the S register. This serves two purposes:
+    1. Should the machine halt, the S register will contain the
+       next address to be accessed. The reference manual appears to
+       indicate that this is the desired behavior, though this could
+       be open to interpretation.
+    2. It relieves the instruction from the burden of determining its
+       effective address, thus simplifying the logic and reusing
+       code in this module.
+
+Note that the instruction must be moved to the F and E registers
+before any of the following are invoked.
 """
 from cdc160a.Storage import Storage
 

@@ -1,19 +1,26 @@
 """
-    CDC 160A Storage
+CDC 160-A memory, register file, and low-level instructions
 
-    Provides registers and memory for the CDC 160A emulator. All values are
-    stored in signed, 16-bit integers. Since the 160A is a 12-bit machine,
-    the most significant 4 bits are not used, and must be 0.
+Copyright © 2025 The System Source Museum, the authors and maintainers,
+and others
 
-    Storage includes all registers and the largest supported memory, 8 banks
-    of 4096 words.
+This file is part of the System Source Museum Control Data 160-A Emulator.
 
-    The design is motivated by, though differs from, the CDC 160A Programming
-    Manual, which can be found at
-    https://archive.org/details/bitsavers_cdc160023aingManual1960_4826291
+The System Source Museum Control Data 160-A Emulator is free software: you
+can redistribute it and/or modify it under the terms of the GNU General
+Public License as published by the Free Software Foundation, either version
+3 of the License, or (at your option) any later version.
 
-    TODO(emintz): move method descriptions to doc strings.
+The System Source Museum Control Data 160-A Emulator is distributed in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even the
+implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along
+with the System Source Museum Control Data 160-A Emulator. If not, see
+<https://www.gnu.org/licenses/.
 """
+
 from enum import Enum, unique
 import numpy as np
 from typing import Final
@@ -35,6 +42,21 @@ class InterruptLock(Enum):
     UNLOCK_PENDING = 2
 
 class Storage:
+    """
+        Emulated CDC 160A Memory, register file, and low-level instructions
+
+        Provides registers and memory for the CDC 160A emulator. All values are
+        stored in signed, 16-bit integers. Since the 160A is a 12-bit machine,
+        the most significant 4 bits are not used, and must be 0.
+
+        Storage includes all registers and the largest supported memory, 8 banks
+        of 4096 words.
+
+        The design is motivated by, though differs from, the CDC 160A Programming
+        Manual, which can be found at
+        https://archive.org/details/bitsavers_cdc160023aingManual1960_4826291
+    """
+
     def __init__(self):
         """
         Constructor

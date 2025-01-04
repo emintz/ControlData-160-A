@@ -1,6 +1,26 @@
 """
-Defines the console switch
+Console switch hardware emulation
+
+Copyright © 2025 The System Source Museum, the authors and maintainers,
+and others
+
+This file is part of the System Source Museum Control Data 160-A Emulator.
+
+The System Source Museum Control Data 160-A Emulator is free software: you
+can redistribute it and/or modify it under the terms of the GNU General
+Public License as published by the Free Software Foundation, either version
+3 of the License, or (at your option) any later version.
+
+The System Source Museum Control Data 160-A Emulator is distributed in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even the
+implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along
+with the System Source Museum Control Data 160-A Emulator. If not, see
+<https://www.gnu.org/licenses/.
 """
+
 
 from enum import Enum
 
@@ -23,7 +43,8 @@ class ConsoleSwitch:
     Emulates a console switch. Switches can be up, centered (off), or down.
     Each switch has a value of a non-negative power of two when on (up or
     down), or zero when off to support masking. See the SwitchBank class
-    for details.
+    for details. Note that this class is used to emulate both jump and
+    stop switches.
     """
     def __init__(self, bit_no: int):
         """

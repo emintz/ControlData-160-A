@@ -1,6 +1,25 @@
 """
 Decodes 12-bit CDC 160-A words into instructions
 
+Copyright © 2025 The System Source Museum, the authors and maintainers,
+and others
+
+This file is part of the System Source Museum Control Data 160-A Emulator.
+
+The System Source Museum Control Data 160-A Emulator is free software: you
+can redistribute it and/or modify it under the terms of the GNU General
+Public License as published by the Free Software Foundation, either version
+3 of the License, or (at your option) any later version.
+
+The System Source Museum Control Data 160-A Emulator is distributed in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even the
+implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along
+with the System Source Museum Control Data 160-A Emulator. If not, see
+<https://www.gnu.org/licenses/.
+
 The instruction interpreter determines the CDC 160-A instruction
 that an (F, E) pair represents and returns that instruction. It
 exploits the instruction format, a sux bit op-code called F and
@@ -39,7 +58,16 @@ from Instructions import BaseInstruction
 
 
 class InstructionDecoder(metaclass=ABCMeta):
+    """
+    Base class for all instruction decoders.
+    """
     def __init__(self, opcode: int | None):
+        """
+        Constructor
+
+        :param opcode: the 6 bit operation code. The value must
+        be in [0o00 .. 0o77]
+        """
         self.opcode = opcode
 
     @abstractmethod
@@ -79,16 +107,6 @@ class Bimodal(InstructionDecoder):
         else:
             return self.__e_nonzero
 
-class Unimplemented(InstructionDecoder):
-    """
-    Temporary interpreter for as-yet unsupported op-codes.
-    """
-    def __init__(self):
-        super().__init__(0o7777)
-
-    def decode(self, _) -> BaseInstruction:
-        return Instructions.ERR
-
 class Opcode00(InstructionDecoder):
 
     def __init__(self):
@@ -120,7 +138,6 @@ class Opcode00(InstructionDecoder):
         return decoded_instruction
 
 class OpCode01(InstructionDecoder):
-    # TODO(emintz): the remaining instructions
     __e_to_instruction_00 = {
         0o00: Instructions.BLS,
         0o01: Instructions.PTA,
@@ -206,8 +223,6 @@ class OpCode77(InstructionDecoder):
         elif e & 0o70 == 0:
             return Instructions.SLS
         return Instructions.SJS
-
-__UNIMPLEMENTED = Unimplemented()
 
 __DECODERS = [
     Opcode00(),                                                 # 00

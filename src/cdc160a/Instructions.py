@@ -1,11 +1,31 @@
 """
 CDC 160A Instructions
 
+Copyright © 2025 The System Source Museum, the authors and maintainers,
+and others
+
+This file is part of the System Source Museum Control Data 160-A Emulator.
+
+The System Source Museum Control Data 160-A Emulator is free software: you
+can redistribute it and/or modify it under the terms of the GNU General
+Public License as published by the Free Software Foundation, either version
+3 of the License, or (at your option) any later version.
+
+The System Source Museum Control Data 160-A Emulator is distributed in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even the
+implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along
+with the System Source Museum Control Data 160-A Emulator. If not, see
+<https://www.gnu.org/licenses/.
+
 Instructions contain three methods:
 
 1. Determine the operand's effective address
 2. Perform the instruction logic and determine the following
    instruction's address
+3. Perform any required post-processing (typically none).
 
 The design supports the following run loop:
 
@@ -19,6 +39,7 @@ The design supports the following run loop:
 TODO(emintz): consider replacing the cobbled-together instruction
               class with dynamically generated classes. See
               https://www.pythontutorial.net/python-oop/python-type-class
+              or maybe a class per instruction. This is low priority.
 """
 from abc import abstractmethod, ABCMeta
 from cdc160a import EffectiveAddress
@@ -73,11 +94,20 @@ def __finish_normal_output(hardware: Hardware) -> None:
     hardware.storage.normal_output_inactive()
 
 class BaseInstruction(metaclass=ABCMeta):
+    """
+    Base class for all instruction implementations
+    """
     def __init__(
             self,
             name: str,
             post_processor: Callable[[Hardware],
             None]):
+        """
+        Constructor
+
+        :param name: instruction name (mnemonic)
+        :param post_processor:
+        """
         self.__name = name
         self.__post_processor = post_processor
 

@@ -1,108 +1,27 @@
 """
-A primitive assembler that loads Storage with the assembled code.
+An extremely basic assembler used for testing. Please see the Assembler
+class documentation below for details.
 
-A primitive proto-assembler that translates source into binary
-and loads the binary into a Storage instance. Instruction names
-are taken from the CDC 160-A assembler, programming, and
-reference manuals. The assembler supports a few pseudo-instructions
-defined in the assembler manual and some implementation-specific
-additions. It does not support symbols of any sort, and the
-output is absolute, i.e. not relocatable.
+Copyright © 2025 The System Source Museum, the authors and maintainers,
+and others
 
-Input format:
+This file is part of the System Source Museum Control Data 160-A Emulator.
 
-Each line contains a single instruction which is formed of one
-or two tokens. Unlike the official assembler, input has no set
-form.
+The System Source Museum Control Data 160-A Emulator is free software: you
+can redistribute it and/or modify it under the terms of the GNU General
+Public License as published by the Free Software Foundation, either version
+3 of the License, or (at your option) any later version.
 
-Numbers are unsigned octal and only contain digits in ['0' .. '7'].
-Numbers MUST NOT have a prefix (e.g. no "0o" prefix).
+The System Source Museum Control Data 160-A Emulator is distributed in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even the
+implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+See the GNU General Public License for more details.
 
-Output format:
-
-The assembler writes a listing to the termai. Each line contains:
-
-  A line number, starting from 0
-
-  The target address and bank in the form AAAA(b) where AAAA is a
-  four digit octal memory address and b is a one octal digit
-  bank number. This is printed even if the assembler emits no
-  code.
-
-  The emitted code, one or two four-digit octal numbers depending
-  on the instruction.
-
-Instructions have three possible semantics, each of which
-has its own format.
-
-1. One word instructions having a set E value, e.g. LS1 (0o0102),
-   which are represented by one token, the instruction name. All
-   following tokens (if any) are ignored except that the
-   assembler issues a warning if the second token, if present,
-   is an octal number.
-
-2. One word instructions having a variable E value, e.g. LDF OO,
-   where OO is an octal number in the range [0, 0o77] inclusive.
-   The first token contains the instruction name and the second
-   contains the E value. The assembler issues an error if the
-   second token is missing or malformed.
-
-3. Two word instructions having a fixed E value and a G value
-   in the range of [0, 0o7777]. The first token contains
-   the instruction name and the second contains the G value.
-   The assembler issues an error if the G value is missing,
-   malformed, or out of range.
-
-4. Two word instructions having a variable and possibly restricted
-   E value. The first token is the instruction, the second is the E
-   value, and the third is the G value.
-
-5. Pseudo-instructions, instructions that affect assembly and
-   generate no code.
-
-Note that well-formed E and G values will not exceed
-the maximum allowed value. Bounds are checked where
-required.
-
-The assembler supports the following pseudo instruction types:
-
-Formatting, pseudo instructions that are written to the listing and
-do nothing else:
-
-    A blank line, which produces a blank like in the listing and is
-    otherwise ignored.
-
-    REM, remarks to appear in the listing and otherwise ignored.
-
-Code generation control:
-
-    BNK sets the memory bank to receive emitted code. Note that BNK
-    does not alter the target memory address, nor does it set bank
-    registers to be used when the emitted program runs.
-
-    ORG sets the target memory address for the next emitted
-    instruction. Note that ORG does not change any memory bank
-    settings.
-
-Runtime configuration, instructions that configure the emulator's
-runtime settings.
-
-    SETB: sets the buffer bank register to its starting value,
-    the value it will have when the assembled program starts.
-
-    SETD: sets the direct bank register to its starting value
-
-    SETI: sets the indirect bank register to its starting value
-
-    SETP: sets the program address, a.k.a. P Register, to its
-    starting value
-
-    SETR: sets the relative storage bank register to its starting value
-
-Note that s runtime configuration pseudo instruction overwrites
-any previous settings. If two SETB instructions occur in a program,
-the second one prevails.
+You should have received a copy of the GNU General Public License along
+with the System Source Museum Control Data 160-A Emulator. If not, see
+<https://www.gnu.org/licenses/.
 """
+
 from __future__ import annotations
 
 from cdc160a import Storage
@@ -671,6 +590,112 @@ class TwoWordVariableE:
         return e
 
 class Assembler:
+    """
+    A primitive assembler that loads Storage with the assembled code.
+
+    A primitive proto-assembler that translates source into binary
+    and loads the binary into a Storage instance. Instruction names
+    are taken from the CDC 160-A assembler, programming, and
+    reference manuals. The assembler supports a few pseudo-instructions
+    defined in the assembler manual and some implementation-specific
+    additions. It does not support symbols of any sort, and the
+    output is absolute, i.e. not relocatable.
+
+    Input format:
+
+    Each line contains a single instruction which is formed of one
+    or two tokens. Unlike the official assembler, input has no set
+    form.
+
+    Numbers are unsigned octal and only contain digits in ['0' .. '7'].
+    Numbers MUST NOT have a prefix (e.g. no "0o" prefix).
+
+    Output format:
+
+    The assembler writes a listing to the termai. Each line contains:
+
+      A line number, starting from 0
+
+      The target address and bank in the form AAAA(b) where AAAA is a
+      four digit octal memory address and b is a one octal digit
+      bank number. This is printed even if the assembler emits no
+      code.
+
+      The emitted code, one or two four-digit octal numbers depending
+      on the instruction.
+
+    Instructions have three possible semantics, each of which
+    has its own format.
+
+    1. One word instructions having a set E value, e.g. LS1 (0o0102),
+       which are represented by one token, the instruction name. All
+       following tokens (if any) are ignored except that the
+       assembler issues a warning if the second token, if present,
+       is an octal number.
+
+    2. One word instructions having a variable E value, e.g. LDF OO,
+       where OO is an octal number in the range [0, 0o77] inclusive.
+       The first token contains the instruction name and the second
+       contains the E value. The assembler issues an error if the
+       second token is missing or malformed.
+
+    3. Two word instructions having a fixed E value and a G value
+       in the range of [0, 0o7777]. The first token contains
+       the instruction name and the second contains the G value.
+       The assembler issues an error if the G value is missing,
+       malformed, or out of range.
+
+    4. Two word instructions having a variable and possibly restricted
+       E value. The first token is the instruction, the second is the E
+       value, and the third is the G value.
+
+    5. Pseudo-instructions, instructions that affect assembly and
+       generate no code.
+
+    Note that well-formed E and G values will not exceed
+    the maximum allowed value. Bounds are checked where
+    required.
+
+    The assembler supports the following pseudo instruction types:
+
+    Formatting, pseudo instructions that are written to the listing and
+    do nothing else:
+
+        A blank line, which produces a blank like in the listing and is
+        otherwise ignored.
+
+        REM, remarks to appear in the listing and otherwise ignored.
+
+    Code generation control:
+
+        BNK sets the memory bank to receive emitted code. Note that BNK
+        does not alter the target memory address, nor does it set bank
+        registers to be used when the emitted program runs.
+
+        ORG sets the target memory address for the next emitted
+        instruction. Note that ORG does not change any memory bank
+        settings.
+
+    Runtime configuration, instructions that configure the emulator's
+    runtime settings.
+
+        SETB: sets the buffer bank register to its starting value,
+        the value it will have when the assembled program starts.
+
+        SETD: sets the direct bank register to its starting value
+
+        SETI: sets the indirect bank register to its starting value
+
+        SETP: sets the program address, a.k.a. P Register, to its
+        starting value
+
+        SETR: sets the relative storage bank register to its starting value
+
+    Note that s runtime configuration pseudo instruction overwrites
+    any previous settings. If two SETB instructions occur in a program,
+    the second one prevails.
+    """
+
     def __init__(self, source, storage: Storage):
         """
         Constructor

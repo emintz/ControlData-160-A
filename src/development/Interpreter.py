@@ -1,10 +1,26 @@
 """
-Runs commands for the character mode console.
+Interpreter for commands issued to the command line-driven console
 
-Note: unlike the actual 160-A console, this simulation
-      can stop when interrupts are locked out or buffering
-      is active. Be warned!
+Copyright © 2025 The System Source Museum, the authors and maintainers,
+and others
+
+This file is part of the System Source Museum Control Data 160-A Emulator.
+
+The System Source Museum Control Data 160-A Emulator is free software: you
+can redistribute it and/or modify it under the terms of the GNU General
+Public License as published by the Free Software Foundation, either version
+3 of the License, or (at your option) any later version.
+
+The System Source Museum Control Data 160-A Emulator is distributed in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even the
+implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along
+with the System Source Museum Control Data 160-A Emulator. If not, see
+<https://www.gnu.org/licenses/.
 """
+
 from abc import ABC, abstractmethod
 
 from cdc160a.Device import Device
@@ -15,6 +31,15 @@ from development.MemoryUse import MemoryUse
 from development.SwitchBank import SwitchBank
 
 def is_octal(string: str) -> bool:
+    """
+    Verifies that the specified string represents a valid
+    octal number, i.e. is non-empty and contains only
+    characters in ['0' .. '7']
+
+    :param string: input to validate
+    :return: True if the input represents a valid octal number,
+             False otherwise.
+    """
     result = 0 < len(string)
     for c in string:
         result = result and '0' <= c <= '7'
@@ -25,7 +50,8 @@ def is_octal(string: str) -> bool:
 
 class Runner(ABC):
     """
-    Base class for all command runners.
+    Base class for all command runners that specifies the
+    interpreter API and manages the command's help string.
     """
 
     def __init__(self, help_string):
@@ -87,8 +113,14 @@ class Runner(ABC):
 
 class Interpreter:
     """
-    Command interpreter
+    A simple interpreter that runs character mode console
+    commands.
+
+    Note: unlike the actual 160-A console, this simulation
+          can stop when interrupts are locked or buffering
+          is active. Be warned!
     """
+
     def __init__(
             self, commands: {str, Runner},  command_reader: CommandReader):
         self.__commands: {str, Runner} = commands
