@@ -73,7 +73,7 @@ class PaperTapeReader(Device):
         return result
 
     def external_function(self, external_function_code: int) -> (
-            (bool, int | None)):
+            (bool, Optional[int])):
         return (
             self.__input_file is not None and external_function_code == 0o4102,
             None)

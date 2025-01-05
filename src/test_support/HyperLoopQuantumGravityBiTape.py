@@ -21,8 +21,8 @@ with the System Source Museum Control Data 160-A Emulator. If not, see
 <https://www.gnu.org/licenses/.
 """
 
-from typing import Optional
 from cdc160a.Device import Device, IOChannelSupport
+from typing import Optional
 
 class HyperLoopQuantumGravityBiTape(Device):
     """
@@ -61,7 +61,7 @@ class HyperLoopQuantumGravityBiTape(Device):
     def close(self) -> None:
         pass
 
-    def external_function(self, external_function_code) -> (bool, int | None):
+    def external_function(self, external_function_code) -> (bool, Optional[int]):
         status = self.accepts(external_function_code)
         value = 0o7777
         if status:

@@ -1,28 +1,28 @@
           REM    Copyright © 2025 The System Source Museum, the authors
           REM    and maintainers, and others
 
-          REM     This file is part of the System Source Museum Control
-          REM     Data 160-A Emulator.
+          REM    This file is part of the System Source Museum Control
+          REM    Data 160-A Emulator.
 
-          REM      The System Source Museum Control Data 160-A Emulator is
-          REM      free software: you can redistribute it and/or modify it
-          REM      under the terms of the GNU General Public License as
-          REM      published by the Free Software Foundation, either version
-          REM      3 of the License, or (at your option) any later version.
+          REM    The System Source Museum Control Data 160-A Emulator is
+          REM    free software: you can redistribute it and/or modify it
+          REM    under the terms of the GNU General Public License as
+          REM    published by the Free Software Foundation, either version
+          REM    3 of the License, or (at your option) any later version.
 
-          REM      The System Source Museum Control Data 160-A Emulator
-          REM      is distributed in the hope that it will be useful,
-          REM      but WITHOUT ANY WARRANTY; without even the implied
-          REM      warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-          REM      PURPOSE. See the GNU General Public License for more details.
+          REM    The System Source Museum Control Data 160-A Emulator
+          REM    is distributed in the hope that it will be useful,
+          REM    but WITHOUT ANY WARRANTY; without even the implied
+          REM    warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+          REM    PURPOSE. See the GNU General Public License for more details.
 
-          REM      You should have received a copy of the GNU General Public
-          REM      License along with the System Source Museum Control Data
-          REM      160-A Emulator. If not, see <https://www.gnu.org/licenses/.
+          REM    You should have received a copy of the GNU General Public
+          REM    License along with the System Source Museum Control Data
+          REM    160-A Emulator. If not, see <https://www.gnu.org/licenses/.
           REM
-          REM      Script for testing the console interrupt. The
-          REM      script loops until the operator turns a jump switch
-          REM      and a stop switch down to generate an interrupt 10
+          REM    Script for testing the console interrupt. The
+          REM    script loops until the operator turns a jump switch
+          REM    and a stop switch down to generate an interrupt 10
           REM
           REM Memory Banks
           REM    Buffer: 0

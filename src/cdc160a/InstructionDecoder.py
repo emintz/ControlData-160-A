@@ -52,16 +52,15 @@ Instructions are decoded as follows:
    def decode(e: int) -> Instruction
 """
 from abc import ABCMeta, abstractmethod
-
 import Instructions
 from Instructions import BaseInstruction
-
+from typing import Optional
 
 class InstructionDecoder(metaclass=ABCMeta):
     """
     Base class for all instruction decoders.
     """
-    def __init__(self, opcode: int | None):
+    def __init__(self, opcode: Optional[int]):
         """
         Constructor
 

@@ -23,13 +23,12 @@ with the System Source Museum Control Data 160-A Emulator. If not, see
 """
 
 from __future__ import annotations
-
 from cdc160a import Storage
 from development.MemoryUse import MemoryUse
 from os import path
 import re
 import sys
-from typing import Callable
+from typing import Callable, Optional
 
 BANK_PATTERN = re.compile("[0-7]")
 E_PATTERN = re.compile("[0-7]{1,2}")
@@ -1068,7 +1067,7 @@ class Assembler:
         return self.__words_written
 
 
-def assembler_from_file(pathname: str, storage: Storage) -> Assembler | None:
+def assembler_from_file(pathname: str, storage: Storage) -> Optional[Assembler]:
     """
     Create an Assembler that takes its input from the provided path name
 
@@ -1098,7 +1097,7 @@ class ClosableString:
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
 
-def assembler_from_string(source: str, storage: Storage) -> Assembler | None:
+def assembler_from_string(source: str, storage: Storage) -> Optional[Assembler]:
     """
     Creates an assembler that takes a string as input.
 

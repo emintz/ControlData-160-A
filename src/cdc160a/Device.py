@@ -116,7 +116,7 @@ class Device(ABC):
     @abstractmethod
     def external_function(
             self,
-            external_function_code) -> (bool, int | None):
+            external_function_code) -> (bool, Optional[int]):
         """
         Performs the requested external function, a request emanating
         from an EXC or EXF instruction. All subclasses must override

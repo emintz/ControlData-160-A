@@ -29,6 +29,7 @@ from cdc160a.Storage import Storage
 from development.CommandReader import CommandReader
 from development.MemoryUse import MemoryUse
 from development.SwitchBank import SwitchBank
+from typing import Optional
 
 def is_octal(string: str) -> bool:
     """
@@ -130,7 +131,7 @@ class Interpreter:
         self.__stop_switches: SwitchBank = SwitchBank()
 
     @staticmethod
-    def __print_device(description: str, device: Device | None) -> None:
+    def __print_device(description: str, device: Optional[Device]) -> None:
         """
         Print the active device name if any.
         :param description: device description (e.g. "Buffered device")

@@ -68,7 +68,7 @@ class PaperTapePunch(Device):
             self.__output_file = None
             self.__file_name = None
 
-    def external_function(self, external_function_code) -> (bool, int | None):
+    def external_function(self, external_function_code) -> (bool, Optional[int]):
         return external_function_code == 0o4104, None
 
     def file_name(self) -> Optional[str]:
